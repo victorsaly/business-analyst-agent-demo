@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Business Performance Analyst Agent</title>
+<meta name="description" content="A course demonstration (Agentic AI Workshop 2026, Capstone 2): an AI agent that answers questions about sales data and shows the query behind every number.">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/static/fonts/PatrickHandSC-Regular.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="preload" href="/static/fonts/PatrickHand-Regular.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<aside class="spine" aria-label="Tape spine">
+  <div class="stripe" aria-hidden="true"><span></span><span></span><span></span></div>
+  <div class="cat"><b>6:00</b>AW&#8209;06</div>
+  <div class="title">Business Performance Analyst Agent</div>
+  <div class="ab">A<br>B<small id="spine-dates">2022&ndash;25</small></div>
+</aside>
+<div class="card">
+  <header class="masthead">
+    <nav aria-label="Screens">
+      <a href="?page=cover" data-page="cover">Cover</a>
+      <a href="?page=changes" data-page="changes">What changed</a>
+      <a href="?page=tracks" data-page="tracks">Tracks</a>
+      <a href="?page=tools" data-page="tools">Tools</a>
+      <a href="?page=briefing" data-page="briefing">Briefing</a>
+      <a href="?page=scorecard" data-page="scorecard">Scorecard</a>
+      <a href="?page=story" data-page="story">Story</a>
+    </nav>
+    <div class="right">
+      <div class="modes" role="group" aria-label="Mode">
+        <button type="button" data-mode="live" title="The real AI. Every run is recorded.">Live AI</button>
+        <button type="button" data-mode="replay" title="Plays back a recorded live run, step by step.">Replay</button>
+        <button type="button" data-mode="dry" title="No AI. Real tool steps, scripted wording. For testing only.">Dry run</button>
+      </div>
+      <div class="counter" id="counter" aria-live="off">0:00<small></small></div>
+    </div>
+  </header>
+  <div class="position" aria-hidden="true"><span id="position"></span></div>
+  <div class="subbar">
+    <div class="aud-pick"><span class="lab">View for</span>
+      <div class="modes" role="group" aria-label="Audience">
+        <button type="button" data-aud="stakeholder" title="Only the answers, numbers and charts.">Stakeholder</button>
+        <button type="button" data-aud="developer" title="Everything underneath: every tool call, its arguments, SQL, timings and tokens.">Developer</button>
+      </div>
+    </div>
+    <button type="button" class="btn explain-btn" id="explain"><svg class="icon" viewBox="0 0 24 24"><path d="M4 9.5v5h3.5L12 19V5L7.5 9.5z"/><path d="M15.5 9a4 4 0 0 1 0 6"/><path d="M18 6.5a7.5 7.5 0 0 1 0 11"/></svg> Explain this page</button>
+  </div>
+  <main id="view" tabindex="-1"></main>
+  <footer class="course-note">Course demonstration: Capstone 2, Agentic AI Workshop 2026. Not a product. AdventureWorks is Microsoft's public sample data about a made-up bicycle company. <a href="?page=story" data-page="story">How we built it</a></footer>
+</div>
+<div class="explainer" id="explainer" hidden role="region" aria-label="Spoken explanation">
+  <button type="button" class="ex-toggle" id="ex-toggle" aria-label="Pause"></button>
+  <div class="ex-body">
+    <div class="ex-head"><span class="ex-who" id="ex-who"></span><span class="ex-time" id="ex-time"></span></div>
+    <p class="ex-text" id="ex-text"></p>
+  </div>
+  <button type="button" class="ex-close" id="ex-close" aria-label="Close explanation"><svg class="icon" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+</div>
+<script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+# secrets and things ./app/demo.sh setup rebuilds
+app/.env
+app/.venv/
+app/data/
+app/video/
+__pycache__/
+.DS_Store

@@ -1,0 +1,13 @@
+{
+  "_about": "The Story screen's timeline (1 October 2026, UK time, from file timestamps). Full version: docs/history.md.",
+  "steps": [
+    {"time": "15:15", "title": "The starting point", "text": "The course gave us a notebook with a working agent engine, but on made-up data: a pretend retailer, in pounds."},
+    {"time": "16:00", "title": "Cut the AI cost", "text": "Measured where the tokens went. Shorter rulebook and tool menu: 32% less fixed cost per round on the free Groq plan."},
+    {"time": "Afternoon", "title": "Turn the brief into a plan", "text": "18 requirements, 13 steps anyone can follow. Key decision: keep the engine, add a new Section 6."},
+    {"time": "Afternoon", "title": "Build Section 6", "text": "Real AdventureWorks data, read-only. Five tools, four guardrails, a new scorecard, the weekly briefing, a planted anomaly to rehearse."},
+    {"time": "19:48", "title": "A demo app", "text": "The same agent behind a small web server: Live AI, Replay of recorded runs, and Dry run for testing. 27 automatic checks."},
+    {"time": "20:08", "title": "Product and design", "text": "Who it's for and what success looks like. The look: a hand-lettered cassette J-card, the demo as a six-minute mixtape."},
+    {"time": "20:36", "title": "Real AI runs, recorded", "text": "Groq's daily allowance ran out, so OpenAI takes over automatically. Every demo question recorded live; scorecard 6 of 7."},
+    {"time": "21:00", "title": "Clear for every audience", "text": "Fixed a briefing stall, added Stakeholder and Developer views, spoken explanations with live captions, and this online copy."}
+  ]
+}

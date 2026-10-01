@@ -1,0 +1,1 @@
+{"error":"Only SELECT (or WITH ... SELECT) queries are allowed. The database is read-only.","query":"DELETE FROM SalesOrderHeader WHERE OrderDate < '2023-01-01'"}

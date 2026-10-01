@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Business Performance Analyst Agent logo: a cassette with a rising bar chart">
+  <title>Business Performance Analyst Agent</title>
+  <path d="M8 10h48a4 4 0 0 1 4 4v38a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V14a4 4 0 0 1 4-4z" fill="#FCFBF7" stroke="#1E3A8A" stroke-width="3.5"/>
+  <path d="M5.8 16h52.4" stroke="#C62828" stroke-width="2.5"/>
+  <path d="M5.8 20.5h52.4" stroke="#C62828" stroke-width="2.5"/>
+  <rect x="13" y="26" width="38" height="16" rx="8" fill="none" stroke="#1E3A8A" stroke-width="3"/>
+  <circle cx="21" cy="34" r="3.6" fill="#1E3A8A"/>
+  <circle cx="43" cy="34" r="3.6" fill="#1E3A8A"/>
+  <path d="M28 38v-3M32 38v-6M36 38v-9" stroke="#C62828" stroke-width="3" stroke-linecap="round"/>
+  <path d="M17 56l3.5-7h23l3.5 7" fill="none" stroke="#1E3A8A" stroke-width="3" stroke-linejoin="round"/>
+</svg>

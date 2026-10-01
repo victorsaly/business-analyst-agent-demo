@@ -1,0 +1,7 @@
+fastapi>=0.104
+uvicorn>=0.24
+pandas>=2.0
+numpy>=1.26
+matplotlib>=3.8
+requests>=2.31
+playwright>=1.45
