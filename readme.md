@@ -5,7 +5,7 @@
 <p align="center"><b>A course demonstration</b>: Capstone 2 of the Agentic AI Workshop 2026.<br>
 Ask a question about sales in plain English. Get the answer, the chart, and the exact query behind every number.</p>
 
-<p align="center"><a href="https://victorsaly.github.io/business-analyst-agent-demo/"><b>Start page: every service</b></a> · <a href="https://victorsaly.github.io/business-analyst-agent-demo/demo/"><b>Online demo</b></a> · <a href="https://victorsaly.github.io/business-analyst-agent-demo/demo/?page=story">Ask the course chat</a> ·
+<p align="center"><a href="https://victorsaly.github.io/business-analyst-agent-demo/"><b>Home: the 60-second pitch</b></a> · <a href="https://victorsaly.github.io/business-analyst-agent-demo/demo/"><b>Online demo</b></a> · <a href="https://victorsaly.github.io/business-analyst-agent-demo/demo/?page=story">Ask the course chat</a> ·
 <a href="https://victorsaly.github.io/business-analyst-agent-demo/pitch/">60-second pitch video</a> · <a href="https://victorsaly.github.io/business-analyst-agent-demo/deck/"><b>Presentation</b></a> · <a href="https://victorsaly.github.io/business-analyst-agent-demo/api/">API reference</a> · <a href="https://victorsaly.github.io/business-analyst-agent-demo/blog/"><b>How this was made</b> (blog)</a> · <a href="docs/history.md">History</a></p>
 
 > [!IMPORTANT]
@@ -150,7 +150,7 @@ docs/                   all the documentation (lower-case names); also published
   build-guide.md        the brief as 13 steps: every notebook cell we added, and why
   prompt-optimization.md, product.md, design.md, audio-sources.md
 notebooks/              our finished notebook (Section 6 = this project)
-site/                   the website, built by app/build_site.py: the start page with every service, the demo (demo/),
+site/                   the website, built by app/build_site.py: the front page with the pitch video, the demo (demo/),
                         the blog (blog/), the API reference (api/), the pitch (pitch/), the presentation (deck/)
 worker/                 the online Ask chat (a Cloudflare Worker); its knowledge base is built locally, never committed
 .github/workflows/      publishes site/ to GitHub Pages on every push
@@ -166,6 +166,9 @@ cd app
 ```
 
 ## Credits
+
+<!-- team:start (written by app/build_site.py from app/web/team.json) -->
+<!-- team:end -->
 
 - Course: Agentic AI Workshop 2026, Capstone 2. The starting notebook and training guide belong to the course
   and are not included here.

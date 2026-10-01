@@ -1,0 +1,5 @@
+{
+  "how": "The team, shown on the front page (the cover), on the blog (The team page and every page's footer) and in the readme. One entry per person, in the order to show them. linkedin is optional. While members is empty, no team section appears anywhere. After editing: cd app && ./demo.sh site",
+  "example": {"name": "Full Name", "linkedin": "https://www.linkedin.com/in/your-profile/"},
+  "members": []
+}

@@ -28,17 +28,52 @@ AREAS = [   # the sidebar on every page: every document, grouped by area
     ("Behind the scenes", [("prompt-optimization", "Cutting the AI cost"), ("audio-sources", "Audio sources")]),
 ]
 
+TEAM = os.path.join(HERE, "web", "team.json")   # the team: also shown on the front page (the cover) and in the readme
+
+
+def team():
+    """The team members ({name, linkedin?}), or [] while app/web/team.json has none yet: then nothing shows."""
+    try:
+        with open(TEAM, encoding="utf-8") as f:
+            return [m for m in json.load(f).get("members", []) if m.get("name", "").strip()]
+    except (OSError, ValueError):
+        return []
+
+
+def areas():
+    """AREAS, plus "The team" once team.json has names in it."""
+    return AREAS + ([("The team", [("team", "Who made this")])] if team() else [])
+
+
+def team_markdown():
+    """The team page, written as Markdown so it renders like every other page."""
+    rows = "\n".join(f"| {html.escape(m['name'].strip()).replace('|', '&#124;')} | " + (f"[LinkedIn]({m['linkedin'].strip()})" if m.get("linkedin", "").strip() else "")
+                     + " |" for m in team())
+    return ("# The team\n\nCapstone 2 of the Agentic AI Workshop 2026 was built as a team. "
+            "These are the people who made it.\n\n| Name | Profile |\n|---|---|\n" + rows + "\n")
+
+
+def made_by():
+    """'Made by A, B and C.' for the foot of every page, each name linking to LinkedIn when there is one."""
+    names = [f'<a href="{html.escape(m["linkedin"].strip())}" rel="noopener">{html.escape(m["name"].strip())}</a>'
+             if m.get("linkedin", "").strip() else html.escape(m["name"].strip()) for m in team()]
+    if not names:
+        return ""
+    joined = names[0] if len(names) == 1 else ", ".join(names[:-1]) + " and " + names[-1]
+    return f' Made by {joined} (<a href="team.html">the team</a>).'
+
+
 # Where the shared files and the other services are, seen from a blog page.
-SITE_LINKS = {"assets": "../", "home": "../home/", "demo": "../demo/", "ask": "../demo/?page=story", "api": "../api/",
+SITE_LINKS = {"assets": "../", "home": "../", "demo": "../demo/", "ask": "../demo/?page=story", "api": "../api/",
               "pitch": "../pitch/", "deck": "../deck/"}
-LOCAL_LINKS = {"assets": "/static/", "home": "/home/", "demo": "/demo/", "ask": "/demo/?page=story", "api": "/redoc",
+LOCAL_LINKS = {"assets": "/static/", "home": "/", "demo": "/demo/", "ask": "/demo/?page=story", "api": "/redoc",
                "pitch": "/pitch/", "deck": "/deck/"}
 
 
 def pages():
     """The docs, by name (without .md). Every one must have a place in AREAS, so none is missing from the sidebar."""
-    names = sorted(f[:-3] for f in os.listdir(DOCS) if f.endswith(".md"))
-    missing = set(names) - {n for _, items in AREAS for n, _ in items}
+    names = sorted(f[:-3] for f in os.listdir(DOCS) if f.endswith(".md")) + (["team"] if team() else [])
+    missing = set(names) - {n for _, items in areas() for n, _ in items}
     if missing:
         raise SystemExit(f"Add these docs to AREAS in app/blog.py: {sorted(missing)}")
     return names
@@ -66,7 +101,7 @@ def link(target):
 def order():
     """Every doc once, in sidebar order: the reading order for the previous / next links."""
     seen = []
-    for _, items in AREAS:
+    for _, items in areas():
         seen += [n for n, _ in items if n not in seen]
     return seen
 
@@ -113,7 +148,8 @@ def unnest(body, blocks):
 
 def convert(name):
     """A doc's Markdown as HTML, plus the parser (its table of contents)."""
-    text = open(os.path.join(DOCS, f"{name}.md"), encoding="utf-8").read()
+    text = team_markdown() if name == "team" else open(os.path.join(DOCS, f"{name}.md"), encoding="utf-8").read()
+    text = re.sub(r"\A---\n.*?\n---\n", "", text, flags=re.S)   # front matter (design.md's tokens) is data, not prose
     text = re.sub(r"\]\(([^)\s]+)\)", lambda m: f"]({link(m.group(1))})", text)
     text, blocks = nest(text)
     md = markdown.Markdown(extensions=["tables", "fenced_code", "sane_lists", "toc"],
@@ -179,10 +215,11 @@ def render(name, links=SITE_LINKS):
     L, a = links, links["assets"]
     here = ' aria-current="page"'
     nav = "".join(f'<a href="{n}.html"{here if n == name else ""}>{label}</a>' for n, label in NAV)
-    areas = "".join(f"<h2>{area}</h2><ul>" + "".join(f'<li><a href="{n}.html"{here if n == name else ""}>{label}</a></li>'
-                                                      for n, label in items) + "</ul>" for area, items in AREAS)
+    sidebar = "".join(f"<h2>{area}</h2><ul>" + "".join(f'<li><a href="{n}.html"{here if n == name else ""}>{label}</a></li>'
+                                                      for n, label in items) + "</ul>" for area, items in areas())
     toc = f'<nav class="toc" aria-label="On this page"><h2>On this page</h2><ul>{on_page}</ul></nav>' if on_page else ""
-    labels = {n: label for _, items in AREAS for n, label in items}
+    labels = {n: label for _, items in areas() for n, label in items}
+    source = "app/web/team.json" if name == "team" else f"docs/{name}.md"
     seq = order()
     i = seq.index(name)
     prev = f'<a class="prev" href="{seq[i - 1]}.html"><span>Previous</span>{labels[seq[i - 1]]}</a>' if i > 0 else ""
@@ -209,7 +246,7 @@ def render(name, links=SITE_LINKS):
 {body}
 {pager}
 <p class="foot">A learning project, not a product. AdventureWorks is Microsoft's public sample data about a made-up bicycle
-company. Source of this page: <a href="{REPO}/blob/main/docs/{name}.md">docs/{name}.md</a>.</p></main>
-<aside class="areas" aria-label="All documents"><details open><summary>All pages</summary>{areas}<h2>Try it</h2><ul><li><a href="{L['home']}">Home: every area</a></li><li><a href="{L['demo']}">Open the demo</a></li><li><a href="{L['ask']}">Ask the course chat</a></li><li><a href="{L['api']}">API reference</a></li><li><a href="{L['pitch']}">60-second pitch video</a></li><li><a href="{L['deck']}">The presentation</a></li><li><a href="getting-started.html">Run it on your laptop</a></li><li><a href="{REPO}">The code on GitHub</a></li></ul></details></aside>
+company.{made_by()} Source of this page: <a href="{REPO}/blob/main/{source}">{source}</a>.</p></main>
+<aside class="areas" aria-label="All documents"><details open><summary>All pages</summary>{sidebar}<h2>Try it</h2><ul><li><a href="{L['home']}">Home: the 60-second pitch</a></li><li><a href="{L['demo']}">Open the demo</a></li><li><a href="{L['ask']}">Ask the course chat</a></li><li><a href="{L['api']}">API reference</a></li><li><a href="{L['pitch']}">60-second pitch video</a></li><li><a href="{L['deck']}">The presentation</a></li><li><a href="getting-started.html">Run it on your laptop</a></li><li><a href="{REPO}">The code on GitHub</a></li></ul></details></aside>
 {toc}</div></body></html>
 """

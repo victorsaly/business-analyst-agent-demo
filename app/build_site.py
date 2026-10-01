@@ -1,10 +1,11 @@
 """Build the website into ../site/ (published to GitHub Pages by .github/workflows/pages.yml).
 
-    site/            the cover (web/cover/): one screen, the pitch video, links to the demo and home/
+    site/            the cover (web/cover/): one screen, the pitch video, links to the demo and the deck
     site/demo/       the demo app: the same screens, playing back recorded live runs
     site/blog/       docs/*.md as pages ("How this was made" first)
     site/api/        the API reference (Redoc), from the server's OpenAPI spec plus the online chat's endpoints
-    site/pitch/, site/deck/, site/home/, site/media/   the pitch video, the presentation, the landing page with every service on it
+    site/pitch/, site/deck/, site/media/   the pitch page (with chapters), the presentation, the video
+    site/home/       the old start page: now forwards to the app's Home screen, so old links still work
 
 No server online, so every answer the demo needs is exported as a JSON file, produced by the very same API
 code the local app uses (in Replay mode). Live AI, dry runs and your own questions stay local; the Ask chat
@@ -16,6 +17,7 @@ Re-run after recording new live runs, then commit and push site/. site/media/ (t
 """
 import json
 import os
+import re
 import shutil
 
 import api_docs
@@ -28,7 +30,7 @@ OUT = os.path.join(os.path.dirname(HERE), "site")
 DEMO = os.path.join(OUT, "demo")
 DATA = os.path.join(DEMO, "data")
 DEMO_FILES = ["index.html", "app.js", "app.css", "explain", "story", "fonts", "favicon.svg", "logo.svg"]   # the app's own files
-NOT_AT_ROOT = {"index.html", "app.js", "app.css", "explain", "story", "promo.html", ".DS_Store"}
+NOT_AT_ROOT = {"index.html", "app.js", "app.css", "explain", "story", "promo.html", "cover", ".DS_Store"}   # cover/ becomes the root index.html
 
 
 def collect(job, what=""):
@@ -68,6 +70,21 @@ def build_blog():
     with open(os.path.join(out, "search.json"), "w", encoding="utf-8") as f:
         f.write(blog.search_index())
     print(f"blog: {len(names)} pages from docs/, plus the search index")
+
+
+def build_readme_team():
+    """The team line in the readme's Credits, between the team:start / team:end markers, from app/web/team.json."""
+    path = os.path.join(os.path.dirname(HERE), "readme.md")
+    text = open(path, encoding="utf-8").read()
+    people = [f"[{m['name'].strip()}]({m['linkedin'].strip()})" if m.get("linkedin", "").strip() else m["name"].strip()
+              for m in blog.team()]
+    line = ""
+    if people:
+        line = "- **The team:** " + (people[0] if len(people) == 1 else ", ".join(people[:-1]) + " and " + people[-1]) + "\n"
+    new = re.sub(r"(<!-- team:start[^>]*-->\n).*?(<!-- team:end -->)", lambda m: m.group(1) + line + m.group(2), text, flags=re.S)
+    if new != text:
+        open(path, "w", encoding="utf-8").write(new)
+    print(f"readme: team of {len(people)}" if people else "readme: no team names yet (app/web/team.json)")
 
 
 def build_api():
@@ -127,7 +144,7 @@ def main():
             path = os.path.join(OUT, item)
             shutil.rmtree(path) if os.path.isdir(path) else os.remove(path)
     web = os.path.join(HERE, "web")
-    # the root: the landing page and everything shared (fonts, logo, blog and landing styles, pitch, deck)
+    # the root: everything shared (fonts, logos, team, blog and landing styles, pitch, deck)
     for item in os.listdir(web):
         if item not in NOT_AT_ROOT:
             src, dst = os.path.join(web, item), os.path.join(OUT, item)
@@ -147,6 +164,7 @@ def main():
 
     build_blog()
     build_api()
+    build_readme_team()
 
     # recorded runs, one file per track
     exported = []

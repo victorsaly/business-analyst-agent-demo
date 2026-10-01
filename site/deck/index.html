@@ -15,7 +15,7 @@
 :root { color-scheme: light; --ink: #1e3a8a; --paper: #fcfbf7; --red: #c62828; --ease: cubic-bezier(0.2, 0.8, 0.2, 1); }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; background: #e7e4da; overflow: hidden; font-family: "Patrick Hand", "Trebuchet MS", sans-serif; }
-.stage { position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; transform-origin: center; box-shadow: 0 0 0 2px var(--ink); background: var(--paper); overflow: hidden; }
+.stage { position: fixed; left: 50%; top: 50%; width: 1920px; height: 1080px; transform-origin: center; box-shadow: 0 0 0 2px var(--ink); background: var(--paper); overflow: hidden; }
 .slide { position: absolute; inset: 0; width: 1920px; height: 1080px; visibility: hidden; opacity: 0; }
 .slide.on { visibility: visible; opacity: 1; z-index: 1; }
 .slide.on[data-transition="fade"] { animation: in-fade 450ms var(--ease) both; }
@@ -53,6 +53,16 @@ html, body { margin: 0; height: 100%; background: #e7e4da; overflow: hidden; fon
 .bar button:hover, .bar a:hover { background: var(--ink); color: var(--paper); }
 .bar .count { margin: 0 0.4rem; min-width: 4.5rem; text-align: center; }
 .bar .grow { flex: 1; }
+/* phones: no hover to reveal the bar, so it stays visible; buttons wrap and are finger-sized. Full screen is
+   left out because phone browsers don't support it for a page element (turn the phone sideways instead). */
+@media (hover: none) { .bar { opacity: 1; } }
+@media (max-width: 600px) {
+  .bar { flex-wrap: wrap; justify-content: center; gap: 0.4rem; padding: 0.5rem; font-size: 14px; }
+  .bar .grow, #fsBtn { display: none; }
+  .bar button, .bar a { min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; }
+  .bar .count { min-width: 3.6rem; margin: 0; }
+  .notes { bottom: 4.2rem; font-size: 17px; }
+}
 .progress { position: fixed; left: 0; top: 0; height: 4px; background: var(--red); z-index: 5; transition: width 300ms var(--ease); }
 .notes { position: fixed; right: 0.75rem; bottom: 3.4rem; width: min(34rem, calc(100vw - 1.5rem)); max-height: 40vh; overflow: auto; background: var(--paper); border: 2px solid var(--ink); padding: 0.9rem 1.1rem; font-size: 20px; line-height: 1.45; color: var(--ink); z-index: 6; display: none; }
 .notes b { font-family: "Patrick Hand SC", sans-serif; font-weight: 400; display: block; margin-bottom: 0.3rem; color: #b71c1c; }
@@ -106,7 +116,7 @@ text{font-family:&quot;Trebuchet MS&quot;,Verdana,sans-serif}
 &lt;rect x=&quot;296&quot; y=&quot;352&quot; width=&quot;48&quot; height=&quot;18&quot; rx=&quot;3&quot; fill=&quot;none&quot; stroke=&quot;#1E3A8A&quot; stroke-width=&quot;2.5&quot;/&gt;
 &lt;/g&gt;&lt;/svg&gt;&lt;/body&gt;&lt;/html&gt;"></iframe>
 <div style="display:flex;flex-direction:column;gap:28px;width:980px"><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:28px;color:#B71C1C">Agentic AI Workshop 2026 · Capstone Project 2 of 5</p><h1 style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:112px;font-weight:400;line-height:1.05;color:#1E3A8A">Business<br>Performance<br>Analyst Agent</h1><p style="font-size:44px;line-height:1.3;color:#3F5A9E">Ask the numbers a question in plain English. Get the answer, the chart and the reason why.</p></div>
-<div style="display:flex;flex-direction:row;align-items:end;justify-content:space-between;border-top:3px solid #1E3A8A;padding:32px 0 0"><div style="display:flex;flex-direction:row;align-items:center;gap:64px"><img src="../home/sensiwise.svg" alt="sensiwise.ai logo" style="width:290px;height:130px;object-fit:contain"><img src="../home/essex.svg" alt="University of Essex logo" style="width:308px;height:130px;object-fit:contain"></div><div style="display:flex;flex-direction:column;gap:4px"><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:28px;color:#1E3A8A;text-align:right">CP&#8209;02 · 6:00</p><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:28px;color:#3F5A9E;text-align:right">1–2 October 2026</p></div></div>
+<div style="display:flex;flex-direction:row;align-items:end;justify-content:space-between;border-top:3px solid #1E3A8A;padding:32px 0 0"><div style="display:flex;flex-direction:row;align-items:center;gap:64px"><img src="../sensiwise.svg" alt="sensiwise.ai logo" style="width:290px;height:130px;object-fit:contain"><img src="../essex.svg" alt="University of Essex logo" style="width:308px;height:130px;object-fit:contain"></div><div style="display:flex;flex-direction:column;gap:4px"><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:28px;color:#1E3A8A;text-align:right">CP&#8209;02 · 6:00</p><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:28px;color:#3F5A9E;text-align:right">1–2 October 2026</p></div></div>
 </section>
 
 <section class="slide" aria-roledescription="slide" aria-label="2 of 12" id="problem" data-transition="fade" style="background:#FCFBF7;color:#1E3A8A;font-family:'Patrick Hand', 'Trebuchet MS', sans-serif;font-size:32px;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
@@ -241,14 +251,14 @@ text{font-family:&quot;Trebuchet MS&quot;,Verdana,sans-serif}
 <div style="position:absolute;left:128px;top:52px;width:112px;height:5px;background:#C62828"></div>
 <div style="position:absolute;left:128px;top:61px;width:112px;height:5px;background:#C62828"></div>
 <div style="position:absolute;left:128px;top:70px;width:112px;height:5px;background:#C62828"></div>
-<div style="display:flex;flex-direction:column;gap:28px"><h1 style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:120px;font-weight:400;line-height:1.05;color:#1E3A8A">Thank you. Questions?</h1><p style="font-size:36px;color:#3F5A9E">Try the online replay, or run Live AI locally with your own key:</p><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:32px;color:#1E3A8A"><a href="https://victorsaly.github.io/business-analyst-agent-demo/">victorsaly.github.io/business-analyst-agent-demo</a></p><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:32px;color:#1E3A8A"><a href="https://github.com/victorsaly/business-analyst-agent-demo">github.com/victorsaly/business-analyst-agent-demo</a></p></div>
-<div style="display:flex;flex-direction:row;align-items:end;justify-content:space-between;border-top:3px solid #1E3A8A;padding:32px 0 0"><div style="display:flex;flex-direction:row;align-items:center;gap:64px"><img src="../home/sensiwise.svg" alt="sensiwise.ai logo" style="width:290px;height:130px;object-fit:contain"><img src="../home/essex.svg" alt="University of Essex logo" style="width:308px;height:130px;object-fit:contain"></div><p style="font-size:26px;line-height:1.35;color:#3F5A9E;width:640px;text-align:right">A course demonstration. AdventureWorks is Microsoft’s public sample of a made-up bicycle company; no real business data is used.</p></div>
+<div style="display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:64px"><div style="display:flex;flex-direction:column;gap:28px"><h1 style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:120px;font-weight:400;line-height:1.05;color:#1E3A8A">Thank you. Questions?</h1><p style="font-size:36px;color:#3F5A9E">Try the online replay, or run Live AI locally with your own key:</p><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:32px;color:#1E3A8A"><a href="https://victorsaly.github.io/business-analyst-agent-demo/">victorsaly.github.io/business-analyst-agent-demo</a></p><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:32px;color:#1E3A8A"><a href="https://github.com/victorsaly/business-analyst-agent-demo">github.com/victorsaly/business-analyst-agent-demo</a></p></div><figure style="margin:0;display:flex;flex-direction:column;align-items:center;gap:14px;flex:none"><img src="img/qr-site.svg" alt="QR code for victorsaly.github.io/business-analyst-agent-demo" style="width:320px;height:320px;display:block;border:3px solid #1E3A8A"><figcaption style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:32px;color:#1E3A8A;text-align:center;line-height:1.2">Scan for the demo,<br>the pitch and the slides</figcaption></figure></div>
+<div style="display:flex;flex-direction:row;align-items:end;justify-content:space-between;border-top:3px solid #1E3A8A;padding:32px 0 0"><div style="display:flex;flex-direction:row;align-items:center;gap:64px"><img src="../sensiwise.svg" alt="sensiwise.ai logo" style="width:290px;height:130px;object-fit:contain"><img src="../essex.svg" alt="University of Essex logo" style="width:308px;height:130px;object-fit:contain"></div><p style="font-size:26px;line-height:1.35;color:#3F5A9E;width:640px;text-align:right">A course demonstration. AdventureWorks is Microsoft’s public sample of a made-up bicycle company; no real business data is used.</p></div>
 </section>
 
 </main>
 <div class="notes" id="notes" aria-live="polite"></div>
 <nav class="bar" aria-label="Presentation controls">
-  <a href="../home/" title="Back to the tape">← Home</a>
+  <a href="../" title="Back to the front page">← Home</a>
   <span class="grow"></span>
   <button type="button" id="prev" aria-label="Previous slide">‹</button>
   <span class="count" id="count">1 / 1</span>

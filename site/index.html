@@ -28,23 +28,36 @@
   </div>
 
   <div class="actions rise d2">
-    <a class="btn primary" href="demo/">Try the live demo <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+    <a class="btn primary" href="demo/?page=tracks">Try the live demo <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
     <a class="btn" href="deck/">See the presentation</a>
-    <a class="btn" href="home/">Everything else: blog, chat, API</a>
+    <a class="btn" href="demo/">Everything else: every screen, blog, chat</a>
   </div>
 
+  <p class="team" id="team" hidden></p>
+
   <footer class="rise d3">
-    <a href="https://sensiwise.ai" target="_blank" rel="noopener"><img src="home/sensiwise.svg" alt="sensiwise.ai"></a>
+    <a href="https://sensiwise.ai" target="_blank" rel="noopener"><img src="sensiwise.svg" alt="sensiwise.ai"></a>
     <span>1–2 October 2026 · a course demonstration</span>
-    <a href="https://www.essex.ac.uk" target="_blank" rel="noopener"><img src="home/essex.svg" alt="University of Essex"></a>
+    <a href="https://www.essex.ac.uk" target="_blank" rel="noopener"><img src="essex.svg" alt="University of Essex"></a>
   </footer>
 </main>
 
 <script>
   const v = document.getElementById("video"), player = document.getElementById("player");
+  v.controls = false;   // the big Play button first; the player's own controls once it plays (phones show both at once otherwise)
   document.getElementById("big").addEventListener("click", () => v.play());
+  v.addEventListener("play", () => { v.controls = true; });
   v.addEventListener("play", () => player.classList.add("playing"));
   v.addEventListener("ended", () => player.classList.remove("playing"));
+  // The team, from team.json (also used by the blog and the readme). While it has no names, nothing shows.
+  fetch("../team.json").then(r => r.ok ? r.json() : { members: [] }).then(({ members = [] }) => {
+    const box = document.getElementById("team"), esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+    const people = members.filter(m => m.name && m.name.trim());
+    if (!people.length) return;
+    box.innerHTML = "Made by " + people.map(m => m.linkedin && m.linkedin.trim()
+      ? `<a href="${esc(m.linkedin.trim())}" target="_blank" rel="noopener">${esc(m.name.trim())}</a>` : esc(m.name.trim())).join(" · ");
+    box.hidden = false;
+  }).catch(() => {});
 </script>
 </body>
 </html>

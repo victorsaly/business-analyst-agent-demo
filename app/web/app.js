@@ -678,8 +678,8 @@ function closest(q, prepared) {
 const SITE = "https://victorsaly.github.io/business-analyst-agent-demo/";   // the public website: blog, API, pitch, deck
 // Where the other services are: next to the demo online; served by this app locally (blog, API reference, presentation).
 const LINKS = STATIC
-  ? { blog: "../blog/", api: "../api/", pitch: "../pitch/", deck: "../deck/", start: "../home/" }
-  : { blog: "/blog/", api: "/redoc", pitch: "/pitch/", deck: "/deck/", start: "/home/" };
+  ? { blog: "../blog/", api: "../api/", pitch: "../pitch/", deck: "../deck/", start: "../" }
+  : { blog: "/blog/", api: "/redoc", pitch: "/pitch/", deck: "/deck/", start: "/" };
 LINKS.code = "https://github.com/victorsaly/business-analyst-agent-demo";
 const BLOG = {   // the blog's page titles (docs/<name>.md), for "Read more in the blog" links
   index: "How this was made", history: "Timeline, step by step", requirements: "Every requirement, with evidence",
@@ -833,7 +833,6 @@ const ELSEWHERE = [
   ["api", "API reference", "Every endpoint behind these screens and the chat, with examples."],
   ["pitch", "Sales pitch", "The 60-second pitch video, with voiceover."],
   ["deck", "Presentation", "Twelve slides with speaker notes, or the PDF."],
-  ["start", "Start page", "Every service on one page."],
 ];
 async function renderHome() {
   view.innerHTML = `
@@ -847,7 +846,7 @@ async function renderHome() {
       <section aria-labelledby="h-areas">
         <div class="rule-head"><h2 id="h-areas">In the app</h2><span class="total">${AREAS.length} screens</span></div>
         <div class="area-grid">${AREAS.map(([page, title, text], i) => `<a class="area" href="?page=${page}" data-page="${page}"><span class="n">${String(i + 1).padStart(2, "0")}</span><b>${title}</b><span class="d">${text}</span></a>`).join("")}</div>
-        <div class="rule-head" style="margin-top:1.6rem"><h2>Read and watch</h2><span class="total">online</span></div>
+        <div class="rule-head" style="margin-top:1.6rem"><h2>Read and watch</h2><span class="total">${STATIC ? "online" : "new tab"}</span></div>
         <div class="area-grid">${ELSEWHERE.map(([key, title, text]) => `<a class="area out" href="${LINKS[key]}" target="_blank" rel="noopener"><span class="n">↗</span><b>${title}</b><span class="d">${text}</span></a>`).join("")}</div>
       </section>
       <section class="ask-card" aria-labelledby="h-ask">

@@ -391,8 +391,8 @@ async def competitors_upload(request: Request):
 
 # last, so it never shadows a named route
 @app.get("/{name}", include_in_schema=False)
-def shared_file(name: str):   # landing.css, favicon.svg, logo.svg: the files the pages share at the root
-    if name not in ("landing.css", "blog.css", "favicon.svg", "logo.svg"):
+def shared_file(name: str):   # landing.css, the logos, team.json: the files the pages share at the root
+    if name not in ("landing.css", "blog.css", "favicon.svg", "logo.svg", "sensiwise.svg", "essex.svg", "team.json"):
         return Response(status_code=404)
     return FileResponse(os.path.join(WEB, name))
 

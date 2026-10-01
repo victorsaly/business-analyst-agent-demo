@@ -399,6 +399,9 @@ body[data-aud="stakeholder"] .steps .line { grid-template-columns: 2rem 1fr; }
   .aud-pick .lab, .wide-only { display: none; }
   .aud-pick .modes { width: 100%; }
   .explain-btn { flex: none; min-height: 44px; padding: 0 0.9rem; }
+  /* online copy: the "Live AI runs locally" note gets its own line under the switch, instead of squeezing into it */
+  .subbar:has(.online-tag) { flex-wrap: wrap; }
+  .subbar .online-tag { order: 3; flex: 1 0 100%; margin: 0; text-align: center; white-space: normal; }
   .btn { min-height: 44px; }
   .sides button { min-height: 44px; }
   .track { min-height: 48px; }

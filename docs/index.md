@@ -2,7 +2,7 @@
 
 *A course demonstration: Capstone 2 of the Agentic AI Workshop 2026, built on 1 October 2026.*
 
-**[Start page](https://victorsaly.github.io/business-analyst-agent-demo/)** · **[Open the demo](https://victorsaly.github.io/business-analyst-agent-demo/demo/)** ·
+**[Home](https://victorsaly.github.io/business-analyst-agent-demo/)** · **[Open the demo](https://victorsaly.github.io/business-analyst-agent-demo/demo/)** ·
 **[The code](https://github.com/victorsaly/business-analyst-agent-demo)** ·
 **[Every requirement, with evidence](requirements.md)**
 
