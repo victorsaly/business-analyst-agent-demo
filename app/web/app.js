@@ -268,9 +268,9 @@ function render() {
 function renderNow() {
   sceneBusy();
   const page = currentPage();
+  menuClose();   // first: puts a phone's open list back inside the nav so the highlight below sees its links
   document.querySelectorAll(".masthead nav a").forEach((a) => { if (a.dataset.page === page) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
   document.querySelectorAll(".masthead .menu").forEach((m) => m.classList.toggle("current", !!m.querySelector('a[aria-current="page"]')));
-  menuClose();
   ({ home: renderHome, cover: renderCover, changes: renderChanges, tracks: () => renderTracks(true), tools: renderTools, briefing: renderBriefing, scorecard: renderScorecard, story: renderStory }[page] || (() => renderTracks(true)))();
 }
 
@@ -1068,6 +1068,7 @@ function menuClose(except) {
     if (m === except) return;
     m.classList.remove("open");
     m.querySelector(".menu-btn").setAttribute("aria-expanded", "false");
+    if (m._sub) { m.appendChild(m._sub); m._sub = null; }
   });
 }
 document.querySelectorAll(".masthead .menu-btn").forEach((btn) => btn.addEventListener("click", () => {
@@ -1075,12 +1076,16 @@ document.querySelectorAll(".masthead .menu-btn").forEach((btn) => btn.addEventLi
   menuClose(m);
   m.classList.toggle("open", open);
   btn.setAttribute("aria-expanded", String(open));
-  if (open) {   // on a phone the list is pinned under the nav bar
-    const r = btn.closest("nav").getBoundingClientRect();
-    m.querySelector(".sub").style.setProperty("--nav-bottom", `${r.bottom}px`);
+  if (open && matchMedia("(max-width: 700px)").matches) {
+    // On a phone the list is pinned under the nav bar. iOS Safari clips a fixed list inside the nav's sideways
+    // scroller, so while open it lives on <body> (app.css: body > .sub) and goes back home on close.
+    const sub = m.querySelector(".sub"), r = btn.closest("nav").getBoundingClientRect();
+    sub.style.setProperty("--nav-bottom", `${r.bottom}px`);
+    document.body.appendChild(sub);
+    m._sub = sub;
   }
 }));
-document.addEventListener("click", (e) => { if (!e.target.closest(".masthead .menu")) menuClose(); });
+document.addEventListener("click", (e) => { if (!e.target.closest(".masthead .menu, body > .sub")) menuClose(); });
 addEventListener("keydown", (e) => {
   if (e.key !== "Escape") return;
   const m = document.querySelector(".masthead .menu.open");

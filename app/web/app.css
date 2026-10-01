@@ -540,9 +540,9 @@ button, a, label.btn, .chip { touch-action: manipulation; -webkit-tap-highlight-
 .sub::before { content: ""; position: absolute; left: 0; right: 0; top: -0.7rem; height: 0.7rem; }   /* keeps hover alive across the gap */
 .menu.open .sub { display: block; }
 @media (hover: hover) and (min-width: 701px) { .menu:hover .sub { display: block; } }
-.masthead nav .sub a { display: block; min-height: 0; padding: 0.45rem 0.9rem; font-family: var(--hand); font-size: 1rem; -webkit-text-stroke: 0; text-decoration: none; color: var(--ink); line-height: 1.25; border-bottom: 0; border-left: 3px solid transparent; }
-.masthead nav .sub a:hover, .masthead nav .sub a:focus-visible { background: var(--wash); border-left-color: var(--red); }
-.masthead nav .sub a[aria-current="page"] { border-left-color: var(--red); }
+.masthead nav .sub a, body > .sub a { display: block; min-height: 0; padding: 0.45rem 0.9rem; font-family: var(--hand); font-size: 1rem; -webkit-text-stroke: 0; text-decoration: none; color: var(--ink); line-height: 1.25; border-bottom: 0; border-left: 3px solid transparent; }
+.masthead nav .sub a:hover, .masthead nav .sub a:focus-visible, body > .sub a:hover, body > .sub a:focus-visible { background: var(--wash); border-left-color: var(--red); }
+.masthead nav .sub a[aria-current="page"], body > .sub a[aria-current="page"] { border-left-color: var(--red); }
 .sub a b { display: flex; -webkit-text-stroke: 0.02em currentColor; align-items: center; gap: 0.3rem; font-family: var(--hand-sc); font-weight: 400; font-size: 1.2rem; }
 .sub a b .ext { width: 0.8em; height: 0.8em; color: var(--ink-2); }
 .sub a span { display: block; font-size: 1rem; color: var(--ink-2); }
@@ -555,6 +555,7 @@ button, a, label.btn, .chip { touch-action: manipulation; -webkit-tap-highlight-
   .menu-btn { min-height: 44px; padding: 0 0.55rem; font-size: 1.2rem; border-bottom: 0; }
   .sub { position: fixed; top: var(--nav-bottom, 46px); left: 0.5rem; right: 0.5rem; min-width: 0; max-height: calc(100vh - var(--nav-bottom, 46px) - 1rem); overflow-y: auto; }
   .sub::before { display: none; }
+  body > .sub { display: block; z-index: 20; }   /* the open list is moved out of the swipeable nav (app.js), which phones clip */
   .masthead nav:has(.menu.open) { mask-image: none; }
   .masthead .right .modes button { justify-content: center; }
 }
