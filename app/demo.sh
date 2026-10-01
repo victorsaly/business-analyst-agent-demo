@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Local demo helper.  Usage: ./demo.sh [setup|app|prepare|video|video-dry|pitch|timings|story|site|test]
+# Local demo helper.  Usage: ./demo.sh [setup|app|prepare|video|video-dry|pitch|timings|knowledge|story|site|test]
 set -euo pipefail
 cd "$(dirname "$0")"
 PY=.venv/bin/python
@@ -19,8 +19,9 @@ case "${1:-app}" in
   video-dry)  shift; $PY record_video.py --mode dry "$@" ;;
   pitch)      shift; $PY make_promo.py "$@" ;;
   timings)    $PY make_explain_timings.py ;;     # after changing an Explain line or its mp3
-  story)      $PY make_story_answers.py ;;       # prepared answers for the online Story chat (uses the AI)
+  knowledge)  shift; $PY make_knowledge.py "$@" ;;        # the Ask chat's knowledge base: ./demo.sh knowledge --course <course repo>
+  story)      shift; $PY make_story_answers.py "$@" ;;     # prepared answers for the online Story chat (uses the AI)
   site)       $PY build_site.py ;;               # rebuild ../site (the online copy) from the recordings
   test)       $PY test_demo.py ;;
-  *) echo "Usage: ./demo.sh [setup|app|prepare|video|video-dry|pitch|timings|story|site|test]"; exit 1 ;;
+  *) echo "Usage: ./demo.sh [setup|app|prepare|video|video-dry|pitch|timings|knowledge|story|site|test]"; exit 1 ;;
 esac

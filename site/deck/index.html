@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Business Performance Analyst Agent · Presentation</title>
+<meta name="description" content="The presentation for the Business Performance Analyst Agent, Capstone Project 2 of the Agentic AI Workshop 2026.">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<!-- How to present: arrow keys, space or click to move; F for full screen; N for speaker notes; P to print or save as PDF. -->
+<style>
+@font-face { font-family: "Patrick Hand SC"; src: url("../fonts/PatrickHandSC-Regular.ttf") format("truetype"); font-display: block; }
+@font-face { font-family: "Patrick Hand"; src: url("../fonts/PatrickHand-Regular.ttf") format("truetype"); font-display: block; }
+@font-face { font-family: "Courier Prime"; src: url("../fonts/CourierPrime-Regular.ttf") format("truetype"); font-weight: 400; font-display: block; }
+@font-face { font-family: "Courier Prime"; src: url("../fonts/CourierPrime-Bold.ttf") format("truetype"); font-weight: 700; font-display: block; }
+:root { color-scheme: light; --ink: #1e3a8a; --paper: #fcfbf7; --red: #c62828; --ease: cubic-bezier(0.2, 0.8, 0.2, 1); }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: #e7e4da; overflow: hidden; font-family: "Patrick Hand", "Trebuchet MS", sans-serif; }
+.stage { position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; transform-origin: center; box-shadow: 0 0 0 2px var(--ink); background: var(--paper); overflow: hidden; }
+.slide { position: absolute; inset: 0; width: 1920px; height: 1080px; visibility: hidden; opacity: 0; }
+.slide.on { visibility: visible; opacity: 1; z-index: 1; }
+.slide.on[data-transition="fade"] { animation: in-fade 450ms var(--ease) both; }
+.slide.on[data-transition="push"] { animation: in-push 520ms var(--ease) both; }
+@keyframes in-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes in-push { from { opacity: 0; transform: translateX(80px); } to { opacity: 1; transform: none; } }
+.slide h1, .slide h2, .slide h3, .slide p, .slide ul { margin: 0; }
+.slide ul { padding-left: 1.1em; }
+.slide h1, .slide h2, .slide h3 { font-weight: 400; }
+.slide img { display: block; }
+.slide a { color: inherit; text-underline-offset: 0.18em; }
+.slide table { border-collapse: collapse; width: 100%; }
+.slide th, .slide td { padding: 0.35em 0.6em; text-align: left; border-bottom: 1px solid #a9b8dc; vertical-align: top; }
+.slide th { border-bottom: 2.5px solid var(--ink); }
+.slide .conn { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; pointer-events: none; }
+.slide .embed { border: 0; background: transparent; }
+/* build-ins: each piece arrives in order once its slide is shown */
+.slide [data-build] { opacity: 0; }
+.slide.on [data-build] { animation-duration: 600ms; animation-timing-function: var(--ease); animation-fill-mode: both; animation-delay: calc(250ms + (var(--o) - 1) * 380ms); }
+.slide.on [data-build="fade"] { animation-name: b-fade; }
+.slide.on [data-build="rise"] { animation-name: b-rise; }
+.slide.on [data-build="left"] { animation-name: b-left; }
+.slide.on [data-build="pop"] { animation-name: b-pop; animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes b-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes b-rise { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
+@keyframes b-left { from { opacity: 0; transform: translateX(-60px); } to { opacity: 1; transform: none; } }
+@keyframes b-pop { from { opacity: 0; transform: scale(0.7); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .slide.on, .slide.on [data-build] { animation: none !important; opacity: 1; }
+}
+/* controls */
+.bar { position: fixed; left: 0; right: 0; bottom: 0; display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; font-family: "Courier Prime", monospace; font-size: 15px; color: var(--ink); z-index: 5; opacity: 0.25; transition: opacity 200ms; }
+.bar:hover, .bar:focus-within, body.idle-off .bar { opacity: 1; }
+.bar button, .bar a { font: inherit; color: var(--ink); background: var(--paper); border: 1.5px solid var(--ink); padding: 0.3rem 0.65rem; cursor: pointer; text-decoration: none; }
+.bar button:hover, .bar a:hover { background: var(--ink); color: var(--paper); }
+.bar .count { margin: 0 0.4rem; min-width: 4.5rem; text-align: center; }
+.bar .grow { flex: 1; }
+.progress { position: fixed; left: 0; top: 0; height: 4px; background: var(--red); z-index: 5; transition: width 300ms var(--ease); }
+.notes { position: fixed; right: 0.75rem; bottom: 3.4rem; width: min(34rem, calc(100vw - 1.5rem)); max-height: 40vh; overflow: auto; background: var(--paper); border: 2px solid var(--ink); padding: 0.9rem 1.1rem; font-size: 20px; line-height: 1.45; color: var(--ink); z-index: 6; display: none; }
+.notes b { font-family: "Patrick Hand SC", sans-serif; font-weight: 400; display: block; margin-bottom: 0.3rem; color: #b71c1c; }
+body.show-notes .notes { display: block; }
+:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+/* print / save as PDF: one slide per page, everything shown */
+@media print {
+  @page { size: 1920px 1080px; margin: 0; }
+  html, body { overflow: visible; height: auto; background: none; }
+  .bar, .progress, .notes { display: none !important; }
+  .stage { position: static; transform: none !important; box-shadow: none; overflow: visible; height: auto; }
+  .slide { position: relative; visibility: visible; opacity: 1; animation: none !important; break-after: page; page-break-after: always; }
+  .slide [data-build] { opacity: 1; animation: none !important; }
+}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<main class="stage" id="stage" aria-roledescription="carousel" aria-label="Presentation">
+<section class="slide" aria-roledescription="slide" aria-label="1 of 12" id="cover" data-transition="push" style="background:#FCFBF7;color:#1E3A8A;font-family:'Patrick Hand', 'Trebuchet MS', sans-serif;font-size:32px;padding:128px;display:flex;flex-direction:column;justify-content:space-between;gap:40px">
+<div style="position:absolute;left:128px;top:52px;width:112px;height:5px;background:#C62828"></div>
+<div style="position:absolute;left:128px;top:61px;width:112px;height:5px;background:#C62828"></div>
+<div style="position:absolute;left:128px;top:70px;width:112px;height:5px;background:#C62828"></div>
+<iframe class="embed" title="Animated cassette" style="position:absolute;left:1150px;top:120px;width:642px;height:412px" srcdoc="&lt;!doctype html&gt;&lt;html&gt;&lt;head&gt;&lt;style&gt;
+html,body{margin:0;height:100%;background:transparent}
+svg{width:100%;height:100%;display:block}
+.reel{transform-box:fill-box;transform-origin:center;animation:spin 5s linear infinite}
+.wob{transform-box:fill-box;transform-origin:center;animation:wob 6s ease-in-out infinite}
+.tl{animation:tl 20s ease-in-out infinite alternate}.tr{animation:tr 20s ease-in-out infinite alternate}
+@keyframes spin{to{transform:rotate(-360deg)}}
+@keyframes wob{0%,100%{transform:rotate(-1.5deg)}50%{transform:rotate(1.5deg)}}
+@keyframes tl{from{r:40px}to{r:28px}}@keyframes tr{from{r:27px}to{r:39px}}
+text{font-family:&quot;Trebuchet MS&quot;,Verdana,sans-serif}
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+&lt;svg viewBox=&quot;0 0 640 410&quot;&gt;&lt;g class=&quot;wob&quot;&gt;
+&lt;rect x=&quot;6&quot; y=&quot;6&quot; width=&quot;628&quot; height=&quot;398&quot; rx=&quot;24&quot; fill=&quot;#FCFBF7&quot; stroke=&quot;#1E3A8A&quot; stroke-width=&quot;4&quot;/&gt;
+&lt;g fill=&quot;#1E3A8A&quot;&gt;&lt;circle cx=&quot;30&quot; cy=&quot;30&quot; r=&quot;6&quot;/&gt;&lt;circle cx=&quot;610&quot; cy=&quot;30&quot; r=&quot;6&quot;/&gt;&lt;circle cx=&quot;30&quot; cy=&quot;380&quot; r=&quot;6&quot;/&gt;&lt;circle cx=&quot;610&quot; cy=&quot;380&quot; r=&quot;6&quot;/&gt;&lt;/g&gt;
+&lt;rect x=&quot;46&quot; y=&quot;34&quot; width=&quot;548&quot; height=&quot;250&quot; rx=&quot;10&quot; fill=&quot;#FFFEFA&quot; stroke=&quot;#1E3A8A&quot; stroke-width=&quot;2&quot;/&gt;
+&lt;g fill=&quot;#C62828&quot;&gt;&lt;rect x=&quot;46&quot; y=&quot;52&quot; width=&quot;548&quot; height=&quot;6&quot;/&gt;&lt;rect x=&quot;46&quot; y=&quot;63&quot; width=&quot;548&quot; height=&quot;6&quot;/&gt;&lt;rect x=&quot;46&quot; y=&quot;74&quot; width=&quot;548&quot; height=&quot;6&quot;/&gt;&lt;/g&gt;
+&lt;text x=&quot;70&quot; y=&quot;128&quot; font-size=&quot;32&quot; font-weight=&quot;700&quot; fill=&quot;#1E3A8A&quot; letter-spacing=&quot;1&quot;&gt;ANALYST AGENT&lt;/text&gt;
+&lt;text x=&quot;572&quot; y=&quot;128&quot; font-size=&quot;28&quot; font-weight=&quot;700&quot; fill=&quot;#B71C1C&quot; text-anchor=&quot;end&quot;&gt;CP-02&lt;/text&gt;
+&lt;text x=&quot;66&quot; y=&quot;272&quot; font-size=&quot;64&quot; font-weight=&quot;700&quot; fill=&quot;#B71C1C&quot;&gt;A&lt;/text&gt;
+&lt;rect x=&quot;170&quot; y=&quot;160&quot; width=&quot;300&quot; height=&quot;96&quot; rx=&quot;48&quot; fill=&quot;#EEF2FB&quot; stroke=&quot;#1E3A8A&quot; stroke-width=&quot;2.5&quot;/&gt;
+&lt;circle class=&quot;tl&quot; cx=&quot;225&quot; cy=&quot;208&quot; r=&quot;40&quot; fill=&quot;#3F5A9E&quot; opacity=&quot;.85&quot;/&gt;
+&lt;circle class=&quot;tr&quot; cx=&quot;415&quot; cy=&quot;208&quot; r=&quot;27&quot; fill=&quot;#3F5A9E&quot; opacity=&quot;.85&quot;/&gt;
+&lt;g class=&quot;reel&quot;&gt;&lt;circle cx=&quot;225&quot; cy=&quot;208&quot; r=&quot;17&quot; fill=&quot;#FCFBF7&quot; stroke=&quot;#1E3A8A&quot; stroke-width=&quot;2.5&quot;/&gt;&lt;path d=&quot;M225 193v6M225 217v6M210 208h6M234 208h6&quot; stroke=&quot;#1E3A8A&quot; stroke-width=&quot;4&quot; stroke-linecap=&quot;round&quot;/&gt;&lt;/g&gt;
+&lt;g class=&quot;reel&quot;&gt;&lt;circle cx=&quot;415&quot; cy=&quot;208&quot; r=&quot;17&quot; fill=&quot;#FCFBF7&quot; stroke=&quot;#1E3A8A&quot; stroke-width=&quot;2.5&quot;/&gt;&lt;path d=&quot;M415 193v6M415 217v6M400 208h6M424 208h6&quot; stroke=&quot;#1E3A8A&quot; stroke-width=&quot;4&quot; stroke-linecap=&quot;round&quot;/&gt;&lt;/g&gt;
+&lt;text x=&quot;572&quot; y=&quot;272&quot; font-size=&quot;26&quot; font-weight=&quot;700&quot; fill=&quot;#B71C1C&quot; text-anchor=&quot;end&quot;&gt;&amp;#9654; 6:00&lt;/text&gt;
+&lt;path d=&quot;M150 404 L178 322 H462 L490 404&quot; fill=&quot;none&quot; stroke=&quot;#1E3A8A&quot; stroke-width=&quot;2.5&quot;/&gt;
+&lt;g fill=&quot;#1E3A8A&quot;&gt;&lt;circle cx=&quot;232&quot; cy=&quot;368&quot; r=&quot;8&quot;/&gt;&lt;circle cx=&quot;408&quot; cy=&quot;368&quot; r=&quot;8&quot;/&gt;&lt;/g&gt;
+&lt;rect x=&quot;296&quot; y=&quot;352&quot; width=&quot;48&quot; height=&quot;18&quot; rx=&quot;3&quot; fill=&quot;none&quot; stroke=&quot;#1E3A8A&quot; stroke-width=&quot;2.5&quot;/&gt;
+&lt;/g&gt;&lt;/svg&gt;&lt;/body&gt;&lt;/html&gt;"></iframe>
+<div style="display:flex;flex-direction:column;gap:28px;width:980px"><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:28px;color:#B71C1C">Agentic AI Workshop 2026 · Capstone Project 2 of 5</p><h1 style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:112px;font-weight:400;line-height:1.05;color:#1E3A8A">Business<br>Performance<br>Analyst Agent</h1><p style="font-size:44px;line-height:1.3;color:#3F5A9E">Ask the numbers a question in plain English. Get the answer, the chart and the reason why.</p></div>
+<div style="display:flex;flex-direction:row;align-items:end;justify-content:space-between;border-top:3px solid #1E3A8A;padding:32px 0 0"><div style="display:flex;flex-direction:row;align-items:center;gap:64px"><img src="../home/sensiwise.svg" alt="sensiwise.ai logo" style="width:290px;height:130px;object-fit:contain"><img src="../home/essex.svg" alt="University of Essex logo" style="width:308px;height:130px;object-fit:contain"></div><div style="display:flex;flex-direction:column;gap:4px"><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:28px;color:#1E3A8A;text-align:right">CP&#8209;02 · 6:00</p><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:28px;color:#3F5A9E;text-align:right">1–2 October 2026</p></div></div>
+</section>
+
+<section class="slide" aria-roledescription="slide" aria-label="2 of 12" id="problem" data-transition="fade" style="background:#FCFBF7;color:#1E3A8A;font-family:'Patrick Hand', 'Trebuchet MS', sans-serif;font-size:32px;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="position:absolute;left:128px;top:52px;width:112px;height:5px;background:#C62828"></div>
+<div style="position:absolute;left:128px;top:61px;width:112px;height:5px;background:#C62828"></div>
+<div style="position:absolute;left:128px;top:70px;width:112px;height:5px;background:#C62828"></div>
+<div style="position:absolute;left:128px;bottom:64px;width:1664px;display:flex;flex-direction:row;justify-content:space-between"><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:24px;color:#3F5A9E">CP&#8209;02 · Business Performance Analyst Agent</p><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:24px;color:#3F5A9E">02</p></div>
+<h2 style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:72px;font-weight:400;line-height:1.1;color:#1E3A8A;padding:0 0 16px;border-bottom:3px solid #1E3A8A">The problem</h2>
+<div style="--o:1;position:absolute;left:128px;top:274px;width:1664px;display:flex;flex-direction:column;gap:8px" data-build="left"><p style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:72px;line-height:1.15;color:#1E3A8A">“How did we do last month?”</p></div>
+<div style="--o:2;position:absolute;left:128px;top:384px;width:1664px;display:flex;flex-direction:column;gap:8px" data-build="left"><p style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:72px;line-height:1.15;color:#1E3A8A">“Which products are losing margin?”</p></div>
+<div style="--o:3;position:absolute;left:128px;top:600px;width:522px;display:flex;flex-direction:column;gap:8px" data-build="rise"><div style="border-left:5px solid #C62828;padding:0 0 0 32px;display:flex;flex-direction:column;gap:8px"><h3 style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:44px;font-weight:400;color:#B71C1C">Days in a queue</h3><p style="font-size:32px;line-height:1.4;color:#3F5A9E">Simple questions wait for an analyst to be free.</p></div></div>
+<div style="--o:4;position:absolute;left:699px;top:600px;width:522px;display:flex;flex-direction:column;gap:8px" data-build="rise"><div style="border-left:5px solid #C62828;padding:0 0 0 32px;display:flex;flex-direction:column;gap:8px"><h3 style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:44px;font-weight:400;color:#B71C1C">A spreadsheet back</h3><p style="font-size:32px;line-height:1.4;color:#3F5A9E">The answer arrives needing its own explanation.</p></div></div>
+<div style="--o:5;position:absolute;left:1270px;top:600px;width:522px;display:flex;flex-direction:column;gap:8px" data-build="rise"><div style="border-left:5px solid #C62828;padding:0 0 0 32px;display:flex;flex-direction:column;gap:8px"><h3 style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:44px;font-weight:400;color:#B71C1C">Repeat reporting</h3><p style="font-size:32px;line-height:1.4;color:#3F5A9E">Analysts spend their week on it instead of deeper work.</p></div></div>
+</section>
+
+<section class="slide" aria-roledescription="slide" aria-label="3 of 12" id="mission" data-transition="push" style="background:#FCFBF7;color:#1E3A8A;font-family:'Patrick Hand', 'Trebuchet MS', sans-serif;font-size:32px;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="position:absolute;left:128px;top:52px;width:112px;height:5px;background:#C62828"></div>
+<div style="position:absolute;left:128px;top:61px;width:112px;height:5px;background:#C62828"></div>
+<div style="position:absolute;left:128px;top:70px;width:112px;height:5px;background:#C62828"></div>
+<div style="position:absolute;left:128px;bottom:64px;width:1664px;display:flex;flex-direction:row;justify-content:space-between"><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:24px;color:#3F5A9E">CP&#8209;02 · Business Performance Analyst Agent</p><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:24px;color:#3F5A9E">03</p></div>
+<h2 style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:72px;font-weight:400;line-height:1.1;color:#1E3A8A;padding:0 0 16px;border-bottom:3px solid #1E3A8A">What the agent does</h2>
+<div style="--o:1;position:absolute;left:128px;top:274px;width:533px;height:296px;display:flex;flex-direction:column;gap:8px;border:2px solid #1E3A8A;padding:28px 32px;background:#FCFBF7" data-build="rise"><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:28px;color:#B71C1C">01</p><h3 style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:38px;font-weight:400;line-height:1.15;color:#1E3A8A">Map the question</h3><p style="font-size:28px;line-height:1.3;color:#3F5A9E">to the right tables and metrics: revenue, margin, volume, cost</p></div>
+<div style="--o:2;position:absolute;left:693px;top:274px;width:533px;height:296px;display:flex;flex-direction:column;gap:8px;border:2px solid #1E3A8A;padding:28px 32px;background:#FCFBF7" data-build="rise"><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:28px;color:#B71C1C">02</p><h3 style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:38px;font-weight:400;line-height:1.15;color:#1E3A8A">Write and run SQL or pandas</h3><p style="font-size:28px;line-height:1.3;color:#3F5A9E">and fix its own errors from the hint each tool returns</p></div>
+<div style="--o:3;position:absolute;left:1259px;top:274px;width:533px;height:296px;display:flex;flex-direction:column;gap:8px;border:2px solid #1E3A8A;padding:28px 32px;background:#FCFBF7" data-build="rise"><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:28px;color:#B71C1C">03</p><h3 style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:38px;font-weight:400;line-height:1.15;color:#1E3A8A">Draw the right chart</h3><p style="font-size:28px;line-height:1.3;color:#3F5A9E">bar, line or breakdown, chosen to suit the question</p></div>
+<div style="--o:4;position:absolute;left:128px;top:600px;width:533px;height:296px;display:flex;flex-direction:column;gap:8px;border:2px solid #1E3A8A;padding:28px 32px;background:#FCFBF7" data-build="rise"><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:28px;color:#B71C1C">04</p><h3 style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:38px;font-weight:400;line-height:1.15;color:#1E3A8A">Explain what drove it</h3><p style="font-size:28px;line-height:1.3;color:#3F5A9E">volume, price, mix, channel and category, before giving a reason</p></div>
+<div style="--o:5;position:absolute;left:693px;top:600px;width:533px;height:296px;display:flex;flex-direction:column;gap:8px;border:2px solid #1E3A8A;padding:28px 32px;background:#FCFBF7" data-build="rise"><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:28px;color:#B71C1C">05</p><h3 style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:38px;font-weight:400;line-height:1.15;color:#1E3A8A">Flag anomalies</h3><p style="font-size:28px;line-height:1.3;color:#3F5A9E">months or segments well off their own recent trend</p></div>
+<div style="--o:6;position:absolute;left:1259px;top:600px;width:533px;height:296px;display:flex;flex-direction:column;gap:8px;border:2px solid #1E3A8A;padding:28px 32px;background:#FCFBF7" data-build="rise"><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:28px;color:#B71C1C">06</p><h3 style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:38px;font-weight:400;line-height:1.15;color:#1E3A8A">Show its working</h3><p style="font-size:28px;line-height:1.3;color:#3F5A9E">the exact queries, taken from the tool log</p></div>
+</section>
+
+<section class="slide" aria-roledescription="slide" aria-label="4 of 12" id="flow" data-transition="fade" style="background:#FCFBF7;color:#1E3A8A;font-family:'Patrick Hand', 'Trebuchet MS', sans-serif;font-size:32px;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="position:absolute;left:128px;top:52px;width:112px;height:5px;background:#C62828"></div>
+<div style="position:absolute;left:128px;top:61px;width:112px;height:5px;background:#C62828"></div>
+<div style="position:absolute;left:128px;top:70px;width:112px;height:5px;background:#C62828"></div>
+<div style="position:absolute;left:128px;bottom:64px;width:1664px;display:flex;flex-direction:row;justify-content:space-between"><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:24px;color:#3F5A9E">CP&#8209;02 · Business Performance Analyst Agent</p><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:24px;color:#3F5A9E">04</p></div>
+<h2 style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:72px;font-weight:400;line-height:1.1;color:#1E3A8A;padding:0 0 16px;border-bottom:3px solid #1E3A8A">How it works</h2>
+<div style="--o:1;position:absolute;left:128px;top:300px;width:237px;height:170px;display:flex;flex-direction:column;gap:8px;border:2px solid #1E3A8A;padding:24px 20px;background:#FCFBF7" data-build="rise"><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:24px;color:#B71C1C">1</p><p style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:30px;line-height:1.2;color:#1E3A8A">Plain-English question</p></div>
+<svg class="conn" viewBox="0 0 1920 1080" aria-hidden="true"><line x1="371.0" y1="385.0" x2="397.0" y2="385.0" stroke="#1E3A8A" stroke-width="3"/><polygon points="407.0,385.0 393.0,377.0 393.0,393.0" fill="#1E3A8A"/></svg>
+<div style="--o:2;position:absolute;left:413px;top:300px;width:237px;height:170px;display:flex;flex-direction:column;gap:8px;border:2px solid #1E3A8A;padding:24px 20px;background:#FCFBF7" data-build="rise"><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:24px;color:#B71C1C">2</p><p style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:30px;line-height:1.2;color:#1E3A8A">Plan the analysis</p></div>
+<svg class="conn" viewBox="0 0 1920 1080" aria-hidden="true"><line x1="656.0" y1="385.0" x2="682.0" y2="385.0" stroke="#1E3A8A" stroke-width="3"/><polygon points="692.0,385.0 678.0,377.0 678.0,393.0" fill="#1E3A8A"/></svg>
+<div style="--o:3;position:absolute;left:698px;top:300px;width:237px;height:170px;display:flex;flex-direction:column;gap:8px;border:2px solid #1E3A8A;padding:24px 20px;background:#FCFBF7" data-build="rise"><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:24px;color:#B71C1C">3</p><p style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:30px;line-height:1.2;color:#1E3A8A">Write query or code</p></div>
+<svg class="conn" viewBox="0 0 1920 1080" aria-hidden="true"><line x1="941.0" y1="385.0" x2="967.0" y2="385.0" stroke="#1E3A8A" stroke-width="3"/><polygon points="977.0,385.0 963.0,377.0 963.0,393.0" fill="#1E3A8A"/></svg>
+<div style="--o:4;position:absolute;left:983px;top:300px;width:237px;height:170px;display:flex;flex-direction:column;gap:8px;border:2px solid #1E3A8A;padding:24px 20px;background:#EEF2FB" data-build="rise"><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:24px;color:#B71C1C">4</p><p style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:30px;line-height:1.2;color:#1E3A8A">Run and self-correct</p></div>
+<svg class="conn" viewBox="0 0 1920 1080" aria-hidden="true"><line x1="1226.0" y1="385.0" x2="1252.0" y2="385.0" stroke="#1E3A8A" stroke-width="3"/><polygon points="1262.0,385.0 1248.0,377.0 1248.0,393.0" fill="#1E3A8A"/></svg>
+<div style="--o:5;position:absolute;left:1268px;top:300px;width:237px;height:170px;display:flex;flex-direction:column;gap:8px;border:2px solid #1E3A8A;padding:24px 20px;background:#FCFBF7" data-build="rise"><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:24px;color:#B71C1C">5</p><p style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:30px;line-height:1.2;color:#1E3A8A">Chart and explanation</p></div>
+<svg class="conn" viewBox="0 0 1920 1080" aria-hidden="true"><line x1="1511.0" y1="385.0" x2="1537.0" y2="385.0" stroke="#1E3A8A" stroke-width="3"/><polygon points="1547.0,385.0 1533.0,377.0 1533.0,393.0" fill="#1E3A8A"/></svg>
+<div style="--o:6;position:absolute;left:1553px;top:300px;width:237px;height:170px;display:flex;flex-direction:column;gap:8px;border:2px solid #1E3A8A;padding:24px 20px;background:#EEF2FB" data-build="rise"><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:24px;color:#B71C1C">6</p><p style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:30px;line-height:1.2;color:#1E3A8A">Weekly briefing</p></div>
+<div style="--o:7;position:absolute;left:128px;top:560px;width:800px;display:flex;flex-direction:column;gap:8px" data-build="fade"><h3 style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:40px;font-weight:400;color:#1E3A8A">Same engine, real data</h3><p style="font-size:30px;line-height:1.35;color:#3F5A9E">We kept the course notebook’s agent loop and pointed it at Microsoft’s AdventureWorks sample: 31,465 orders, May 2022 to June 2025, ten territories.</p></div>
+<div style="--o:8;position:absolute;left:992px;top:560px;width:800px;display:flex;flex-direction:column;gap:8px" data-build="fade"><h3 style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:40px;font-weight:400;color:#1E3A8A">Keeps going</h3><p style="font-size:30px;line-height:1.35;color:#3F5A9E">When Groq’s free daily allowance runs out, it switches to OpenAI automatically. Shorter prompts cut the cost per round by 32%.</p></div>
+</section>
+
+<section class="slide" aria-roledescription="slide" aria-label="5 of 12" id="tools" data-transition="fade" style="background:#FCFBF7;color:#1E3A8A;font-family:'Patrick Hand', 'Trebuchet MS', sans-serif;font-size:32px;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="position:absolute;left:128px;top:52px;width:112px;height:5px;background:#C62828"></div>
+<div style="position:absolute;left:128px;top:61px;width:112px;height:5px;background:#C62828"></div>
+<div style="position:absolute;left:128px;top:70px;width:112px;height:5px;background:#C62828"></div>
+<div style="position:absolute;left:128px;bottom:64px;width:1664px;display:flex;flex-direction:row;justify-content:space-between"><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:24px;color:#3F5A9E">CP&#8209;02 · Business Performance Analyst Agent</p><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:24px;color:#3F5A9E">05</p></div>
+<h2 style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:72px;font-weight:400;line-height:1.1;color:#1E3A8A;padding:0 0 16px;border-bottom:3px solid #1E3A8A">Five tools, plus one</h2>
+<table style="font-size:28px;color:#1E3A8A;font-family:'Patrick Hand', 'Trebuchet MS', sans-serif"><tr><th style="width:30%;font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-weight:400">Tool</th><th style="width:30%;font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-weight:400">Purpose</th><th style="width:40%;font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-weight:400">What we added</th></tr><tr><td style="font-family:'Courier Prime', 'Courier New', monospace;color:#1E3A8A">get_schema()</td><td>Tables, columns, data dictionary</td><td style="color:#3F5A9E">Also lists what the data does not have</td></tr><tr><td style="font-family:'Courier Prime', 'Courier New', monospace;color:#1E3A8A">run_sql(query)</td><td>Read-only query execution</td><td style="color:#3F5A9E">One SELECT at a time; file opened read-only</td></tr><tr><td style="font-family:'Courier Prime', 'Courier New', monospace;color:#1E3A8A">run_python(code)</td><td>pandas analysis in a sandbox</td><td style="color:#3F5A9E">No imports, files or system; 10-second limit</td></tr><tr><td style="font-family:'Courier Prime', 'Courier New', monospace;color:#1E3A8A">make_chart(data, type)</td><td>Bar, line or breakdown chart</td><td style="color:#3F5A9E">Drawn from any query result</td></tr><tr><td style="font-family:'Courier Prime', 'Courier New', monospace;color:#1E3A8A">detect_anomalies(metric)</td><td>Flags values off trend</td><td style="color:#3F5A9E">7 metrics, by territory, category, channel</td></tr><tr><td style="font-family:'Courier Prime', 'Courier New', monospace;color:#1E3A8A">explain_change(…)</td><td>Stretch: volume, price, mix</td><td style="color:#3F5A9E">Three parts that always add up</td></tr></table>
+
+</section>
+
+<section class="slide" aria-roledescription="slide" aria-label="6 of 12" id="rules" data-transition="fade" style="background:#1E3A8A;color:#1E3A8A;font-family:'Patrick Hand', 'Trebuchet MS', sans-serif;font-size:32px;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="position:absolute;left:128px;top:52px;width:112px;height:5px;background:#F4C7C3"></div>
+<div style="position:absolute;left:128px;top:61px;width:112px;height:5px;background:#F4C7C3"></div>
+<div style="position:absolute;left:128px;top:70px;width:112px;height:5px;background:#F4C7C3"></div>
+<div style="position:absolute;left:128px;bottom:64px;width:1664px;display:flex;flex-direction:row;justify-content:space-between"><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:24px;color:#D6DEF3">CP&#8209;02 · Business Performance Analyst Agent</p><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:24px;color:#D6DEF3">06</p></div>
+<h2 style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:72px;font-weight:400;line-height:1.1;color:#FCFBF7;padding:0 0 16px;border-bottom:3px solid #FCFBF7">Built to be trusted</h2>
+<div style="--o:1;position:absolute;left:128px;top:284px;width:800px;display:flex;flex-direction:column;gap:8px;border-top:3px solid #FCFBF7;padding:24px 0 0;gap:12px" data-build="rise"><h3 style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:44px;font-weight:400;color:#FCFBF7">Read-only database</h3><p style="font-size:30px;line-height:1.35;color:#D6DEF3">The file is opened read-only, and only SELECT is allowed. “Delete the orders” is refused.</p></div>
+<div style="--o:2;position:absolute;left:992px;top:284px;width:800px;display:flex;flex-direction:column;gap:8px;border-top:3px solid #FCFBF7;padding:24px 0 0;gap:12px" data-build="rise"><h3 style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:44px;font-weight:400;color:#FCFBF7">Always show the query</h3><p style="font-size:30px;line-height:1.35;color:#D6DEF3">The queries under each answer come from the tool log, never from the AI’s own words.</p></div>
+<div style="--o:3;position:absolute;left:128px;top:590px;width:800px;display:flex;flex-direction:column;gap:8px;border-top:3px solid #FCFBF7;padding:24px 0 0;gap:12px" data-build="rise"><h3 style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:44px;font-weight:400;color:#FCFBF7">Say when the data can’t answer</h3><p style="font-size:30px;line-height:1.35;color:#D6DEF3">Returns, competitor prices, satisfaction: not in the data, so it says so. No stand-ins.</p></div>
+<div style="--o:4;position:absolute;left:992px;top:590px;width:800px;display:flex;flex-direction:column;gap:8px;border-top:3px solid #FCFBF7;padding:24px 0 0;gap:12px" data-build="rise"><h3 style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:44px;font-weight:400;color:#FCFBF7">Never a forecast as fact</h3><p style="font-size:30px;line-height:1.35;color:#D6DEF3">It shows the past trend. Any projection is labelled “ESTIMATE, not a fact”.</p></div>
+</section>
+
+<section class="slide" aria-roledescription="slide" aria-label="7 of 12" id="northwest" data-transition="push" style="background:#FCFBF7;color:#1E3A8A;font-family:'Patrick Hand', 'Trebuchet MS', sans-serif;font-size:32px;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="position:absolute;left:128px;top:52px;width:112px;height:5px;background:#C62828"></div>
+<div style="position:absolute;left:128px;top:61px;width:112px;height:5px;background:#C62828"></div>
+<div style="position:absolute;left:128px;top:70px;width:112px;height:5px;background:#C62828"></div>
+<div style="position:absolute;left:128px;bottom:64px;width:1664px;display:flex;flex-direction:row;justify-content:space-between"><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:24px;color:#3F5A9E">CP&#8209;02 · Business Performance Analyst Agent</p><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:24px;color:#3F5A9E">07</p></div>
+<h2 style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:72px;font-weight:400;line-height:1.1;color:#1E3A8A;padding:0 0 16px;border-bottom:3px solid #1E3A8A">Why did Northwest margin drop in Q2 2023?</h2>
+<img src="img/northwest.jpg" alt="Demo screen: the agent answering why Northwest margin dropped, with its step list" style="--o:1;position:absolute;left:128px;top:274px;width:960px;height:540px;object-fit:contain;border:2px solid #1E3A8A" data-build="fade">
+<div style="--o:2;position:absolute;left:1144px;top:274px;width:648px;display:flex;flex-direction:column;gap:8px" data-build="pop"><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:64px;font-weight:700;color:#B71C1C">−$150,905</p><p style="font-size:30px;line-height:1.3;color:#1E3A8A">Margin went from $110,755 in Q1 to −$40,151 in Q2.</p></div>
+<div style="--o:3;position:absolute;left:1144px;top:470px;width:648px;display:flex;flex-direction:column;gap:8px" data-build="rise"><ul style="font-size:28px;line-height:1.45;color:#3F5A9E"><li>Margin per unit: −$256,848</li><li>Higher volume: +$240,225</li><li>Reseller channel: −$174,193</li><li>Mountain Bikes: −$166,669</li></ul><p style="font-size:28px;line-height:1.3;color:#1E3A8A">Every figure has its query underneath.</p></div>
+</section>
+
+<section class="slide" aria-roledescription="slide" aria-label="8 of 12" id="planted" data-transition="fade" style="background:#FCFBF7;color:#1E3A8A;font-family:'Patrick Hand', 'Trebuchet MS', sans-serif;font-size:32px;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="position:absolute;left:128px;top:52px;width:112px;height:5px;background:#C62828"></div>
+<div style="position:absolute;left:128px;top:61px;width:112px;height:5px;background:#C62828"></div>
+<div style="position:absolute;left:128px;top:70px;width:112px;height:5px;background:#C62828"></div>
+<div style="position:absolute;left:128px;bottom:64px;width:1664px;display:flex;flex-direction:row;justify-content:space-between"><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:24px;color:#3F5A9E">CP&#8209;02 · Business Performance Analyst Agent</p><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:24px;color:#3F5A9E">08</p></div>
+<h2 style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:72px;font-weight:400;line-height:1.1;color:#1E3A8A;padding:0 0 16px;border-bottom:3px solid #1E3A8A">The planted anomaly, found</h2>
+<div style="--o:1;position:absolute;left:128px;top:330px;width:760px;display:flex;flex-direction:column;gap:8px" data-build="pop"><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:120px;font-weight:700;line-height:1;color:#B71C1C">−$96,403</p><p style="font-size:32px;color:#3F5A9E">Northwest margin, May 2024</p></div>
+<div style="--o:2;position:absolute;left:960px;top:300px;width:832px;display:flex;flex-direction:column;gap:8px;gap:24px;border-left:3px solid #1E3A8A;padding:0 0 0 48px" data-build="rise"><p style="font-size:32px;line-height:1.35;color:#1E3A8A">We planted a 25% bike discount in a copy of the data, then asked a leadership question that leads to it.</p><p style="font-size:32px;line-height:1.35;color:#1E3A8A">The agent traced the loss to the reseller discount, which jumped from <b>0.02%</b> to <b>21.69%</b>.</p></div>
+<div style="--o:3;position:absolute;left:128px;top:820px;width:1664px;display:flex;flex-direction:column;gap:8px" data-build="fade"><p style="font-size:28px;color:#3F5A9E">A rehearsal on a separate copy of the database. The real data is never changed.</p></div>
+</section>
+
+<section class="slide" aria-roledescription="slide" aria-label="9 of 12" id="briefing" data-transition="fade" style="background:#EEF2FB;color:#1E3A8A;font-family:'Patrick Hand', 'Trebuchet MS', sans-serif;font-size:32px;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="position:absolute;left:128px;top:52px;width:112px;height:5px;background:#C62828"></div>
+<div style="position:absolute;left:128px;top:61px;width:112px;height:5px;background:#C62828"></div>
+<div style="position:absolute;left:128px;top:70px;width:112px;height:5px;background:#C62828"></div>
+<div style="position:absolute;left:128px;bottom:64px;width:1664px;display:flex;flex-direction:row;justify-content:space-between"><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:24px;color:#3F5A9E">CP&#8209;02 · Business Performance Analyst Agent</p><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:24px;color:#3F5A9E">09</p></div>
+<h2 style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:72px;font-weight:400;line-height:1.1;color:#1E3A8A;padding:0 0 16px;border-bottom:3px solid #1E3A8A">The weekly leadership briefing</h2>
+<img src="img/briefing.jpg" alt="Demo screen: the one-page weekly leadership briefing with its KPI table" style="--o:1;position:absolute;left:128px;top:274px;width:960px;height:540px;object-fit:contain;border:2px solid #1E3A8A" data-build="fade">
+<div style="--o:2;position:absolute;left:1144px;top:294px;width:648px;display:flex;flex-direction:column;gap:8px" data-build="rise"><h3 style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:40px;font-weight:400;color:#1E3A8A">KPIs straight from SQL</h3><p style="font-size:28px;line-height:1.35;color:#3F5A9E">So the AI can’t mistype a number.</p></div>
+<div style="--o:3;position:absolute;left:1144px;top:464px;width:648px;display:flex;flex-direction:column;gap:8px" data-build="rise"><h3 style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:40px;font-weight:400;color:#1E3A8A">AI writes the story</h3><p style="font-size:28px;line-height:1.35;color:#3F5A9E">Commentary and charts on what moved.</p></div>
+<div style="--o:4;position:absolute;left:1144px;top:634px;width:648px;display:flex;flex-direction:column;gap:8px" data-build="rise"><h3 style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:40px;font-weight:400;color:#1E3A8A">One page</h3><p style="font-size:28px;line-height:1.35;color:#3F5A9E">With every query it used listed.</p></div>
+</section>
+
+<section class="slide" aria-roledescription="slide" aria-label="10 of 12" id="scorecard" data-transition="fade" style="background:#FCFBF7;color:#1E3A8A;font-family:'Patrick Hand', 'Trebuchet MS', sans-serif;font-size:32px;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="position:absolute;left:128px;top:52px;width:112px;height:5px;background:#C62828"></div>
+<div style="position:absolute;left:128px;top:61px;width:112px;height:5px;background:#C62828"></div>
+<div style="position:absolute;left:128px;top:70px;width:112px;height:5px;background:#C62828"></div>
+<div style="position:absolute;left:128px;bottom:64px;width:1664px;display:flex;flex-direction:row;justify-content:space-between"><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:24px;color:#3F5A9E">CP&#8209;02 · Business Performance Analyst Agent</p><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:24px;color:#3F5A9E">10</p></div>
+<h2 style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:72px;font-weight:400;line-height:1.1;color:#1E3A8A;padding:0 0 16px;border-bottom:3px solid #1E3A8A">Scorecard</h2>
+<img src="img/scorecard.jpg" alt="Demo screen: the scorecard showing 7 of 7 passed" style="--o:1;position:absolute;left:792px;top:274px;width:1000px;height:563px;object-fit:contain;border:2px solid #1E3A8A" data-build="fade">
+<div style="--o:2;position:absolute;left:128px;top:274px;width:600px;display:flex;flex-direction:column;gap:8px" data-build="pop"><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:120px;font-weight:700;line-height:1;color:#1E3A8A">7 / 7</p></div>
+<div style="--o:3;position:absolute;left:128px;top:444px;width:600px;display:flex;flex-direction:column;gap:8px;gap:24px" data-build="rise"><p style="font-size:30px;line-height:1.35;color:#1E3A8A">The brief’s four questions plus three guardrail traps, marked against answers worked out from the database.</p><p style="font-size:28px;line-height:1.35;color:#3F5A9E">It was 6 of 7 until we fixed how it answered “return rate”. Plus 27 automatic checks that need no AI key.</p></div>
+</section>
+
+<section class="slide" aria-roledescription="slide" aria-label="11 of 12" id="lessons" data-transition="push" style="background:#FCFBF7;color:#1E3A8A;font-family:'Patrick Hand', 'Trebuchet MS', sans-serif;font-size:32px;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="position:absolute;left:128px;top:52px;width:112px;height:5px;background:#C62828"></div>
+<div style="position:absolute;left:128px;top:61px;width:112px;height:5px;background:#C62828"></div>
+<div style="position:absolute;left:128px;top:70px;width:112px;height:5px;background:#C62828"></div>
+<div style="position:absolute;left:128px;bottom:64px;width:1664px;display:flex;flex-direction:row;justify-content:space-between"><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:24px;color:#3F5A9E">CP&#8209;02 · Business Performance Analyst Agent</p><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:24px;color:#3F5A9E">11</p></div>
+<h2 style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:72px;font-weight:400;line-height:1.1;color:#1E3A8A;padding:0 0 16px;border-bottom:3px solid #1E3A8A">What we learned</h2>
+<div style="--o:1;position:absolute;left:128px;top:274px;width:1664px;display:flex;flex-direction:row;gap:32px;align-items:baseline;border-bottom:1px solid #A9B8DC;padding:0 0 16px" data-build="rise"><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:28px;color:#B71C1C;width:56px">01</p><p style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:36px;line-height:1.2;color:#1E3A8A;width:760px">Keep the engine, change the inputs</p><p style="flex:1;font-size:28px;line-height:1.3;color:#3F5A9E">We added a new section instead of rewriting, so nothing that worked broke.</p></div>
+<div style="--o:2;position:absolute;left:128px;top:398px;width:1664px;display:flex;flex-direction:row;gap:32px;align-items:baseline;border-bottom:1px solid #A9B8DC;padding:0 0 16px" data-build="rise"><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:28px;color:#B71C1C;width:56px">02</p><p style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:36px;line-height:1.2;color:#1E3A8A;width:760px">Never trust a model with numbers it can look up</p><p style="flex:1;font-size:28px;line-height:1.3;color:#3F5A9E">KPI tables and query lists come from code and the tool log.</p></div>
+<div style="--o:3;position:absolute;left:128px;top:522px;width:1664px;display:flex;flex-direction:row;gap:32px;align-items:baseline;border-bottom:1px solid #A9B8DC;padding:0 0 16px" data-build="rise"><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:28px;color:#B71C1C;width:56px">03</p><p style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:36px;line-height:1.2;color:#1E3A8A;width:760px">Measure the tokens</p><p style="flex:1;font-size:28px;line-height:1.3;color:#3F5A9E">On a free plan, the fixed text sent every round is the real cost.</p></div>
+<div style="--o:4;position:absolute;left:128px;top:646px;width:1664px;display:flex;flex-direction:row;gap:32px;align-items:baseline;border-bottom:1px solid #A9B8DC;padding:0 0 16px" data-build="rise"><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:28px;color:#B71C1C;width:56px">04</p><p style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:36px;line-height:1.2;color:#1E3A8A;width:760px">Plan for a live demo to fail</p><p style="flex:1;font-size:28px;line-height:1.3;color:#3F5A9E">Labelled replays of real runs kept the demo going.</p></div>
+<div style="--o:5;position:absolute;left:128px;top:770px;width:1664px;display:flex;flex-direction:row;gap:32px;align-items:baseline;border-bottom:1px solid #A9B8DC;padding:0 0 16px" data-build="rise"><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:28px;color:#B71C1C;width:56px">05</p><p style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:36px;line-height:1.2;color:#1E3A8A;width:760px">Check against the brief, not just the tests</p><p style="flex:1;font-size:28px;line-height:1.3;color:#3F5A9E">Reading it line by line found three gaps the tests missed.</p></div>
+</section>
+
+<section class="slide" aria-roledescription="slide" aria-label="12 of 12" id="close" data-transition="push" style="background:#FCFBF7;color:#1E3A8A;font-family:'Patrick Hand', 'Trebuchet MS', sans-serif;font-size:32px;padding:128px;display:flex;flex-direction:column;justify-content:space-between;gap:40px">
+<div style="position:absolute;left:128px;top:52px;width:112px;height:5px;background:#C62828"></div>
+<div style="position:absolute;left:128px;top:61px;width:112px;height:5px;background:#C62828"></div>
+<div style="position:absolute;left:128px;top:70px;width:112px;height:5px;background:#C62828"></div>
+<div style="display:flex;flex-direction:column;gap:28px"><h1 style="font-family:'Patrick Hand SC', 'Trebuchet MS', sans-serif;font-size:120px;font-weight:400;line-height:1.05;color:#1E3A8A">Thank you. Questions?</h1><p style="font-size:36px;color:#3F5A9E">Try the online replay, or run Live AI locally with your own key:</p><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:32px;color:#1E3A8A"><a href="https://victorsaly.github.io/business-analyst-agent-demo/">victorsaly.github.io/business-analyst-agent-demo</a></p><p style="font-family:'Courier Prime', 'Courier New', monospace;font-size:32px;color:#1E3A8A"><a href="https://github.com/victorsaly/business-analyst-agent-demo">github.com/victorsaly/business-analyst-agent-demo</a></p></div>
+<div style="display:flex;flex-direction:row;align-items:end;justify-content:space-between;border-top:3px solid #1E3A8A;padding:32px 0 0"><div style="display:flex;flex-direction:row;align-items:center;gap:64px"><img src="../home/sensiwise.svg" alt="sensiwise.ai logo" style="width:290px;height:130px;object-fit:contain"><img src="../home/essex.svg" alt="University of Essex logo" style="width:308px;height:130px;object-fit:contain"></div><p style="font-size:26px;line-height:1.35;color:#3F5A9E;width:640px;text-align:right">A course demonstration. AdventureWorks is Microsoft’s public sample of a made-up bicycle company; no real business data is used.</p></div>
+</section>
+
+</main>
+<div class="notes" id="notes" aria-live="polite"></div>
+<nav class="bar" aria-label="Presentation controls">
+  <a href="../home/" title="Back to the tape">← Home</a>
+  <span class="grow"></span>
+  <button type="button" id="prev" aria-label="Previous slide">‹</button>
+  <span class="count" id="count">1 / 1</span>
+  <button type="button" id="next" aria-label="Next slide">›</button>
+  <button type="button" id="notesBtn" aria-pressed="false" title="Speaker notes (N)">Notes</button>
+  <button type="button" id="fsBtn" title="Full screen (F)">Full screen</button>
+  <button type="button" id="pdfBtn" title="Print or save as PDF (P)">PDF</button>
+</nav>
+<script>
+const NOTES = ["Hello. This is our Business Performance Analyst Agent, built for Capstone Project 2 of the Agentic AI Workshop 2026, run by sensiwise.ai with the University of Essex. In one line: ask the numbers a question in plain English, and get the answer, the chart and the reason why, with the query behind every number.", "Managers ask simple questions like these. Today they wait in a queue, the answer comes back days later as a spreadsheet that needs explaining, and analysts lose their week to repeat reporting.", "The brief gave six things the agent must do. It maps each question to the right tables and metrics, writes and runs SQL or pandas and fixes its own errors, draws a chart that suits the question, explains what drove the result, flags anomalies, and shows its working so every answer can be checked.", "The flow follows the brief: question, plan, write the query or code, run it and self-correct, then the chart and explanation, and at the end of the week a briefing. We kept the course's agent engine and swapped the data underneath for Microsoft's public AdventureWorks sample, opened read-only. AdventureWorks is a made-up bicycle company, so there is no real business data.", "These are the five tools the brief asked for, plus a stretch tool, explain_change, that splits any change into volume, price and mix so the parts always add up to the total. Every tool error comes back with a hint about how to fix it, which is how the agent corrects itself.", "Trust is the point. Four house rules: the database is read-only, every answer shows its query from the tool log, the agent says when the data can't answer instead of inventing a stand-in, and it never presents a forecast as fact.", "Here is one of the brief's questions, replayed from a recorded live run. The agent split the change into volume, price and mix, then by channel and product. Margin per unit fell sharply, volume partly offset it, and resellers and mountain bikes drove the loss. Each number on screen sits above the query that produced it.", "To rehearse the demo moment from the brief, we planted a 25 percent bike discount in Northwest in a separate copy of the database. Asked about it, the agent found the margin loss of 96 thousand dollars and traced it to the reseller discount jump.", "At the end of the week it writes a one-page briefing. The KPI table comes straight from SQL so the AI can't mistype it; the AI writes the commentary and charts, and every query is listed.", "We test it with a scorecard: the four questions from the brief and three guardrail traps, competitor prices, return rate and a forecast. Each is marked against an answer computed from the database. It scores seven of seven on the recorded runs.", "Five lessons. Keep the engine and change the inputs. Never trust a model with numbers it can look up. Measure the tokens. Plan for the live demo to fail. And check against the brief itself, not just the tests.", "Thank you. The online copy replays every recorded run, and the code is public. Happy to take questions, including one that leads to the planted anomaly."];
+const slides = [...document.querySelectorAll(".slide")];
+const stage = document.getElementById("stage");
+let cur = 0;
+
+function fit() {
+  const s = Math.min(innerWidth / 1920, innerHeight / 1080);
+  stage.style.transform = `translate(-50%, -50%) scale(${s})`;
+}
+function show(i) {
+  i = Math.max(0, Math.min(slides.length - 1, i));
+  slides[cur].classList.remove("on");
+  void slides[i].offsetWidth;            // restart the build-ins when a slide is shown again
+  slides[i].classList.add("on");
+  cur = i;
+  document.getElementById("count").textContent = `${i + 1} / ${slides.length}`;
+  document.getElementById("progress").style.width = `${((i + 1) / slides.length) * 100}%`;
+  document.getElementById("notes").innerHTML = `<b>Speaker notes · slide ${i + 1}</b>` + (NOTES[i] || "No notes for this slide.");
+  history.replaceState(null, "", `#${i + 1}`);
+}
+const go = d => show(cur + d);
+function fullscreen() { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.(); }
+function notes() { const on = document.body.classList.toggle("show-notes"); document.getElementById("notesBtn").setAttribute("aria-pressed", on); }
+
+document.getElementById("prev").onclick = () => go(-1);
+document.getElementById("next").onclick = () => go(1);
+document.getElementById("notesBtn").onclick = notes;
+document.getElementById("fsBtn").onclick = fullscreen;
+document.getElementById("pdfBtn").onclick = () => print();
+stage.addEventListener("click", e => { if (!e.target.closest("a")) go(e.clientX < innerWidth / 3 ? -1 : 1); });
+addEventListener("keydown", e => {
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  const k = e.key;
+  if (["ArrowRight", "ArrowDown", "PageDown", " ", "Enter"].includes(k)) { e.preventDefault(); go(1); }
+  else if (["ArrowLeft", "ArrowUp", "PageUp", "Backspace"].includes(k)) { e.preventDefault(); go(-1); }
+  else if (k === "Home") show(0);
+  else if (k === "End") show(slides.length - 1);
+  else if (k === "f" || k === "F") fullscreen();
+  else if (k === "n" || k === "N") notes();
+  else if (k === "p" || k === "P") print();
+});
+let x0 = null;
+addEventListener("touchstart", e => { x0 = e.touches[0].clientX; }, { passive: true });
+addEventListener("touchend", e => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 40) go(dx < 0 ? 1 : -1); x0 = null; });
+addEventListener("resize", fit);
+addEventListener("hashchange", () => show((parseInt(location.hash.slice(1)) || 1) - 1));
+fit();
+show((parseInt(location.hash.slice(1)) || 1) - 1);
+</script>
+</body>
+</html>

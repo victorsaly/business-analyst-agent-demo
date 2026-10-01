@@ -40,8 +40,9 @@ presents a forecast or guess as a fact.
 
 - Live presentation: 13:45-15:30 sprint, 15:45-16:30 presentations; each a 6-minute demo plus 2-minute Q&A.
 - Projector in a lit room; also a recorded, narrated video produced by `app/record_video.py`.
-- Modes: Live AI (Groq free tier, rate-limited), Replay of a recorded live run, Dry run (no AI, scripted,
-  for testing only). Replay and dry run must always be labelled as such on screen.
+- Modes: Live AI (Groq free tier, rate-limited, with automatic fallback to OpenAI gpt-5.4-mini when the
+  daily allowance runs out), Replay of a recorded live run, Dry run (no AI, scripted, for testing only).
+  Replay and dry run are always labelled as such on screen.
 
 ## Capabilities and Constraints
 
@@ -51,7 +52,13 @@ presents a forecast or guess as a fact.
 - Margin = LineTotal - (OrderQty x StandardCost).
 - Screens: overview, what changed (before/after vs the starting notebook), demo cases, tools without AI,
   weekly briefing, scorecard.
-- The video recorder drives the UI by URL parameters and waits for a scene-complete signal.
+- The video recorder drives the UI by URL parameters and waits for a scene-complete signal
+  ([record_video.py](../app/record_video.py)):
+
+```python
+page.goto(f"http://localhost:{PORT}/?{params}&mode={args.mode}&presenter=1&autorun=1&delay={args.delay}")
+page.wait_for_selector("body[data-scene=done]", timeout=600_000)
+```
 
 ## Brand Commitments
 
@@ -60,12 +67,12 @@ Name: "Business Performance Analyst Agent" for AdventureWorks. No team branding.
 
 ## Evidence on Hand
 
-Real query results from AdventureWorks; recorded live runs in `app/recordings/` (once prepared); the
+Real query results from AdventureWorks; recorded live runs in `app/recordings/`; the
 scorecard. No customer testimonials, benchmarks or business results exist; none may be invented.
 
 ## Product Principles
 
-1. Show the working: the query is part of the answer, not a footnote.
+1. Show the working: the exact queries sit under every answer ("How I got this", in Developer view).
 2. Honest about limits: "the data does not include…" is a feature, shown with the same weight as an answer.
 3. Never blur modes: live, replay and dry run are always distinguishable.
 4. Readable from the back of the room.
@@ -73,4 +80,4 @@ scorecard. No customer testimonials, benchmarks or business results exist; none 
 ## Accessibility & Inclusion
 
 Projected display: large type, high contrast that survives a washed-out projector, no meaning carried by
-color alone.
+colour alone.

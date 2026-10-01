@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Getting started: run the demo on your own laptop (Mac and Windows) · Business Performance Analyst Agent</title>
+<meta name="description" content="A course demonstration (Agentic AI Workshop 2026, Capstone 2): how we built an AI analyst agent, step by step.">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="../blog.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/diff.min.js" defer></script>
+<script>addEventListener("DOMContentLoaded", () => window.hljs && hljs.highlightAll());</script><script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+mermaid.initialize({ startOnLoad: false, theme: "base", securityLevel: "strict",
+  flowchart: { curve: "basis", padding: 14, nodeSpacing: 34, rankSpacing: 40 }, sequence: { mirrorActors: false },
+  themeVariables: { fontFamily: '"Patrick Hand SC", "Marker Felt", cursive', fontSize: "17px",
+    background: "#fcfbf7", primaryColor: "#ffffff", primaryTextColor: "#1e3a8a", primaryBorderColor: "#1e3a8a",
+    secondaryColor: "#eef2fb", tertiaryColor: "#eef2fb", lineColor: "#3f5a9e", textColor: "#1d2433",
+    clusterBkg: "#eef2fb", clusterBorder: "#a9b8dc", edgeLabelBackground: "#ffffff",
+    noteBkgColor: "#eef2fb", noteBorderColor: "#a9b8dc", noteTextColor: "#1e3a8a", actorLineColor: "#a9b8dc", signalColor: "#3f5a9e",
+    cScale0: "#eef2fb", cScale1: "#ffffff", cScale2: "#eef2fb", cScale3: "#ffffff", cScale4: "#eef2fb",
+    cScaleLabel0: "#1e3a8a", cScaleLabel1: "#1e3a8a", cScaleLabel2: "#1e3a8a", cScaleLabel3: "#1e3a8a", cScaleLabel4: "#1e3a8a",
+    cScalePeer0: "#a9b8dc", cScalePeer1: "#a9b8dc", cScalePeer2: "#a9b8dc", cScalePeer3: "#a9b8dc", cScalePeer4: "#a9b8dc" } });
+await document.fonts.ready;   // measure the labels in the hand-lettered font, not the fallback
+await mermaid.run({ querySelector: "pre.mermaid" });
+</script>
+<script src="../blog.js" defer></script></head>
+<body><header class="top"><div class="stripe"></div><div class="in">
+<a class="brand" href="index.html"><img src="../logo.svg" alt="" width="32" height="32"> Business Performance Analyst Agent</a>
+<div class="search" role="search"><label class="sr" for="q">Search the docs</label><input id="q" type="search" placeholder="Search the docs" autocomplete="off" spellcheck="false" aria-controls="hits" aria-expanded="false" aria-autocomplete="list"><kbd aria-hidden="true">/</kbd><div id="hits" role="listbox" aria-label="Search results" hidden></div></div><nav aria-label="Blog"><a href="index.html">How this was made</a><a href="history.html">History</a><a href="requirements.html">Requirements</a><a href="build-guide.html">Build guide</a><a href="../demo/">Open the demo</a><a href="../api/">API</a><a href="../home/">Home</a></nav></div></header>
+<div class="wrap"><main><span class="course">Course demonstration · Capstone 2 · Agentic AI Workshop 2026</span>
+<h1 id="getting-started-run-the-demo-on-your-own-laptop-mac-and-windows">Getting started: run the demo on your own laptop (Mac and Windows)</h1>
+<p><em>For everyone in the group. No programming needed: you download a folder, double-click two files, and the
+demo opens in your browser. The first time takes about 15 minutes.</em></p>
+<blockquote>
+<p><strong>Only want to watch or present?</strong> You don't need to install anything:
+- <a href="https://victorsaly.github.io/business-analyst-agent-demo/demo/">The online demo</a> replays every recorded run.
+- <a href="https://victorsaly.github.io/business-analyst-agent-demo/deck/">The presentation</a> has 12 slides with speaker notes and a PDF download.
+- <a href="https://victorsaly.github.io/business-analyst-agent-demo/pitch/">The 60-second pitch</a> is the pitch video.</p>
+<p>Install the demo only if you want <strong>Live AI</strong>, where you ask your own questions and the real AI answers.</p>
+</blockquote>
+<h2 id="what-you-need">What you need</h2>
+<ul>
+<li>A Mac or a Windows laptop, with internet.</li>
+<li>About 1 GB of free space.</li>
+<li>15 minutes.</li>
+<li>Optional: a free Groq key for Live AI (Step 3). Without one, Replay mode still works.</li>
+</ul>
+<p>The whole thing at a glance. Steps 1 to 4 happen once; after that, you only do Steps 5 and 6:</p>
+<figure class="diagram"><pre class="mermaid">flowchart LR
+  accTitle: The six steps, once and every time
+  subgraph once[&quot;Once (about 15 minutes)&quot;]
+    S1[&quot;1 · Download the ZIP&quot;] --&gt; S2[&quot;2 · Install Python&quot;] --&gt; S3[&quot;3 · Get a Groq key&lt;br/&gt;(optional)&quot;] --&gt; S4[&quot;4 · Double-click&lt;br/&gt;1 Setup&quot;]
+  end
+  subgraph every[&quot;Every time&quot;]
+    S5[&quot;5 · Double-click&lt;br/&gt;2 Start&quot;] --&gt; S6[&quot;6 · Use it in&lt;br/&gt;your browser&quot;]
+  end
+  S4 --&gt; S5
+  classDef red stroke:#c62828,stroke-width:2px,color:#b71c1c
+  classDef optional stroke-dasharray:5 4
+  class S5 red
+  class S3 optional
+</pre></figure>
+<h2 id="step-1-download-the-project">Step 1. Download the project</h2>
+<ol>
+<li>Open <a href="https://github.com/victorsaly/business-analyst-agent-demo">https://github.com/victorsaly/business-analyst-agent-demo</a>.</li>
+<li>Click the green <strong>Code</strong> button, then <strong>Download ZIP</strong>.</li>
+<li>Open your <strong>Downloads</strong> folder and unzip the file:<ul>
+<li><strong>Mac:</strong> double-click <code>business-analyst-agent-demo-main.zip</code>.</li>
+<li><strong>Windows:</strong> right-click the zip file, choose <strong>Extract All…</strong>, then <strong>Extract</strong>.</li>
+</ul>
+</li>
+<li>Move the unzipped folder somewhere easy to find, for example your Desktop.</li>
+</ol>
+<p>You should now have a folder called <code>business-analyst-agent-demo-main</code>. Inside it are four files whose names
+start with <code>Mac -</code> or <code>Windows -</code>:</p>
+<pre><code class="language-text">Mac - 1 Setup.command
+Mac - 2 Start.command
+Windows - 1 Setup.bat
+Windows - 2 Start.bat
+</code></pre>
+<p>These are the only files you need to touch. Mac users use the two <code>Mac</code> files; Windows users use the two <code>Windows</code> files.</p>
+<h2 id="step-2-install-python-once">Step 2. Install Python (once)</h2>
+<p>Python is the free program the demo runs on. You need Python 3.10 or newer. If you are not sure whether you
+have it, skip this step: the setup file in Step 4 checks for you and opens the download page if it is missing.</p>
+<p>To check by hand:</p>
+<p><strong>Mac</strong></p>
+<ol>
+<li>Open <strong>Terminal</strong> (press <strong>⌘ Space</strong>, type <code>Terminal</code>, press <strong>Enter</strong>).</li>
+<li>
+<p>Type this and press <strong>Enter</strong>:</p>
+<pre><code class="language-bash">python3 --version
+</code></pre>
+</li>
+</ol>
+<p><strong>Windows</strong></p>
+<ol>
+<li>Open <strong>PowerShell</strong> (press the <strong>Windows</strong> key, type <code>PowerShell</code>, press <strong>Enter</strong>).</li>
+<li>
+<p>Type this and press <strong>Enter</strong>:</p>
+<pre><code class="language-powershell">py --version
+</code></pre>
+</li>
+</ol>
+<p>You should see a version of 3.10 or higher, for example:</p>
+<pre><code class="language-text">Python 3.12.4
+</code></pre>
+<p>If you see <code>command not found</code>, <code>not recognized</code>, or a number below 3.10, install Python:</p>
+<p><strong>Mac</strong></p>
+<ol>
+<li>Go to <a href="https://www.python.org/downloads/macos/">https://www.python.org/downloads/macos/</a> and click the latest <strong>Python 3</strong> release.</li>
+<li>Download the <strong>macOS 64-bit universal2 installer</strong> (<code>.pkg</code>).</li>
+<li>Open it and click <strong>Continue</strong> until it finishes.</li>
+</ol>
+<p><strong>Windows</strong></p>
+<ol>
+<li>Go to <a href="https://www.python.org/downloads/windows/">https://www.python.org/downloads/windows/</a> and download the latest <strong>Python 3</strong> "Windows installer (64-bit)".</li>
+<li>Open it. <strong>On the first screen, tick "Add python.exe to PATH"</strong> at the bottom. This is the step people most often miss.</li>
+<li>Click <strong>Install Now</strong> and wait until it says <em>Setup was successful</em>.</li>
+</ol>
+<h2 id="step-3-get-a-free-ai-key-optional-for-live-ai">Step 3. Get a free AI key (optional, for Live AI)</h2>
+<ol>
+<li>Go to <a href="https://console.groq.com">https://console.groq.com</a> and sign up. It's free, and a Google account works.</li>
+<li>In the menu, click <strong>API Keys</strong>, then <strong>Create API Key</strong>. Give it any name, such as <code>capstone</code>.</li>
+<li>Copy the key (it starts with <code>gsk_</code>) and keep it somewhere safe for Step 4. Groq shows it only once.</li>
+</ol>
+<p>Don't share your key or put it in a document or chat: anyone who has it can use up your free allowance.</p>
+<h2 id="step-4-set-up-the-demo-once">Step 4. Set up the demo (once)</h2>
+<p><strong>Mac</strong></p>
+<ol>
+<li>Open the project folder and double-click <code>Mac - 1 Setup.command</code>.</li>
+<li>If macOS says it <em>can't be opened because it is from an unidentified developer</em>:<ol>
+<li>Click <strong>Done</strong>.</li>
+<li>Right-click the file, choose <strong>Open</strong>, then click <strong>Open</strong> again.</li>
+<li>On newer macOS, if there is no <strong>Open</strong> button: go to <strong>System Settings → Privacy &amp; Security</strong>, scroll down, and click <strong>Open Anyway</strong>.</li>
+</ol>
+</li>
+<li>A Terminal window opens and works for a few minutes. Leave it alone until it says <code>Setup done.</code></li>
+</ol>
+<p><strong>Windows</strong></p>
+<ol>
+<li>Open the project folder and double-click <code>Windows - 1 Setup.bat</code>.</li>
+<li>If a blue <em>Windows protected your PC</em> box appears, click <strong>More info</strong>, then <strong>Run anyway</strong>.</li>
+<li>A black window opens and works for a few minutes. Leave it alone until it says <code>Setup done.</code></li>
+</ol>
+<p>When it has finished, the window shows something like this (the Mac version; Windows is the same apart from
+the last lines):</p>
+<pre><code class="language-text">== Business Performance Analyst Agent: setup (Mac) ==
+Downloading AdventureWorks (about 17 MB)...
+Database ready: /Users/you/Desktop/business-analyst-agent-demo-main/app/data/adventureworks.db
+
+Setup done.
+A text file called .env will open now. Paste your free Groq key after GROQ_API_KEY= and save it.
+(No key? Skip this: Replay mode works without one.)
+Next: double-click 'Mac - 2 Start.command'.
+Press Enter to close this window.
+</code></pre>
+<p>At the same time a text file called <code>.env</code> opens (TextEdit on Mac, Notepad on Windows). To add your key:</p>
+<ol>
+<li>Click at the end of the line <code>GROQ_API_KEY=</code>.</li>
+<li>
+<p>Paste your Groq key straight after the <code>=</code>, with no spaces. The line should look like this:</p>
+<pre><code class="language-text">GROQ_API_KEY=gsk_your_key_here
+</code></pre>
+</li>
+<li>
+<p>Save the file (<strong>⌘ S</strong> on Mac, <strong>Ctrl S</strong> on Windows) and close it.</p>
+</li>
+<li>Press <strong>Enter</strong> in the setup window to close it (on Windows, press any key).</li>
+</ol>
+<p>No key? Close the <code>.env</code> file without changing it. Running Setup a second time is safe: it keeps your <code>.env</code>.</p>
+<h2 id="step-5-start-the-demo-every-time">Step 5. Start the demo (every time)</h2>
+<ol>
+<li>Double-click the Start file:<ul>
+<li><strong>Mac:</strong> <code>Mac - 2 Start.command</code></li>
+<li><strong>Windows:</strong> <code>Windows - 2 Start.bat</code></li>
+</ul>
+</li>
+<li>
+<p>A window opens and shows:</p>
+<pre><code class="language-text">Starting the demo... your browser will open http://localhost:8501
+Keep this window open while you present. Close it to stop the demo.
+</code></pre>
+</li>
+<li>
+<p>After about three seconds your browser opens <a href="http://localhost:8501">http://localhost:8501</a>. If the page doesn't load, wait five seconds and refresh it.</p>
+</li>
+<li>You see the cover page with the one-minute pitch video. Click <strong>Try the live demo</strong> to open the app.</li>
+</ol>
+<p><strong>Keep the Terminal or black window open</strong> while you use the demo. To stop the demo, close that window.</p>
+<h2 id="step-6-use-it">Step 6. Use it</h2>
+<ul>
+<li><strong>Live AI / Replay / Dry run</strong> (top right): <strong>Live AI</strong> asks the real AI and needs your key. <strong>Replay</strong> plays
+    back a recorded real run and needs no key, and no internet for the AI. Switch to Replay if the wifi or the
+    free allowance fails during the presentation.</li>
+<li><strong>Tracks:</strong> the demo plan. Press a track to play it, or type your own question in the box.</li>
+<li><strong>View for: Stakeholder / Developer:</strong> a plain-English view of the answer, or every step and query underneath.</li>
+<li><strong>Explain this page:</strong> a spoken explanation of the screen you're on.</li>
+</ul>
+<p>More detail on every screen is in <a href="running-the-app.html">Running the demo</a>.</p>
+<h2 id="presenting-the-slides">Presenting the slides</h2>
+<p>Open the <a href="https://victorsaly.github.io/business-analyst-agent-demo/deck/">presentation</a>. It runs in the browser, so nothing needs installing.</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Key</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>→</strong>, <strong>Space</strong> or a click</td>
+<td>Next slide</td>
+</tr>
+<tr>
+<td><strong>←</strong></td>
+<td>Previous slide</td>
+</tr>
+<tr>
+<td><strong>F</strong></td>
+<td>Full screen (press <strong>Esc</strong> to leave)</td>
+</tr>
+<tr>
+<td><strong>N</strong></td>
+<td>Show or hide the speaker notes</td>
+</tr>
+<tr>
+<td><strong>P</strong></td>
+<td>Print, or save as PDF</td>
+</tr>
+</tbody>
+</table></div>
+<p>There is also a ready-made PDF: <a href="https://victorsaly.github.io/business-analyst-agent-demo/deck/presentation.pdf">presentation.pdf</a>.</p>
+<h2 id="if-something-goes-wrong">If something goes wrong</h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>What you see</th>
+<th>What to do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><em>"Python 3.10 or newer is not installed yet"</em></td>
+<td>Install Python (Step 2), then double-click the Setup file again. On Windows, make sure you ticked <strong>Add python.exe to PATH</strong>. If you didn't, run the Python installer again, choose <strong>Modify</strong>, and tick it.</td>
+</tr>
+<tr>
+<td>Windows opens the <strong>Microsoft Store</strong> when you run Setup</td>
+<td>Install Python from python.org instead (Step 2), then run Setup again.</td>
+</tr>
+<tr>
+<td><em>"Run 'Mac - 1 Setup.command' first."</em> or <em>"Run "Windows - 1 Setup.bat" first."</em></td>
+<td>Do Step 4 before Step 5.</td>
+</tr>
+<tr>
+<td>The browser says <em>This site can't be reached</em></td>
+<td>Wait five seconds and refresh. Check the Start window is still open and shows no error.</td>
+</tr>
+<tr>
+<td><em>"address already in use"</em> (the Start window closes or shows an error)</td>
+<td>The demo is already running in another window. Use that one, or close it and start again. To find it, see <a href="#port-8501-already-in-use">Port 8501 already in use</a> below.</td>
+</tr>
+<tr>
+<td>Live AI says <em>"No AI key set"</em>, or that the key is wrong</td>
+<td>Open <code>app/.env</code> (Step 4) and check the line is exactly <code>GROQ_API_KEY=gsk_…</code>. Then close the Start window and start again. On a Mac, <code>.env</code> is hidden in Finder: press <strong>⌘ Shift .</strong> to show hidden files.</td>
+</tr>
+<tr>
+<td>Live AI stops with a <em>rate limit</em> or <em>allowance</em> message</td>
+<td>The free Groq plan has a daily limit. Switch to <strong>Replay</strong>: it plays back real recorded runs.</td>
+</tr>
+<tr>
+<td>Setup stopped with an error about the internet</td>
+<td>Check your connection (some office or university networks block downloads) and run Setup again. Running it twice is safe.</td>
+</tr>
+</tbody>
+</table></div>
+<p>Still stuck? Copy the last lines of the Terminal or black window into the group chat, with a screenshot.</p>
+<h3 id="port-8501-already-in-use">Port 8501 already in use</h3>
+<p>The demo uses port 8501. If something else already uses it, the Start window shows a line ending in
+<code>address already in use</code>. To see what is using the port:</p>
+<p><strong>Mac</strong> (in Terminal)</p>
+<pre><code class="language-bash">lsof -i :8501
+</code></pre>
+<p><strong>Windows</strong> (in PowerShell)</p>
+<pre><code class="language-powershell">netstat -ano | findstr :8501
+</code></pre>
+<p>If it is an older copy of the demo, close its window. Otherwise you can run the demo on another port; see
+<a href="#for-the-technically-curious">For the technically curious</a>.</p>
+<h2 id="for-the-technically-curious">For the technically curious</h2>
+<p>The double-click files run the same commands you can type yourself. All commands run from inside the <code>app</code>
+folder of the project.</p>
+<p><strong>Mac</strong> (Terminal)</p>
+<ol>
+<li>
+<p>Go to the <code>app</code> folder (change the path if you put the project somewhere else):</p>
+<pre><code class="language-bash">cd ~/Desktop/business-analyst-agent-demo-main/app
+</code></pre>
+</li>
+<li>
+<p>Set up once. <code>demo.sh setup</code> also installs the browser used to record the demo video:</p>
+<pre><code class="language-bash">./demo.sh setup
+</code></pre>
+</li>
+<li>
+<p>Start the demo:</p>
+<pre><code class="language-bash">./demo.sh app
+</code></pre>
+</li>
+</ol>
+<p><strong>Windows</strong> (PowerShell)</p>
+<ol>
+<li>
+<p>Go to the <code>app</code> folder:</p>
+<pre><code class="language-powershell">cd $HOME\Desktop\business-analyst-agent-demo-main\app
+</code></pre>
+</li>
+<li>
+<p>Set up once:</p>
+<pre><code class="language-powershell">py -3 -m venv .venv
+.venv\Scripts\python -m pip install -r requirements.txt
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+</code></pre>
+</li>
+<li>
+<p>Start the demo, then open <a href="http://localhost:8501">http://localhost:8501</a> and click <strong>Try the live demo</strong>:</p>
+<pre><code class="language-powershell">.venv\Scripts\python server.py
+</code></pre>
+</li>
+</ol>
+<p>To use a different port, set <code>PORT</code> before starting the server, then open that port in the browser
+(for example <a href="http://localhost:8502">http://localhost:8502</a>):</p>
+<p><strong>Mac</strong></p>
+<pre><code class="language-bash">PORT=8502 .venv/bin/python server.py
+</code></pre>
+<p><strong>Windows</strong></p>
+<pre><code class="language-powershell">$env:PORT = &quot;8502&quot;; .venv\Scripts\python server.py
+</code></pre>
+<nav class="pager" aria-label="Previous and next page"><a class="next" href="index.html"><span>Next</span>How this was made</a></nav>
+<p class="foot">A learning project, not a product. AdventureWorks is Microsoft's public sample data about a made-up bicycle
+company. Source of this page: <a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/docs/getting-started.md">docs/getting-started.md</a>.</p></main>
+<aside class="areas" aria-label="All documents"><details open><summary>All pages</summary><h2>Start here</h2><ul><li><a href="getting-started.html" aria-current="page">Run it on your laptop (Mac and Windows)</a></li></ul><h2>The story</h2><ul><li><a href="index.html">How this was made</a></li><li><a href="history.html">Timeline, step by step</a></li></ul><h2>The brief</h2><ul><li><a href="requirements.html">Every requirement, with evidence</a></li><li><a href="build-guide.html">The 13 build steps</a></li></ul><h2>The app</h2><ul><li><a href="running-the-app.html">Running the demo</a></li><li><a href="product.html">Who it's for</a></li><li><a href="design.html">How it looks</a></li></ul><h2>Behind the scenes</h2><ul><li><a href="prompt-optimization.html">Cutting the AI cost</a></li><li><a href="audio-sources.html">Audio sources</a></li></ul><h2>Try it</h2><ul><li><a href="../home/">Home: every area</a></li><li><a href="../demo/">Open the demo</a></li><li><a href="../demo/?page=story">Ask the course chat</a></li><li><a href="../api/">API reference</a></li><li><a href="../pitch/">60-second pitch video</a></li><li><a href="../deck/">The presentation</a></li><li><a href="getting-started.html">Run it on your laptop</a></li><li><a href="https://github.com/victorsaly/business-analyst-agent-demo">The code on GitHub</a></li></ul></details></aside>
+<nav class="toc" aria-label="On this page"><h2>On this page</h2><ul><li><a href="#what-you-need">What you need</a></li><li><a href="#step-1-download-the-project">Step 1. Download the project</a></li><li><a href="#step-2-install-python-once">Step 2. Install Python (once)</a></li><li><a href="#step-3-get-a-free-ai-key-optional-for-live-ai">Step 3. Get a free AI key (optional, for Live AI)</a></li><li><a href="#step-4-set-up-the-demo-once">Step 4. Set up the demo (once)</a></li><li><a href="#step-5-start-the-demo-every-time">Step 5. Start the demo (every time)</a></li><li><a href="#step-6-use-it">Step 6. Use it</a></li><li><a href="#presenting-the-slides">Presenting the slides</a></li><li><a href="#if-something-goes-wrong">If something goes wrong</a></li><li><a href="#for-the-technically-curious">For the technically curious</a></li></ul></nav></div></body></html>

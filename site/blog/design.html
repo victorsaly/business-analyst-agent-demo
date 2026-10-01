@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design System: Business Performance Analyst Agent · Business Performance Analyst Agent</title>
+<meta name="description" content="A course demonstration (Agentic AI Workshop 2026, Capstone 2): how we built an AI analyst agent, step by step.">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="../blog.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/diff.min.js" defer></script>
+<script>addEventListener("DOMContentLoaded", () => window.hljs && hljs.highlightAll());</script>
+<script src="../blog.js" defer></script></head>
+<body><header class="top"><div class="stripe"></div><div class="in">
+<a class="brand" href="index.html"><img src="../logo.svg" alt="" width="32" height="32"> Business Performance Analyst Agent</a>
+<div class="search" role="search"><label class="sr" for="q">Search the docs</label><input id="q" type="search" placeholder="Search the docs" autocomplete="off" spellcheck="false" aria-controls="hits" aria-expanded="false" aria-autocomplete="list"><kbd aria-hidden="true">/</kbd><div id="hits" role="listbox" aria-label="Search results" hidden></div></div><nav aria-label="Blog"><a href="index.html">How this was made</a><a href="history.html">History</a><a href="requirements.html">Requirements</a><a href="build-guide.html">Build guide</a><a href="../demo/">Open the demo</a><a href="../api/">API</a><a href="../home/">Home</a></nav></div></header>
+<div class="wrap"><main><span class="course">Course demonstration · Capstone 2 · Agentic AI Workshop 2026</span>
+<hr />
+<p>name: Business Performance Analyst Agent
+description: A six-minute demo pressed onto a hand-lettered cassette J-card, ballpoint ink on ruled inlay stock.
+colors:
+  ballpoint-ink: "#1E3A8A"
+  ink-pressed: "#172F73"
+  faded-ink: "#3F5A9E"
+  printed-red: "#C62828"
+  red-ink: "#B71C1C"
+  inlay-paper: "#FCFBF7"
+  blank-white: "#FFFFFF"
+  blue-wash: "#EEF2FB"
+  ruled-line: "#DBE2F1"
+  mid-rule: "#A9B8DC"
+  pencil-grey: "#687083"
+  chart-ink-blue: "#2B4BB0"
+  chart-pencil-ochre: "#B7791F"
+  chart-faded-blue: "#6B86C5"
+  chart-other-grey: "#8E98AE"
+  chart-gridline: "#D3DBEE"
+typography:
+  display:
+    fontFamily: "Patrick Hand SC, Patrick Hand, Marker Felt, cursive"
+    fontSize: "5.4rem"
+    fontWeight: 400
+    lineHeight: 0.98
+    letterSpacing: "0.01em"
+  headline-page:
+    fontFamily: "Patrick Hand SC, Patrick Hand, Marker Felt, cursive"
+    fontSize: "3.6rem"
+    fontWeight: 400
+    lineHeight: 1
+    letterSpacing: "0.01em"
+  headline:
+    fontFamily: "Patrick Hand SC, Patrick Hand, Marker Felt, cursive"
+    fontSize: "3rem"
+    fontWeight: 400
+    lineHeight: 1.08
+    letterSpacing: "0.01em"
+  title:
+    fontFamily: "Patrick Hand SC, Patrick Hand, Marker Felt, cursive"
+    fontSize: "1.8rem"
+    fontWeight: 400
+    lineHeight: 1.2
+    letterSpacing: "0.01em"
+  lede:
+    fontFamily: "Patrick Hand SC, Patrick Hand, Marker Felt, cursive"
+    fontSize: "1.75rem"
+    fontWeight: 400
+    lineHeight: 1.35
+  track:
+    fontFamily: "Patrick Hand SC, Patrick Hand, Marker Felt, cursive"
+    fontSize: "1.32rem"
+    fontWeight: 400
+    lineHeight: 1.2
+  label:
+    fontFamily: "Patrick Hand SC, Patrick Hand, Marker Felt, cursive"
+    fontSize: "1.15rem"
+    fontWeight: 400
+    lineHeight: 1
+  answer:
+    fontFamily: "Patrick Hand, Marker Felt, cursive"
+    fontSize: "1.5rem"
+    fontWeight: 400
+    lineHeight: 1.45
+  body:
+    fontFamily: "Patrick Hand, Marker Felt, cursive"
+    fontSize: "1.25rem"
+    fontWeight: 400
+    lineHeight: 1.45
+  note:
+    fontFamily: "Patrick Hand, Marker Felt, cursive"
+    fontSize: "1.15rem"
+    fontWeight: 400
+    lineHeight: 1.45
+  typed:
+    fontFamily: "Courier Prime, Courier New, monospace"
+    fontSize: "1rem"
+    fontWeight: 400
+    lineHeight: 1.5
+    fontFeature: "tnum"
+  typed-strong:
+    fontFamily: "Courier Prime, Courier New, monospace"
+    fontSize: "1rem"
+    fontWeight: 700
+    lineHeight: 1.5
+    fontFeature: "tnum"
+rounded:
+  none: "0px"
+spacing:
+  hairline-gap: "4px"
+  inset-sm: "0.6rem"
+  inset-md: "1rem"
+  panel-x: "1.4rem"
+  ruled-line: "2rem"
+  gutter: "2.25rem"
+  column-gap: "2rem"
+  pair-gap: "3rem"
+  masthead: "4.5rem"
+  spine: "6rem"
+components:
+  button-primary:
+    backgroundColor: "{colors.ballpoint-ink}"
+    textColor: "{colors.inlay-paper}"
+    typography: "{typography.track}"
+    rounded: "{rounded.none}"
+    padding: "0.65rem 1.3rem"
+  button-primary-hover:
+    backgroundColor: "{colors.ink-pressed}"
+    textColor: "{colors.inlay-paper}"
+  button-secondary:
+    backgroundColor: "{colors.inlay-paper}"
+    textColor: "{colors.ballpoint-ink}"
+    typography: "{typography.track}"
+    rounded: "{rounded.none}"
+    padding: "0.65rem 1.3rem"
+  button-secondary-hover:
+    backgroundColor: "{colors.blue-wash}"
+    textColor: "{colors.ballpoint-ink}"
+  button-warn:
+    backgroundColor: "{colors.inlay-paper}"
+    textColor: "{colors.red-ink}"
+    rounded: "{rounded.none}"
+    padding: "0.65rem 1.3rem"
+  button-disabled:
+    backgroundColor: "{colors.inlay-paper}"
+    textColor: "{colors.pencil-grey}"
+  mode-switch:
+    backgroundColor: "{colors.inlay-paper}"
+    textColor: "{colors.ballpoint-ink}"
+    typography: "{typography.label}"
+    padding: "0.3rem 0.8rem"
+  mode-switch-active:
+    backgroundColor: "{colors.ballpoint-ink}"
+    textColor: "{colors.inlay-paper}"
+  tag:
+    backgroundColor: "{colors.inlay-paper}"
+    textColor: "{colors.ballpoint-ink}"
+    typography: "{typography.label}"
+    rounded: "{rounded.none}"
+    padding: "0.3rem 0.55rem 0.25rem"
+  tag-live:
+    backgroundColor: "{colors.ballpoint-ink}"
+    textColor: "{colors.inlay-paper}"
+  tag-dry-run:
+    backgroundColor: "{colors.inlay-paper}"
+    textColor: "{colors.red-ink}"
+  input:
+    backgroundColor: "{colors.blank-white}"
+    textColor: "{colors.ballpoint-ink}"
+    typography: "{typography.body}"
+    rounded: "{rounded.none}"
+    padding: "0.5rem 0.65rem"
+  track-row:
+    backgroundColor: "{colors.inlay-paper}"
+    textColor: "{colors.ballpoint-ink}"
+    typography: "{typography.track}"
+    padding: "0.3rem 0.4rem"
+  track-row-current:
+    backgroundColor: "{colors.blue-wash}"
+    textColor: "{colors.ballpoint-ink}"
+  panel:
+    backgroundColor: "{colors.inlay-paper}"
+    textColor: "{colors.ballpoint-ink}"
+    rounded: "{rounded.none}"
+    padding: "1rem 1.4rem"
+  now-playing:
+    backgroundColor: "{colors.inlay-paper}"
+    textColor: "{colors.ballpoint-ink}"
+    rounded: "{rounded.none}"
+    padding: "1.4rem 1.8rem 1.8rem"
+  typed-block:
+    backgroundColor: "{colors.blank-white}"
+    textColor: "{colors.ballpoint-ink}"
+    typography: "{typography.typed}"
+    rounded: "{rounded.none}"
+    padding: "0.6rem 0.8rem"
+  margin-note:
+    backgroundColor: "{colors.inlay-paper}"
+    textColor: "{colors.red-ink}"
+    rounded: "{rounded.none}"
+    padding: "0.55rem 0.8rem"</p>
+<hr />
+<h1 id="design-system-business-performance-analyst-agent">Design System: Business Performance Analyst Agent</h1>
+<h2 id="overview">Overview</h2>
+<p><strong>Creative North Star: "The Six-Minute Mixtape"</strong></p>
+<p>The demo looks like an unfolded cassette J-card (the paper insert in a cassette case), written up by hand. A vertical spine runs down the left edge with the title, a red triple stripe and an A/B box. The main panel is ruled inlay stock. Every screen is a part of the card: the tracklist is the demo plan, each prepared case is a track with a running time, side A holds the brief's questions and side B the guardrails. The tape counter and a thin red position bar move while a run plays. Text is ballpoint ink throughout. Red is the printed second colour: the stripe, the running bar, corrections and refusals. Charts are drawn in the same ink on the same paper.</p>
+<p>The system is flat, square and inked. Depth comes from rules and boxes; there are no shadows. Type carries the brand: hand-lettered block caps for anything you would letter onto a card, handwritten prose for answers, and typewriter for anything the machine produced (SQL, tool names, counters, figures). It deliberately avoids the usual dark AI dashboard with KPI tiles and chat bubbles.</p>
+<p>It is built to be read from the back of a lit room on a washed-out projector. The root font size is large (18px, rising to 21px at 1800px and wider), contrast is ink on near-white, and no state relies on colour alone: the active screen gets an underline, the current track gets a wash and a red number, and a dry run gets a red box plus written words.</p>
+<p>Main characteristics:</p>
+<ul>
+<li>Two-ink print: ballpoint blue for everything, one printed red for signals; ochre appears only in charts.</li>
+<li>Ruled paper ground: a faint blue line every 2rem across the whole page, so content sits on lines like handwriting.</li>
+<li>Three voices of type: lettered caps (Patrick Hand SC), handwriting (Patrick Hand), typewriter (Courier Prime).</li>
+<li>Square hairline boxes (1.5px ink) and heavier 2–2.5px rules under headings; no radius, no shadow.</li>
+<li>A fixed spine plus a sticky masthead with the screen nav, the mode switch and the tape counter.</li>
+</ul>
+<h2 id="colors">Colors</h2>
+<p>A two-ink print on cream-white stock: one deep ballpoint blue carries all text and structure, one printed red carries signals, and a set of pale blues is used for rules and washes.</p>
+<p>In <code>app/web/app.css</code> the colours are CSS custom properties on <code>:root</code>. The CSS names are shorter than the token names used on this page (<code>--ink</code> is Ballpoint Ink, <code>--ink-2</code> is Faded Ink, <code>--rule-mid</code> is Mid Rule, <code>--pencil</code> is Pencil Grey):</p>
+<pre><code class="language-css">:root {
+  --paper: #fcfbf7;     /* inlay-paper */
+  --wash: #eef2fb;      /* blue-wash */
+  --ink: #1e3a8a;       /* ballpoint-ink */
+  --ink-2: #3f5a9e;     /* faded-ink */
+  --rule: #dbe2f1;      /* ruled-line */
+  --rule-mid: #a9b8dc;  /* mid-rule */
+  --red: #c62828;       /* printed-red */
+  --red-ink: #b71c1c;   /* red-ink */
+  --pencil: #687083;    /* pencil-grey */
+  ...
+}
+</code></pre>
+<h3 id="primary">Primary</h3>
+<ul>
+<li><strong>Ballpoint Ink</strong> (<code>ballpoint-ink</code>): all text, every box outline, heading rules, the spine border, filled primary buttons, the active mode and the active side tab. Inverted (paper on ink) for selection and solid tags.</li>
+<li><strong>Pressed Ink</strong> (<code>ink-pressed</code>): hover state of the filled primary button only.</li>
+<li><strong>Faded Ink</strong> (<code>faded-ink</code>): secondary text such as track numbers, notes, figure captions, query labels, the "how I got this" footer and the side-budget line. It is still ink, only older and less pressed.</li>
+</ul>
+<h3 id="secondary">Secondary</h3>
+<ul>
+<li><strong>Printed Red</strong> (<code>printed-red</code>): the brand stripe on the spine, the run-position bar, the active-nav underline, the margin line beside the tracklist, list bullets, the focus ring, the text caret and the "writing…" cursor block, plus outlines for refusals, slips and margin notes.</li>
+<li><strong>Red Ink</strong> (<code>red-ink</code>): red text, which is darker so it holds contrast on paper: the catalogue time on the spine, the current track number, error and refused steps, the dry-run note, footnote numbers <code>[1]</code>, failed scorecard marks and a counter that has gone over 6:00.</li>
+</ul>
+<h3 id="neutral">Neutral</h3>
+<ul>
+<li><strong>Inlay Paper</strong> (<code>inlay-paper</code>): the page, every panel and the chart background. It is never pure white.</li>
+<li><strong>Blank White</strong> (<code>blank-white</code>): only where something gets written or typed into the card: text inputs, the textarea, and the typed SQL blocks.</li>
+<li><strong>Blue Wash</strong> (<code>blue-wash</code>): hover and the current track row; the secondary button's hover.</li>
+<li><strong>Ruled Line</strong> (<code>ruled-line</code>): the background rules every 2rem on the page and on the downloadable briefing.</li>
+<li><strong>Mid Rule</strong> (<code>mid-rule</code>): row dividers in lists, tables, tracklists and step logs; borders on typed blocks and chart images; scrollbar thumb; the hover underline in the nav.</li>
+<li><strong>Pencil Grey</strong> (<code>pencil-grey</code>): disabled controls, placeholders and the track sub-line (for example "No recording yet"). It means "not available", not hierarchy.</li>
+</ul>
+<h3 id="chart-palette">Chart palette</h3>
+<p>Charts are drawn by matplotlib in <code>app/analyst/tools.py</code> on the same paper, with the same fonts. The colours are set at the top of the chart code:</p>
+<pre><code class="language-python">_INK, _INK_SOFT, _PAPER, _RULE, _OTHER = &quot;#1E3A8A&quot;, &quot;#3F5A9E&quot;, &quot;#FCFBF7&quot;, &quot;#D3DBEE&quot;, &quot;#8E98AE&quot;
+_SERIES = [&quot;#2B4BB0&quot;, &quot;#B7791F&quot;, &quot;#6B86C5&quot;]   # red is kept for negative values only
+_NEG = &quot;#C62828&quot;
+</code></pre>
+<ul>
+<li><strong>Chart Ink Blue</strong> (<code>chart-ink-blue</code>): series 1, and every bar in a single-series chart.</li>
+<li><strong>Chart Pencil Ochre</strong> (<code>chart-pencil-ochre</code>): series 2. The only place ochre appears in the system.</li>
+<li><strong>Chart Faded Blue</strong> (<code>chart-faded-blue</code>): series 3.</li>
+<li><strong>Chart Other Grey</strong> (<code>chart-other-grey</code>): the "Other" bucket in breakdowns.</li>
+<li><strong>Chart Gridline</strong> (<code>chart-gridline</code>): value-axis gridlines. The baseline spine is Ballpoint Ink at 1.4pt, and the other three spines are removed.</li>
+</ul>
+<p>This categorical set was checked for colour-blind separation and contrast against Inlay Paper.</p>
+<h3 id="named-rules">Named Rules</h3>
+<p><strong>The Red Is Not Data Rule.</strong> Printed Red never encodes a data series. In charts it marks negative values only (negative bars turn red). In the UI it means signal: brand stripe, running, correction, refusal, current position. If a third series is needed, use Chart Faded Blue, never red.</p>
+<p><strong>The Two-Ink Rule.</strong> Interface chrome uses only the blues and the red. Ochre lives in charts and nowhere else.</p>
+<p><strong>The Paper Is Not White Rule.</strong> Surfaces are Inlay Paper. Blank White appears only inside fields and typed blocks, the places where something is written or typed onto the card.</p>
+<h2 id="typography">Typography</h2>
+<p><strong>Display Font:</strong> Patrick Hand SC (with Patrick Hand, Marker Felt, cursive)
+<strong>Body Font:</strong> Patrick Hand (with Marker Felt, cursive)
+<strong>Label/Mono Font:</strong> Courier Prime (with Courier New, monospace)</p>
+<p>All three are self-hosted OFL (open-licence) fonts in <code>app/web/fonts</code>, loaded with <code>font-display: block</code> so the card never flashes a system font while they load. The downloadable briefing embeds them as base64, so it looks the same when emailed or printed.</p>
+<pre><code class="language-css">@font-face { font-family: &quot;Patrick Hand SC&quot;; src: url(&quot;fonts/PatrickHandSC-Regular.ttf&quot;) format(&quot;truetype&quot;); font-display: block; }
+@font-face { font-family: &quot;Patrick Hand&quot;; src: url(&quot;fonts/PatrickHand-Regular.ttf&quot;) format(&quot;truetype&quot;); font-display: block; }
+@font-face { font-family: &quot;Courier Prime&quot;; src: url(&quot;fonts/CourierPrime-Regular.ttf&quot;) format(&quot;truetype&quot;); font-weight: 400; font-display: block; }
+</code></pre>
+<p><strong>Character:</strong> Block caps lettered with a marker for anything a person would write on the card, a looser hand for the answer prose, and a typewriter label for anything the machine produced. Hand-lettered headings (h1–h3) carry a thin <code>-webkit-text-stroke</code> of 0.035em in the current colour (<code>paint-order: stroke fill</code>) so they look as if drawn with a marker. Track titles, nav links, buttons, scorecard questions, the side total and the spine title carry a lighter 0.02em stroke:</p>
+<pre><code class="language-css">h1, h2, h3 { font-family: var(--hand-sc); font-weight: 400; -webkit-text-stroke: 0.035em currentColor; paint-order: stroke fill; }
+.track .t, .list li .t, .score-row .q, .masthead nav a, .btn, .rule-head .total, .spine .title { -webkit-text-stroke: 0.02em currentColor; }
+</code></pre>
+<h3 id="hierarchy">Hierarchy</h3>
+<ul>
+<li><strong>Display</strong> (<code>display</code>): the Cover title only, set over three lines with a 4px ink underline bar.</li>
+<li><strong>Headline Page</strong> (<code>headline-page</code>): the titles of the What changed, Tools, Briefing and Scorecard screens.</li>
+<li><strong>Headline</strong> (<code>headline</code>): the question on the now-playing inlay, followed by a 3px ink rule. The empty state ("Pick a track.") is a little larger, at 3.4rem.</li>
+<li><strong>Title</strong> (<code>title</code>): section heads such as "Answer", "How I got this" and "Side A", always on a 2.5px ink rule.</li>
+<li><strong>Lede</strong> (<code>lede</code>): the Cover tagline, in lettered caps.</li>
+<li><strong>Track</strong> (<code>track</code>): track names, list items, scorecard questions and buttons (1.3–1.35rem). Nav links are 1.3rem.</li>
+<li><strong>Label</strong> (<code>label</code>): tags, field labels, mode-switch buttons, side tabs and table headers (1.05–1.2rem).</li>
+<li><strong>Answer</strong> (<code>answer</code>): the answer prose, capped at 58rem wide.</li>
+<li><strong>Body</strong> (<code>body</code>): the default running text on the page.</li>
+<li><strong>Note</strong> (<code>note</code>): secondary text in Faded Ink: notes, captions, track descriptions (1.05–1.2rem).</li>
+<li><strong>Typed</strong> (<code>typed</code>, <code>typed-strong</code>): SQL, tool names in the step log (bold), the tape counter (bold, 1.35rem), the catalogue mark, the footer metrics, the numeric table cells (right-aligned, tabular) and the margin formula.</li>
+</ul>
+<p>The root is 18px, 21px at 1800px and wider (for projectors), and 16px at 1100px and below. All sizes are in rem, so they scale from that root:</p>
+<pre><code class="language-css">html { font-size: 18px; }
+@media (min-width: 1800px) { html { font-size: 21px; } }
+@media (max-width: 1100px) { html { font-size: 16px; } }
+</code></pre>
+<h3 id="named-rules_1">Named Rules</h3>
+<p><strong>The Three Voices Rule.</strong> Lettered caps for labels and titles, handwriting for prose, typewriter for anything the machine produced. Never set SQL or numbers from a query in a hand face, and never set prose in the typewriter.</p>
+<p><strong>The Marker Weight Rule.</strong> The hand faces only come in weight 400, so weight comes from the text stroke, never from <code>font-weight: bold</code> (which would synthesise a faux bold). Use 0.035em on headings and 0.02em on lettered labels.</p>
+<h2 id="layout">Layout</h2>
+<p>The page is a two-column grid: a 6rem spine and the card. The spine is sticky and full height: the red triple stripe (three 5px bars, 4px apart), the catalogue mark ("6:00 / CP-02 / 1–2 Oct 26": the demo running time, Capstone Project 2 of 5, and the workshop dates), the vertical title rotated to read bottom-up, and the A/B box with the date span. The masthead is sticky, 4.5rem high, ruled underneath with 2px ink, and holds the screen nav on the left with the mode switch and tape counter on the right. Directly under it is a 4px red position bar that scales from the left as a run plays.</p>
+<p>Main content has 2.25rem side gutters and 2rem top padding. The paper is ruled every 2rem (<code>ruled-line</code>), and list rows, requirement rows and track rows are at least one ruled line high so they sit on the lines. The rules are a hard-stop gradient on the page background:</p>
+<pre><code class="language-css">body {
+  background-color: var(--paper);
+  background-image: linear-gradient(to bottom, transparent calc(var(--line) - 1px), var(--rule) calc(var(--line) - 1px), var(--rule) var(--line), transparent var(--line));
+  background-size: 100% var(--line);   /* --line: 2rem */
+}
+</code></pre>
+<ul>
+<li><strong>Tracks</strong> is a deck: the tapelist on the left (minimum 27rem, about a third, sticky under the masthead), the now-playing inlay on the right; 2rem gap.</li>
+<li><strong>Cover</strong> is a 1.25 : 1 split: the title block on the left, a ruled panel ("How it plays", "House rules") on the right; 3rem gap, vertically centred.</li>
+<li><strong>What changed</strong> uses a 1 : 1 before/after pair with a 3rem gap, then the requirements list and folding detail sections.</li>
+<li><strong>Briefing / Scorecard</strong> sit on one ruled sheet, max 66rem wide.</li>
+<li>Reading widths are capped: answer 58rem, charts and notes 62rem, notes and slips 52rem.</li>
+</ul>
+<p>On smaller screens: at 1100px and below the root drops to 16px, and every split collapses to one column; the tapelist stops being sticky. At 700px and below the spine becomes a horizontal top strip (no A/B box, a wrapping title), the masthead wraps and stops being sticky, gutters shrink to 1rem, and requirement rows drop their category and points columns.</p>
+<h2 id="elevation--depth">Elevation &amp; Depth</h2>
+<p>The system is flat. There is no <code>box-shadow</code> anywhere in the build. Hierarchy comes from line weight and from the paper: 1px Mid Rule for row dividers, 1.5px ink for boxes, tags and controls, 2px ink for structural edges (spine, masthead, buttons), 2.5px ink under section heads, and 3–4px ink bars under the big titles. The only "lift" is the Blue Wash on hover and on the current row, and the inverted ink fill for active states.</p>
+<h3 id="named-rules_2">Named Rules</h3>
+<p><strong>The Ink, Not Light Rule.</strong> To separate something, give it a heavier rule or a box. Do not use a shadow, a blur or a soft gradient. Hard-stop gradients are fine only as a way to draw ruled lines (the paper rules, the tracklist margin line).</p>
+<h2 id="shapes">Shapes</h2>
+<p>Every corner is square (<code>rounded.none</code>). Inputs explicitly reset to a 0 radius. Boxes are hairline ink outlines on paper, like the printed panels of a J-card. Recurring marks:
+- the red triple stripe on the spine;
+- a 1px red vertical margin line running through the tracklist behind the track numbers, like the margin rule on lined paper;
+- a heavy ink rule under every heading;
+- bracketed red footnote numbers <code>[1]</code>, <code>[2]</code> before each liner-note query;
+- line icons (play, flip, download, tick, cross, plus, pen) drawn at 2px with round caps and joins, 1.1em, in the current colour.</p>
+<p>The one rounded shape is the WebKit scrollbar thumb (6px), which is browser chrome rather than part of the card.</p>
+<h2 id="components">Components</h2>
+<h3 id="buttons">Buttons</h3>
+<p>Buttons use lettered caps in square ink boxes, like boxes ruled onto the card.
+- <strong>Shape:</strong> square (<code>rounded.none</code>), 2px ink border, icon and label 0.55rem apart.
+- <strong>Primary:</strong> ink fill with paper text; for the main action on a screen ("Play side A", "Ask").
+- <strong>Secondary:</strong> paper fill with an ink outline and ink text.
+- <strong>Warn:</strong> red outline with Red Ink text, for destructive or reset actions.
+- <strong>Hover / Active:</strong> secondary hovers to Blue Wash, primary darkens to Pressed Ink (160ms); press nudges down 1px (120ms).
+- <strong>Disabled:</strong> Pencil Grey text and a Mid Rule border on paper; <code>not-allowed</code> cursor.
+- <strong>Link-style action:</strong> an underlined handwriting link ("New conversation") for low-stakes actions.</p>
+<h3 id="mode-switch">Mode switch</h3>
+<p>A segmented box of three lettered buttons (Live AI, Replay, Dry run) joined by 1.5px ink dividers. The active mode is filled with ink. The mode is also restated on the now-playing inlay as a tag: <strong>Live</strong> is a solid ink tag, <strong>Replay</strong> an outline tag, <strong>Dry run</strong> a red-outlined tag plus a written red note. The mode is never shown by colour alone.</p>
+<h3 id="tags">Tags</h3>
+<ul>
+<li><strong>Style:</strong> lettered caps in a 1.5px ink box, square, compact padding.</li>
+<li><strong>Variants:</strong> outline (default), solid (ink fill, paper text), red (red border, Red Ink text).</li>
+</ul>
+<h3 id="cards--containers-panels">Cards / Containers (panels)</h3>
+<ul>
+<li><strong>Corner Style:</strong> square.</li>
+<li><strong>Background:</strong> Inlay Paper, so the ruled lines stop at the box edge and the box reads as a pasted panel.</li>
+<li><strong>Shadow Strategy:</strong> none (see Elevation &amp; Depth).</li>
+<li><strong>Border:</strong> 1.5px ink.</li>
+<li><strong>Internal Padding:</strong> 1rem 1.4rem for panels and before/after pairs; 1.4rem 1.8rem for the now-playing inlay and the sheet.</li>
+</ul>
+<h3 id="inputs--fields">Inputs / Fields</h3>
+<ul>
+<li><strong>Style:</strong> 1.5px ink border, Blank White fill, square, handwriting at 1.2–1.25rem. The textarea switches to the typewriter. Placeholders are Pencil Grey.</li>
+<li><strong>Labels:</strong> lettered caps above the field.</li>
+<li><strong>Focus:</strong> the global focus ring, a 2px Printed Red outline offset 3px. The caret is red too:</li>
+</ul>
+<pre><code class="language-css">:focus-visible { outline: 2px solid var(--red); outline-offset: 3px; }
+body { caret-color: var(--red); }
+</code></pre>
+<h3 id="navigation">Navigation</h3>
+<p>Lettered caps links in the masthead, 1.6rem apart, with no default underline. Hover shows a 2.5px Mid Rule underline. The current page gets a 2.5px Printed Red underline (<code>aria-current="page"</code>). At 700px and below the links wrap.</p>
+<h3 id="tracklist-signature">Tracklist (signature)</h3>
+<p>The demo plan as a cassette tracklist inside a ruled box. Side A / Side B tabs (a segmented box like the mode switch) flip the face with a y-axis turn (rotate to 90°, 220ms, opacity to 0.2). Each track is a full-width button laid out as number · title · running time, with a Pencil Grey sub-line when a recording is missing. Hover and current rows get Blue Wash, and the current number turns Red Ink. The side's summed time sits in the heading against 6:00, and the "both sides" budget sits underneath. A hidden bonus track sits below a typed gap marker and is labelled as a planted rehearsal anomaly. Pressing a track plays it: this is the screen's primary action.</p>
+<h3 id="step-log-signature">Step log (signature)</h3>
+<p>A numbered list where each tool step is inked in as it arrives, with a left-to-right <code>clip-path</code> reveal of 340ms:</p>
+<pre><code class="language-css">@keyframes ink { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+.steps li { border-bottom: 1px solid var(--rule-mid); animation: ink 340ms var(--ease) both; }
+</code></pre>
+<p>Each row shows a lettered number, the bold typed tool name and a handwriting summary. Refused or errored steps turn Red Ink. Queries fold open in a typed SQL block. While the agent works, a "writing…" line ends in a blinking red caret block (1s, stepped).</p>
+<h3 id="liner-notes">Liner notes</h3>
+<p>The "How I got this" section is an ordered list of the exact queries from the tool log. Each has a red bracketed number, a typed label and a typed SQL block (Blank White, 1px Mid Rule border). A typed footer gives tool calls, tokens, seconds and model.</p>
+<h3 id="tape-counter-and-position-bar">Tape counter and position bar</h3>
+<p>A bold typed counter (tabular numbers) in the masthead counts up while a run plays, with a smaller Faded Ink suffix, and turns Red Ink when over. A 4px red bar under the masthead scales across in step (250ms linear).</p>
+<h3 id="margin-note-and-slip">Margin note and slip</h3>
+<p>Presenter-only "Point out:" notes, and refusal or limit slips: handwriting in Red Ink inside a 1.5px red box on paper, with the lead word in lettered caps.</p>
+<h3 id="ruled-table">Ruled table</h3>
+<p>Lettered header cells on a 2.5px ink rule, rows on 1px Mid Rule, numeric cells in the typewriter, right-aligned with tabular numbers. Used for KPIs, tool results and the briefing.</p>
+<h3 id="chart-figure">Chart figure</h3>
+<p>Charts are matplotlib PNGs on Inlay Paper, with a lettered caps title on the left (19pt), handwriting tick labels (15pt), typewriter value labels (14pt), gridlines only on the value axis, and a single ink baseline. They are shown with a 1px Mid Rule border and a Faded Ink caption ("chart_1: …").</p>
+<h3 id="downloadable-briefing-page">Downloadable briefing page</h3>
+<p>A self-contained miniature of the card at fixed pixel sizes: a 64px spine with a 3-bar red stripe and vertical title, 17px handwriting body, rules every 28px, a 32px lettered h1 on a 3px rule, tables and liner notes as in the app, and embedded fonts. The outer border is dropped when printing.</p>
+<h2 id="dos-and-donts">Do's and Don'ts</h2>
+<h3 id="do">Do:</h3>
+<ul>
+<li>Do set every surface on Inlay Paper with the 2rem ruled lines, and keep row heights at a minimum of one ruled line.</li>
+<li>Do separate content with ink rules and 1.5px boxes: 1px Mid Rule between rows, 2.5px ink under headings.</li>
+<li>Do use the three voices strictly: lettered caps for titles and labels, handwriting for prose, Courier Prime for SQL, tool names, counters and figures.</li>
+<li>Do give hand-lettered headings the 0.035em text stroke (0.02em on lettered labels) instead of a bold weight.</li>
+<li>Do reserve Printed Red for the stripe, the running bar, the current position, corrections, refusals and focus.</li>
+<li>Do draw chart series in Chart Ink Blue, Chart Pencil Ochre and Chart Faded Blue, in that order, with "Other" in Chart Other Grey and negatives in red.</li>
+<li>Do state every mode in words as well as style (solid, outline or red tag, plus the dry-run note).</li>
+<li>Do keep motion short and purposeful (160ms hovers, 220ms side flip, 340ms ink reveal), and turn all of it off for people who ask their system for reduced motion:</li>
+</ul>
+<pre><code class="language-css">@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</code></pre>
+<h3 id="dont">Don't:</h3>
+<ul>
+<li>Don't use rounded corners, drop shadows, blurs or soft colour gradients on any card element (hard-stop gradients that draw ruled lines are the paper itself, and are fine).</li>
+<li>Don't use red as a data series, or ochre in interface chrome.</li>
+<li>Don't use pure white as a surface; it is only for fields and typed blocks.</li>
+<li>Don't set prose or headings in a system sans or serif. If a hand face fails to load, the fallback is Marker Felt or cursive, never Arial or Inter.</li>
+<li>Don't fake bold on Patrick Hand or Patrick Hand SC with <code>font-weight: 700</code>.</li>
+<li>Don't turn the screens into a dark AI dashboard with KPI tiles and chat bubbles; answers are inked onto the card, not spoken in bubbles.</li>
+</ul>
+<nav class="pager" aria-label="Previous and next page"><a class="prev" href="product.html"><span>Previous</span>Who it's for</a><a class="next" href="prompt-optimization.html"><span>Next</span>Cutting the AI cost</a></nav>
+<p class="foot">A learning project, not a product. AdventureWorks is Microsoft's public sample data about a made-up bicycle
+company. Source of this page: <a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/docs/design.md">docs/design.md</a>.</p></main>
+<aside class="areas" aria-label="All documents"><details open><summary>All pages</summary><h2>Start here</h2><ul><li><a href="getting-started.html">Run it on your laptop (Mac and Windows)</a></li></ul><h2>The story</h2><ul><li><a href="index.html">How this was made</a></li><li><a href="history.html">Timeline, step by step</a></li></ul><h2>The brief</h2><ul><li><a href="requirements.html">Every requirement, with evidence</a></li><li><a href="build-guide.html">The 13 build steps</a></li></ul><h2>The app</h2><ul><li><a href="running-the-app.html">Running the demo</a></li><li><a href="product.html">Who it's for</a></li><li><a href="design.html" aria-current="page">How it looks</a></li></ul><h2>Behind the scenes</h2><ul><li><a href="prompt-optimization.html">Cutting the AI cost</a></li><li><a href="audio-sources.html">Audio sources</a></li></ul><h2>Try it</h2><ul><li><a href="../home/">Home: every area</a></li><li><a href="../demo/">Open the demo</a></li><li><a href="../demo/?page=story">Ask the course chat</a></li><li><a href="../api/">API reference</a></li><li><a href="../pitch/">60-second pitch video</a></li><li><a href="../deck/">The presentation</a></li><li><a href="getting-started.html">Run it on your laptop</a></li><li><a href="https://github.com/victorsaly/business-analyst-agent-demo">The code on GitHub</a></li></ul></details></aside>
+<nav class="toc" aria-label="On this page"><h2>On this page</h2><ul><li><a href="#overview">Overview</a></li><li><a href="#colors">Colors</a></li><li><a href="#typography">Typography</a></li><li><a href="#layout">Layout</a></li><li><a href="#elevation--depth">Elevation &amp; Depth</a></li><li><a href="#shapes">Shapes</a></li><li><a href="#components">Components</a></li><li><a href="#dos-and-donts">Do's and Don'ts</a></li></ul></nav></div></body></html>

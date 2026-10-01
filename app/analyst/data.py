@@ -1,6 +1,7 @@
 """AdventureWorks as a local, read-only SQLite database (same logic as notebook Section 6A)."""
 import io
 import os
+import pathlib
 import re
 import sqlite3
 import urllib.request
@@ -23,7 +24,36 @@ AW_PLANT = {"territory": "Northwest", "month": "2024-05", "category": "Bikes", "
 
 DB_FILES = {"real": os.path.join(DATA_DIR, "adventureworks.db"),
             "planted": os.path.join(DATA_DIR, "adventureworks_planted.db")}
-_current = {"name": "real"}
+_current = {"name": "real", "competitors": None, "selected": None}
+
+# Optional competitor price list, kept in its own small SQLite file and ATTACHed read-only, so the
+# AdventureWorks database is never touched. "mock" = fictional demo data; "uploaded" = the user's CSV.
+COMPETITOR_FILES = {"mock": os.path.join(DATA_DIR, "competitor_prices_mock.db"),
+                    "uploaded": os.path.join(DATA_DIR, "competitor_prices_uploaded.db")}
+
+# Our price for each product next to every competitor price. gap_pct > 0 means we are dearer.
+# Online price only: Reseller lines are wholesale prices to bike shops, not comparable with a shop's shelf price.
+PRICE_VIEW_SQL = """
+CREATE TEMP VIEW price_comparison AS
+WITH ours AS (
+    SELECT product, MAX(category) AS category, MAX(subcategory) AS subcategory,
+           SUM(CASE WHEN channel = 'Online' THEN revenue END)
+             / SUM(CASE WHEN channel = 'Online' THEN qty END) AS online_price,
+           SUM(qty) AS units
+    FROM main.sales_lines
+    WHERE order_date > date((SELECT max(order_date) FROM main.sales_lines), '-12 months')
+    GROUP BY product)
+SELECT c.product, COALESCE(o.category, '(not sold in last 12 months)') AS category, o.subcategory,
+       ROUND(p.ListPrice, 2)                                                AS our_list_price,
+       ROUND(o.online_price, 2)                                             AS our_online_price,
+       COALESCE(o.units, 0)                                                 AS our_units_12m,
+       c.competitor, c.competitor_price, c.observed_date,
+       ROUND(100.0 * (p.ListPrice - c.competitor_price) / c.competitor_price, 1)   AS list_gap_pct,
+       ROUND(100.0 * (o.online_price - c.competitor_price) / c.competitor_price, 1) AS online_gap_pct
+FROM comp.competitor_prices c
+JOIN main.Product p ON p.Name = c.product
+LEFT JOIN ours o    ON o.product = c.product
+"""
 
 AW_VIEW_SQL = """
 CREATE VIEW sales_lines AS
@@ -120,9 +150,41 @@ def current():
     return _current["name"]
 
 
+def use_competitors(name):
+    """Which competitor price list the agent can see right now: None, "mock" or "uploaded"."""
+    if name is not None and not os.path.exists(COMPETITOR_FILES[name]):
+        raise LookupError(f"No {name} competitor price list yet.")
+    _current["competitors"] = name
+
+
+def competitors():
+    return _current["competitors"]
+
+
+def select_competitors(name):
+    """The presenter's choice (Tools screen). Demo tracks may override it for the length of a run."""
+    use_competitors(name)
+    _current["selected"] = name
+
+
+def selected_competitors():
+    return _current["selected"]
+
+
+def _read_only(path):
+    """A read-only SQLite URI that works on Windows paths (C:\\...) and paths with spaces, as well as on macOS."""
+    return pathlib.Path(path).resolve().as_uri() + "?mode=ro"
+
+
 def connect():
-    """Open the current database READ-ONLY: any attempt to change data fails at the database level."""
-    return sqlite3.connect(f"file:{DB_FILES[_current['name']]}?mode=ro", uri=True, check_same_thread=False)
+    """Open the current database READ-ONLY: any attempt to change data fails at the database level.
+    A competitor price list, when one is switched on, is attached read-only as well."""
+    con = sqlite3.connect(_read_only(DB_FILES[_current['name']]), uri=True, check_same_thread=False)
+    comp = _current["competitors"]
+    if comp:
+        con.execute("ATTACH DATABASE ? AS comp", (_read_only(COMPETITOR_FILES[comp]),))
+        con.execute(PRICE_VIEW_SQL)
+    return con
 
 
 build("real")

@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The demo app: Business Performance Analyst Agent · Business Performance Analyst Agent</title>
+<meta name="description" content="A course demonstration (Agentic AI Workshop 2026, Capstone 2): how we built an AI analyst agent, step by step.">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="../blog.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/diff.min.js" defer></script>
+<script>addEventListener("DOMContentLoaded", () => window.hljs && hljs.highlightAll());</script><script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+mermaid.initialize({ startOnLoad: false, theme: "base", securityLevel: "strict",
+  flowchart: { curve: "basis", padding: 14, nodeSpacing: 34, rankSpacing: 40 }, sequence: { mirrorActors: false },
+  themeVariables: { fontFamily: '"Patrick Hand SC", "Marker Felt", cursive', fontSize: "17px",
+    background: "#fcfbf7", primaryColor: "#ffffff", primaryTextColor: "#1e3a8a", primaryBorderColor: "#1e3a8a",
+    secondaryColor: "#eef2fb", tertiaryColor: "#eef2fb", lineColor: "#3f5a9e", textColor: "#1d2433",
+    clusterBkg: "#eef2fb", clusterBorder: "#a9b8dc", edgeLabelBackground: "#ffffff",
+    noteBkgColor: "#eef2fb", noteBorderColor: "#a9b8dc", noteTextColor: "#1e3a8a", actorLineColor: "#a9b8dc", signalColor: "#3f5a9e",
+    cScale0: "#eef2fb", cScale1: "#ffffff", cScale2: "#eef2fb", cScale3: "#ffffff", cScale4: "#eef2fb",
+    cScaleLabel0: "#1e3a8a", cScaleLabel1: "#1e3a8a", cScaleLabel2: "#1e3a8a", cScaleLabel3: "#1e3a8a", cScaleLabel4: "#1e3a8a",
+    cScalePeer0: "#a9b8dc", cScalePeer1: "#a9b8dc", cScalePeer2: "#a9b8dc", cScalePeer3: "#a9b8dc", cScalePeer4: "#a9b8dc" } });
+await document.fonts.ready;   // measure the labels in the hand-lettered font, not the fallback
+await mermaid.run({ querySelector: "pre.mermaid" });
+</script>
+<script src="../blog.js" defer></script></head>
+<body><header class="top"><div class="stripe"></div><div class="in">
+<a class="brand" href="index.html"><img src="../logo.svg" alt="" width="32" height="32"> Business Performance Analyst Agent</a>
+<div class="search" role="search"><label class="sr" for="q">Search the docs</label><input id="q" type="search" placeholder="Search the docs" autocomplete="off" spellcheck="false" aria-controls="hits" aria-expanded="false" aria-autocomplete="list"><kbd aria-hidden="true">/</kbd><div id="hits" role="listbox" aria-label="Search results" hidden></div></div><nav aria-label="Blog"><a href="index.html">How this was made</a><a href="history.html">History</a><a href="requirements.html">Requirements</a><a href="build-guide.html">Build guide</a><a href="../demo/">Open the demo</a><a href="../api/">API</a><a href="../home/">Home</a></nav></div></header>
+<div class="wrap"><main><span class="course">Course demonstration · Capstone 2 · Agentic AI Workshop 2026</span>
+<h1 id="the-demo-app-business-performance-analyst-agent">The demo app: Business Performance Analyst Agent</h1>
+<blockquote>
+<p>Course demonstration (Capstone 2, Agentic AI Workshop 2026). See the <a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/readme.md">main readme</a> for the
+project overview and <a href="history.html">history.md</a> for how we got here. Commands below run from the <code>app/</code> folder.
+If you have never used a terminal, follow <a href="getting-started.html">Getting started</a> instead: it uses double-click files.</p>
+</blockquote>
+<p>A local app that runs the AdventureWorks agent from <a href="build-guide.html">build-guide.md</a> on your own machine.
+It has a screen per demo case, saves every live AI run so you can replay it later, and can record a
+narrated demo video.</p>
+<h2 id="quick-start-macos">Quick start (macOS)</h2>
+<ol>
+<li>
+<p>Open <strong>Terminal</strong> and go to the <code>app</code> folder of the project (change the path to where your copy is):</p>
+<pre><code class="language-bash">cd ~/Desktop/business-analyst-agent-demo-main/app
+</code></pre>
+</li>
+<li>
+<p>Set up once. This creates a local Python environment, installs the browser used for the video, and
+    downloads the database (17 MB):</p>
+<pre><code class="language-bash">./demo.sh setup
+</code></pre>
+<p>You should see, at the end:</p>
+<pre><code class="language-text">Database ready: /…/app/data/adventureworks.db
+Setup done. Put your key in app/.env, then: ./demo.sh app
+</code></pre>
+</li>
+<li>
+<p>Open <code>app/.env</code> in a text editor and add your key(s), one per line:</p>
+<pre><code class="language-bash">open -e .env
+</code></pre>
+<pre><code class="language-text">GROQ_API_KEY=gsk_...
+OPENAI_API_KEY=sk-...
+</code></pre>
+<p>Either key is enough. With no key, Replay and Dry run still work.</p>
+</li>
+<li>
+<p>Start the app. It opens <a href="http://localhost:8501">http://localhost:8501</a> in your browser: the cover page with the pitch video.
+    Click <strong>Try the live demo</strong> to open the app (or go straight to <a href="http://localhost:8501/demo/">http://localhost:8501/demo/</a>):</p>
+<pre><code class="language-bash">./demo.sh app
+</code></pre>
+<pre><code class="language-text">Open http://localhost:8501
+</code></pre>
+<p>Leave Terminal open while you use the app. Press <strong>Ctrl C</strong> in Terminal to stop it.</p>
+</li>
+</ol>
+<p><strong>Windows (PowerShell).</strong> <code>demo.sh</code> is a Mac and Linux script. On Windows, use the double-click files in
+<a href="getting-started.html">Getting started</a>, or run these from the <code>app</code> folder:</p>
+<pre><code class="language-powershell">py -3 -m venv .venv
+.venv\Scripts\python -m pip install -r requirements.txt
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+notepad .env
+.venv\Scripts\python server.py
+</code></pre>
+<p>Then open <a href="http://localhost:8501">http://localhost:8501</a> and click <strong>Try the live demo</strong>. The video commands below (<code>prepare</code>, <code>video</code>, <code>pitch</code>) also need
+<code>.venv\Scripts\python -m playwright install chromium</code> and are only tested on a Mac.</p>
+<h2 id="the-three-modes-top-right">The three modes (top right)</h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Uses the AI?</th>
+<th>When to use it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Live AI</strong></td>
+<td>Yes</td>
+<td>The real thing. Every run is saved to <code>recordings/</code> automatically.</td>
+</tr>
+<tr>
+<td><strong>Replay</strong></td>
+<td>No (plays back a real AI run, step by step)</td>
+<td>Backup for the live demo if the wifi or the free plan fails. Labelled "Replay".</td>
+</tr>
+<tr>
+<td><strong>Dry run</strong></td>
+<td>No</td>
+<td>Only to test the screens and the video. The steps and numbers are real tool results, but the plan and wording are scripted. Labelled in red.</td>
+</tr>
+</tbody>
+</table></div>
+<figure class="diagram"><pre class="mermaid">flowchart LR
+  accTitle: Which mode to use
+  Q{&quot;Showing it&lt;br/&gt;to people?&quot;} -- &quot;no, testing&lt;br/&gt;the screens&quot; --&gt; D[&quot;Dry run&quot;]
+  Q -- yes --&gt; K{&quot;AI key and&lt;br/&gt;wifi working?&quot;}
+  K -- yes --&gt; L[&quot;Live AI&quot;]
+  K -- &quot;no, or too slow&quot; --&gt; R[&quot;Replay&quot;]
+  L -. &quot;every run is saved&lt;br/&gt;for Replay&quot; .-&gt; R
+  classDef red stroke:#c62828,stroke-width:2px,color:#b71c1c
+  class D red
+</pre></figure>
+<h2 id="the-screens">The screens</h2>
+<p>The app looks like a hand-lettered cassette J-card, and the demo is laid out as a six-minute mixtape.</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Screen</th>
+<th>What it shows</th>
+<th>Judging point</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Home</td>
+<td>The first screen: every area of the app, the blog, the API reference, the pitch and the presentation, with suggested questions for the chat</td>
+<td>Pitch</td>
+</tr>
+<tr>
+<td>Cover</td>
+<td>The problem, how it works, the house rules (guardrails)</td>
+<td>Pitch, business value</td>
+</tr>
+<tr>
+<td>What changed</td>
+<td>Before / after, every brief requirement, old vs new rulebook, the tool descriptions</td>
+<td>Agent design</td>
+</tr>
+<tr>
+<td>Tracks</td>
+<td>The demo as a tracklist. Side A has the brief's questions, side B the guardrails, briefing and scorecard, plus a hidden rehearsal track. Each track shows its time budget; both sides add up to 6:00. Your own questions go in the box below.</td>
+<td>Working demo, trust</td>
+</tr>
+<tr>
+<td>Tools</td>
+<td>Anomaly scan and read-only SQL by hand. "Try: delete the orders" is refused</td>
+<td>Trust &amp; safety</td>
+</tr>
+<tr>
+<td>Briefing</td>
+<td>The one-page leadership briefing, downloadable as a standalone HTML page</td>
+<td>Business value</td>
+</tr>
+<tr>
+<td>Scorecard</td>
+<td>The brief's 4 questions plus 3 guardrail traps, marked Pass / Fail</td>
+<td>Evaluation</td>
+</tr>
+<tr>
+<td>Story</td>
+<td>The project timeline, step by step, with suggested questions for the chat</td>
+<td>Pitch</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>The Ask chat</strong> is the button at the bottom right of every screen. It opens a panel that keeps the conversation
+while you move between screens. Answers stream in as they're written, number their sources, and end with
+<strong>Resources</strong>: the blog pages, the API reference, the presentation or the code that go with the answer. More on
+how it works under <a href="#the-ask-chat-local-and-online">The Ask chat</a>.</p>
+<p><strong>The blog</strong> is served by the app too, at <code>http://localhost:8501/blog/</code>: every document in <code>docs/</code>, in the app's
+style, rendered fresh on each visit. The API reference is at <code>http://localhost:8501/redoc</code>.</p>
+<p><strong>View for: Stakeholder / Developer</strong> (under the header) switches between two views. Stakeholder shows only
+the answers, numbers and charts. Developer adds everything underneath: each tool call, its arguments, the
+SQL, timings, AI rounds and tokens.</p>
+<p><strong>Explain this page</strong> plays a spoken explanation for the chosen audience, with word-by-word captions. The
+clips and their text are in <code>web/explain/</code>. To change a line:</p>
+<ol>
+<li>Edit the text in <code>web/explain/scripts.json</code>.</li>
+<li>Regenerate that screen's mp3 in the same folder (see <a href="audio-sources.html">audio-sources.md</a>).</li>
+<li>
+<p>Re-measure the caption timings:</p>
+<pre><code class="language-bash">./demo.sh timings
+</code></pre>
+</li>
+</ol>
+<p>Other behaviour worth knowing when presenting:</p>
+<ul>
+<li>Starting a run stops any run still going on another screen, so a forgotten run never blocks the next one.</li>
+<li>On the Briefing screen the KPI table appears at once, and a status line updates every second while the AI works.</li>
+<li>If a live run goes past its time slot, a button offers the recorded run instead.</li>
+<li>While a track plays, the counter top right shows time used against the track's budget. The red bar under
+    the header fills as you go, and the counter turns red if you run over.</li>
+</ul>
+<h2 id="competitor-prices-optional-for-demos">Competitor prices (optional, for demos)</h2>
+<p>AdventureWorks has no competitor data, so by default the agent says so (side B, track 1). To demo a
+price comparison, go to <strong>Tools → Competitor prices</strong> and choose one of these:</p>
+<ul>
+<li><strong>Use the mock price list</strong>: three fictional shops (Summit Cycles, Velo Direct, TrailCraft) with prices
+    generated from our list prices. Velo Direct undercuts our Road Bikes by about 20%, which is the finding the
+    agent should surface. Answers say the prices are mock.</li>
+<li><strong>Download the template (CSV)</strong>: the mock list as a file. Edit it, or fill in your own, then upload it with
+    <strong>Attach your CSV…</strong>.</li>
+<li><strong>Detach</strong>: go back to the default (no competitor data).</li>
+</ul>
+<p>The CSV needs these columns (prices in $, <code>observed_date</code> optional). The first lines of the template:</p>
+<pre><code class="language-text">product,competitor,competitor_price,observed_date
+AWC Logo Cap,Summit Cycles,9.55,2025-06-29
+AWC Logo Cap,TrailCraft,9.66,2025-06-29
+All-Purpose Bike Stand,Velo Direct,157.12,2025-06-29
+</code></pre>
+<p>Product names must match AdventureWorks names (case and spacing don't matter). Rows that don't match are
+listed back to you.</p>
+<p>The list is kept in its own SQLite file in <code>data/</code> and attached read-only. The agent sees it as the
+<code>competitor_prices</code> table and the <code>price_comparison</code> view (our list price and online price next to each
+competitor's, plus the % gap). Your own questions use the list you picked. The guardrail track and the
+scorecard always run without one, so the guardrail still scores. The hidden track "Competitor prices (mock
+list attached)" always uses the mock list.</p>
+<h2 id="the-60-second-pitch-video">The 60-second pitch video</h2>
+<p><code>video/pitch.mp4</code> is a launch-style trailer. In order:</p>
+<ol>
+<li>A hand-lettered hook and problem card.</li>
+<li>The app, revealed on the music's drop.</li>
+<li>Real AI runs, replayed, with zooms into the chart, the answer and the SQL.</li>
+<li>A three-shot trust montage.</li>
+<li>An end card on the final hit.</li>
+</ol>
+<p>It runs on a 120 BPM music bed with a professional voiceover; the music dips under the voice. The audio was
+made with ElevenLabs; see <a href="audio-sources.html">audio-sources.md</a>.</p>
+<p>To re-render it from the current recordings (about 1 minute):</p>
+<pre><code class="language-bash">./demo.sh pitch
+</code></pre>
+<p>Live runs overwrite their track's recording. So before rendering, <code>make_promo.py</code> checks that each recording
+still supports what the voiceover says (for example, that the anomaly answer still mentions the Reseller
+channel). If one doesn't, it stops and names the track to re-record. The scenes, captions and timings are in
+<code>SCENES</code> at the top of <code>make_promo.py</code>.</p>
+<h2 id="making-the-video">Making the video</h2>
+<ol>
+<li>
+<p>Run every case live once and record it. This uses about 120,000 to 160,000 tokens, most of a day's free
+    Groq allowance:</p>
+<pre><code class="language-bash">./demo.sh prepare
+</code></pre>
+</li>
+<li>
+<p>Replay those recordings in a browser and save <code>video/demo.mp4</code> with narration:</p>
+<pre><code class="language-bash">./demo.sh video
+</code></pre>
+</li>
+</ol>
+<p>Options:</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Command</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>./demo.sh video --no-voice</code></td>
+<td>Records without narration</td>
+</tr>
+<tr>
+<td><code>./demo.sh video --voice Daniel</code></td>
+<td>Uses another macOS voice (<code>say -v '?'</code> lists them)</td>
+</tr>
+<tr>
+<td><code>./demo.sh video --rehearsal</code></td>
+<td>Adds the planted-anomaly scene</td>
+</tr>
+<tr>
+<td><code>./demo.sh video-dry</code></td>
+<td>Test video with no AI at all, labelled DRY RUN. Don't present it as the agent.</td>
+</tr>
+<tr>
+<td><code>./demo.sh prepare northwest_margin guard_forecast</code></td>
+<td>Re-records only the cases you name</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="presenting-live">Presenting live</h2>
+<ol>
+<li>Before the session, start the app (<code>./demo.sh app</code>, or the Start file from <a href="getting-started.html">Getting started</a>).</li>
+<li>Choose <strong>Live AI</strong> (top right).</li>
+<li>Play side A, then side B, track by track. The counters keep you inside the 6-minute slot.</li>
+<li>If the AI is slow or rate-limited, switch to <strong>Replay</strong>. The same track then shows the recorded
+    live run, labelled as a replay.</li>
+<li>For the organisers' planted-anomaly question, type it into "Write your own question" in Live AI mode.</li>
+</ol>
+<p>Adding <code>?presenter=1</code> to the URL (<a href="http://localhost:8501/demo/?presenter=1">http://localhost:8501/demo/?presenter=1</a>) shows a red margin note with the
+talking point for each screen. The video uses this.</p>
+<h2 id="presenter-zoom">Presenter zoom</h2>
+<ol>
+<li>While presenting, point the mouse at anything: a chart, the answer, a query or a panel.</li>
+<li>Press <strong>Z</strong> to zoom into it.</li>
+<li>Press <strong>Z</strong> or <strong>Esc</strong> to zoom out.</li>
+</ol>
+<p>Screens change with a short transition.</p>
+<h2 id="ai-services-groq-then-openai">AI services: Groq, then OpenAI</h2>
+<p>The agent tries the services set in <code>app/.env</code> in this order:</p>
+<ol>
+<li>Groq (<code>GROQ_API_KEY</code>), model <code>openai/gpt-oss-20b</code> unless you set <code>LLM_MODEL</code>.</li>
+<li>OpenAI (<code>OPENAI_API_KEY</code>), model <code>gpt-5.4-mini</code> unless you set <code>OPENAI_MODEL</code>.</li>
+</ol>
+<p>If Groq runs out of its daily allowance or credit, the agent switches to OpenAI and carries on. The footer of
+each answer shows which model answered.</p>
+<p>To make OpenAI the first choice, add this line to <code>.env</code>. The current recordings were made this way, because
+OpenAI follows the rules more reliably than the free model:</p>
+<pre><code class="language-text">LLM_PROVIDER=openai
+</code></pre>
+<p>If no key is set, Live AI stops with this message; Replay and Dry run still work:</p>
+<pre><code class="language-text">No AI key set. Put GROQ_API_KEY=... or OPENAI_API_KEY=... in app/.env (or use Replay / Dry run).
+</code></pre>
+<h2 id="checks">Checks</h2>
+<pre><code class="language-bash">./demo.sh test
+</code></pre>
+<p>On Windows:</p>
+<pre><code class="language-powershell">.venv\Scripts\python test_demo.py
+</code></pre>
+<p>This runs 36 checks without any AI key. They cover:</p>
+<ul>
+<li>the guardrails (read-only SQL, refused writes, the sandbox);</li>
+<li>every case in dry run;</li>
+<li>the briefing;</li>
+<li>the competitor price list;</li>
+<li>the examiner;</li>
+<li>the live AI loop against a fake AI server (tool calls, a rate-limit retry, recording and replay);</li>
+<li>adapting to OpenAI's settings, and falling back to the next service when one runs out.</li>
+</ul>
+<p>Each check prints one line. The last line should be:</p>
+<pre><code class="language-text">ALL CHECKS PASSED
+</code></pre>
+<h2 id="files">Files</h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>server.py</code></td>
+<td>Local web server: the analyst package behind a small streaming API</td>
+</tr>
+<tr>
+<td><code>web/</code></td>
+<td>The screens: <code>index.html</code>, <code>app.css</code>, <code>app.js</code>, and the fonts (OFL licence)</td>
+</tr>
+<tr>
+<td><code>analyst/data.py</code></td>
+<td>Builds the read-only AdventureWorks SQLite file</td>
+</tr>
+<tr>
+<td><code>analyst/tools.py</code></td>
+<td>The tools and their menu cards (same code as notebook Section 6)</td>
+</tr>
+<tr>
+<td><code>analyst/agent.py</code></td>
+<td>The rulebook and the AI tool loop</td>
+</tr>
+<tr>
+<td><code>analyst/cases.py</code></td>
+<td>Demo cases, dry-run scripts, recordings / replay</td>
+</tr>
+<tr>
+<td><code>analyst/briefing.py</code></td>
+<td>Weekly leadership briefing</td>
+</tr>
+<tr>
+<td><code>analyst/evals.py</code></td>
+<td>Scorecard (examiner copied from the notebook)</td>
+</tr>
+<tr>
+<td><code>prepare_recordings.py</code></td>
+<td>Records every case live</td>
+</tr>
+<tr>
+<td><code>record_video.py</code></td>
+<td>Records the narrated walkthrough video</td>
+</tr>
+<tr>
+<td><code>make_promo.py</code>, <code>web/promo.html</code></td>
+<td>Renders the 60-second pitch video</td>
+</tr>
+<tr>
+<td><code>promo/audio/</code></td>
+<td>Pitch-video music and voiceover lines (sources: <a href="audio-sources.html">audio-sources.md</a>)</td>
+</tr>
+<tr>
+<td><code>test_demo.py</code></td>
+<td>Automated checks</td>
+</tr>
+<tr>
+<td><code>analyst/story.py</code>, <code>make_story_answers.py</code></td>
+<td>The Story chat, and its prepared answers for the online copy</td>
+</tr>
+<tr>
+<td><code>make_explain_timings.py</code></td>
+<td>Word timings for the Explain captions, measured from each clip's pauses</td>
+</tr>
+<tr>
+<td><code>build_site.py</code></td>
+<td>Builds the online copy (GitHub Pages) into <code>../site</code></td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="the-ask-chat-local-and-online">The Ask chat (local and online)</h2>
+<p>The chat on the <strong>Story</strong> screen answers course students' questions about the task, each step, the
+course material, and how we built it. Every answer uses only:</p>
+<ul>
+<li>our notes: the brief line by line (<a href="requirements.html">requirements.md</a>), the step-by-step guide
+    (<a href="build-guide.html">build-guide.md</a>) and the history (<a href="history.html">history.md</a>);</li>
+<li>course material: the passages that best match the question from the course's training guide and
+    starting notebook, and from our finished notebook. These are numbered, and the answer cites them, like [2].</li>
+</ul>
+<p>The suggested questions have answers prepared in advance, so they are instant and cost nothing. To regenerate
+them (this uses the AI):</p>
+<pre><code class="language-bash">./demo.sh story
+</code></pre>
+<p><strong>The knowledge base.</strong> The course files aren't in this repo, so you build it from your own copy of the course repo:</p>
+<pre><code class="language-bash">./demo.sh knowledge --course /path/to/capstone-project-2-business_analyst_agent
+</code></pre>
+<p>This writes <code>data/knowledge.json</code> (for the local app) and <code>../worker/knowledge.json</code> (for the online chat).
+Both are git-ignored, because they hold course material. Without <code>--course</code>, the chat still works from our
+own notebook and docs.</p>
+<p><strong>Online.</strong> The website can't hold an API key, so the online chat goes through a small Cloudflare Worker
+(<code>worker/</code>). The Worker holds the OpenAI key as a secret, searches the knowledge base the same way the local
+app does, and caps costs with these limits:</p>
+<figure class="diagram"><pre class="mermaid">sequenceDiagram
+  accTitle: One question to the online Ask chat
+  participant V as Visitor
+  participant W as Cloudflare Worker
+  participant K as Knowledge base
+  participant O as OpenAI
+  V-&gt;&gt;W: A question
+  Note over W: Checks the site and the daily limits
+  W-&gt;&gt;K: Find the best passages
+  K--&gt;&gt;W: Numbered passages
+  W-&gt;&gt;O: Question + passages, sent with the secret key
+  O--&gt;&gt;W: Answer
+  W--&gt;&gt;V: Answer, citing passages like [2]
+</pre></figure>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Limit</th>
+<th>Where to change it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Answers only the demo site (and localhost)</td>
+<td><code>ALLOWED</code> in <code>worker/src/index.js</code></td>
+</tr>
+<tr>
+<td>300 questions a day in total</td>
+<td><code>DAILY_LIMIT</code> in <code>worker/wrangler.toml</code></td>
+</tr>
+<tr>
+<td>25 questions a day per visitor (counted by a hash of their IP address)</td>
+<td><code>PER_VISITOR_LIMIT</code></td>
+</tr>
+<tr>
+<td>Model</td>
+<td><code>MODEL</code> (<code>gpt-5.4-mini</code>)</td>
+</tr>
+</tbody>
+</table></div>
+<p>To update it after changing the docs, the notebook or <code>analyst/story.py</code>:</p>
+<ol>
+<li>
+<p>Rebuild the knowledge base (from <code>app/</code>):</p>
+<pre><code class="language-bash">./demo.sh knowledge --course /path/to/course/repo
+</code></pre>
+</li>
+<li>
+<p>Deploy the Worker:</p>
+<pre><code class="language-bash">cd ../worker &amp;&amp; npx wrangler@3 deploy
+</code></pre>
+</li>
+</ol>
+<p>First-time setup on a new Cloudflare account (from <code>worker/</code>; Wrangler 3 runs on Node 20, newer versions need Node 22):</p>
+<ol>
+<li>
+<p>Create a KV namespace:</p>
+<pre><code class="language-bash">npx wrangler@3 kv namespace create LIMITS
+</code></pre>
+</li>
+<li>
+<p>Put the id it prints into <code>wrangler.toml</code>.</p>
+</li>
+<li>
+<p>Store the OpenAI key as a secret (it asks you to paste it):</p>
+<pre><code class="language-bash">npx wrangler@3 secret put OPENAI_API_KEY
+</code></pre>
+</li>
+</ol>
+<h2 id="api-reference">API reference</h2>
+<p>Every endpoint the screens use is documented, with examples, in one OpenAPI spec:</p>
+<ul>
+<li><strong>Online:</strong> <a href="https://victorsaly.github.io/business-analyst-agent-demo/api/">the API reference</a>, shown with Redoc. It also covers the
+    online Ask chat's endpoints, and you can download the spec there (<code>openapi.json</code>).</li>
+<li><strong>Locally</strong>, while the app runs: <a href="http://localhost:8501/redoc">http://localhost:8501/redoc</a> (to read) or <a href="http://localhost:8501/docs">http://localhost:8501/docs</a> (to try
+    the endpoints in the browser).</li>
+</ul>
+<p>The descriptions live in <code>app/api_docs.py</code>, next to the server. After changing them, rebuild the online copy:</p>
+<pre><code class="language-bash">./demo.sh site
+</code></pre>
+<p>The streaming endpoints (<code>/api/run</code>, <code>/api/briefing</code>, <code>/api/scorecard</code>) send Server-Sent Events; the reference lists
+every event type and its fields.</p>
+<nav class="pager" aria-label="Previous and next page"><a class="prev" href="build-guide.html"><span>Previous</span>The 13 build steps</a><a class="next" href="product.html"><span>Next</span>Who it's for</a></nav>
+<p class="foot">A learning project, not a product. AdventureWorks is Microsoft's public sample data about a made-up bicycle
+company. Source of this page: <a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/docs/running-the-app.md">docs/running-the-app.md</a>.</p></main>
+<aside class="areas" aria-label="All documents"><details open><summary>All pages</summary><h2>Start here</h2><ul><li><a href="getting-started.html">Run it on your laptop (Mac and Windows)</a></li></ul><h2>The story</h2><ul><li><a href="index.html">How this was made</a></li><li><a href="history.html">Timeline, step by step</a></li></ul><h2>The brief</h2><ul><li><a href="requirements.html">Every requirement, with evidence</a></li><li><a href="build-guide.html">The 13 build steps</a></li></ul><h2>The app</h2><ul><li><a href="running-the-app.html" aria-current="page">Running the demo</a></li><li><a href="product.html">Who it's for</a></li><li><a href="design.html">How it looks</a></li></ul><h2>Behind the scenes</h2><ul><li><a href="prompt-optimization.html">Cutting the AI cost</a></li><li><a href="audio-sources.html">Audio sources</a></li></ul><h2>Try it</h2><ul><li><a href="../home/">Home: every area</a></li><li><a href="../demo/">Open the demo</a></li><li><a href="../demo/?page=story">Ask the course chat</a></li><li><a href="../api/">API reference</a></li><li><a href="../pitch/">60-second pitch video</a></li><li><a href="../deck/">The presentation</a></li><li><a href="getting-started.html">Run it on your laptop</a></li><li><a href="https://github.com/victorsaly/business-analyst-agent-demo">The code on GitHub</a></li></ul></details></aside>
+<nav class="toc" aria-label="On this page"><h2>On this page</h2><ul><li><a href="#quick-start-macos">Quick start (macOS)</a></li><li><a href="#the-three-modes-top-right">The three modes (top right)</a></li><li><a href="#the-screens">The screens</a></li><li><a href="#competitor-prices-optional-for-demos">Competitor prices (optional, for demos)</a></li><li><a href="#the-60-second-pitch-video">The 60-second pitch video</a></li><li><a href="#making-the-video">Making the video</a></li><li><a href="#presenting-live">Presenting live</a></li><li><a href="#presenter-zoom">Presenter zoom</a></li><li><a href="#ai-services-groq-then-openai">AI services: Groq, then OpenAI</a></li><li><a href="#checks">Checks</a></li><li><a href="#files">Files</a></li><li><a href="#the-ask-chat-local-and-online">The Ask chat (local and online)</a></li><li><a href="#api-reference">API reference</a></li></ul></nav></div></body></html>

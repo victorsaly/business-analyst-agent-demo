@@ -21,6 +21,7 @@ from matplotlib import font_manager
 import numpy as np
 import pandas as pd
 
+from . import competitors as _comp, data as _data
 from .data import AW_START, AW_END, connect as _aw_connect
 
 CHARTS = []                               # charts are kept here for the answer and the briefing
@@ -86,6 +87,46 @@ AW_DICTIONARY = {
 }
 
 
+def competitor_dictionary():
+    """What the agent is told about the attached competitor price list (None when nothing is attached)."""
+    source = _data.competitors()
+    meta = _comp.info(source) if source else None
+    if not meta:
+        return None
+    return {
+        "source": meta["label"],
+        "is_mock": meta["mock"],
+        "competitors": meta["competitors"],
+        "table": "competitor_prices: product, competitor, competitor_price ($), observed_date. "
+                 "product matches sales_lines.product / Product.Name.",
+        "view": {"name": "price_comparison",
+                 "grain": "one row per product per competitor",
+                 "columns": {"product": "product name", "category": "our category", "subcategory": "our subcategory",
+                             "our_list_price": "our list price (Product.ListPrice)",
+                             "our_online_price": "what website customers actually paid per unit, after discounts, "
+                                                 "last 12 months of data (empty if not sold online)",
+                             "our_units_12m": "units we sold in the last 12 months of data",
+                             "competitor": "competitor name", "competitor_price": "their price ($)",
+                             "observed_date": "when their price was seen",
+                             "list_gap_pct": "100 * (our_list_price - competitor_price) / competitor_price; above 0 = we are dearer",
+                             "online_gap_pct": "same, using our_online_price"}},
+        "rules": ["Compare the same product only (the view already does this). Average gaps with AVG(list_gap_pct) "
+                  "grouped by competitor / category / subcategory.",
+                  "Say which competitors and how many products the comparison covers.",
+                  "Reseller prices are wholesale (to bike shops), so they are not in the view: never compare them "
+                  "with competitor prices."]
+                 + (["These competitor prices are MOCK demo data, not real market prices. Say so in the first line "
+                     "of the answer."] if meta["mock"] else
+                    [f"Source: {meta['label']}, loaded {meta['loaded_at']}. Name the source in the answer."]),
+    }
+
+
+def not_in_data():
+    """What the data cannot answer right now (competitor prices drop out when a price list is attached)."""
+    gone = {"competitors or their prices"} if competitor_dictionary() else set()
+    return [x for x in AW_DICTIONARY["not_in_data"] if x not in gone]
+
+
 def get_schema():
     """Tables, columns, the data dictionary and the date range."""
     try:
@@ -94,8 +135,15 @@ def get_schema():
             for (name,) in con.execute("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name"):
                 tables[name] = ", ".join(r[1] for r in con.execute(f'PRAGMA table_info("{name}")')
                                          if r[1] not in ("rowguid", "ModifiedDate"))
-        return {"periods": AW_PERIODS, "dictionary": AW_DICTIONARY, "tables_and_columns": tables,
-                "summary": f"sales_lines view + {len(tables)} raw tables, data {AW_START} to {AW_END}"}
+        dictionary = dict(AW_DICTIONARY, not_in_data=not_in_data())
+        comp = competitor_dictionary()
+        if comp:
+            dictionary["competitor_prices"] = comp
+            tables["competitor_prices"] = "product, competitor, competitor_price, observed_date"
+            tables["price_comparison (view)"] = ", ".join(comp["view"]["columns"])
+        return {"periods": AW_PERIODS, "dictionary": dictionary, "tables_and_columns": tables,
+                "summary": f"sales_lines view + {len(tables)} raw tables, data {AW_START} to {AW_END}"
+                           + (f"; competitor prices attached ({comp['source']})" if comp else "")}
     except Exception as e:
         return {"error": f"Could not read the schema: {e}"}
 
@@ -363,7 +411,7 @@ def make_chart(data=None, chart_type="bar", x=None, y=None, series=None, title=N
 
 # ---- detect_anomalies: periods well off their own recent trend ----
 _AW_METRIC_SQL = {
-    "revenue": "SUM(revenue)", "margin": "SUM(margin)", "units": "SUM(qty)",
+    "revenue": "SUM(revenue)", "margin": "SUM(margin)", "cost": "SUM(cost)", "units": "SUM(qty)",
     "orders": "COUNT(DISTINCT order_id)",
     "margin_pct": "100.0 * SUM(margin) / NULLIF(SUM(revenue), 0)",
     "avg_discount_pct": "100.0 * SUM(unit_price * unit_discount * qty) / NULLIF(SUM(unit_price * qty), 0)",
@@ -464,7 +512,7 @@ def detect_anomalies(metric="revenue", by="territory", grain="month", period="al
             r.pop("_last")
             r["periods"] = r["from"] if r["from"] == r["to"] else f"{r['from']} to {r['to']}"
         runs.sort(key=lambda r: -abs(r["z"]))
-        unit = "%" if metric.endswith("_pct") else ("$" if metric in ("revenue", "margin") else "")
+        unit = "%" if metric.endswith("_pct") else ("$" if metric in ("revenue", "margin", "cost") else "")
         money = lambda v: f"${v:,.0f}" if unit == "$" else f"{v:,.1f}{unit}"
         if runs:
             bits = [f"{r['segment']} {r['periods']} {r['direction']} (peak {money(r['value'])} vs ~{money(r['expected'])} expected)"

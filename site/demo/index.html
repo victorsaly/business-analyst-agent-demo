@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Business Performance Analyst Agent</title>
+<meta name="description" content="A course demonstration (Agentic AI Workshop 2026, Capstone 2): an AI agent that answers questions about sales data and shows the query behind every number.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preload" href="fonts/PatrickHandSC-Regular.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="preload" href="fonts/PatrickHand-Regular.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div class="card">
+  <header class="masthead">
+    <a class="brand" href="?page=home" data-page="home" aria-label="Business Performance Analyst Agent: home"><img src="logo.svg" alt="" width="30" height="30"><span>Analyst Agent</span></a>
+    <nav aria-label="Site">
+      <a href="?page=home" data-page="home">Home</a>
+      <div class="menu">
+        <button type="button" class="menu-btn" aria-expanded="false" aria-controls="menu-demo">Demo<svg class="icon chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+        <ul class="sub" id="menu-demo">
+          <li><a href="?page=cover" data-page="cover"><b>Cover</b><span>The title card and the six-minute plan</span></a></li>
+          <li><a href="?page=changes" data-page="changes"><b>What changed</b><span>Before and after, the notebook vs this app</span></a></li>
+          <li><a href="?page=tracks" data-page="tracks"><b>Tracks</b><span>The brief's questions, answered live</span></a></li>
+          <li><a href="?page=tools" data-page="tools"><b>Tools</b><span>The agent's read-only tools, by hand</span></a></li>
+          <li><a href="?page=briefing" data-page="briefing"><b>Briefing</b><span>The one-page weekly leadership briefing</span></a></li>
+          <li><a href="?page=scorecard" data-page="scorecard"><b>Scorecard</b><span>Test questions marked against the database</span></a></li>
+        </ul>
+      </div>
+      <a href="?page=story" data-page="story">Story</a>
+      <div class="menu">
+        <button type="button" class="menu-btn" aria-expanded="false" aria-controls="menu-blog">Blog<svg class="icon chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+        <ul class="sub" id="menu-blog">
+          <li><a href="#" data-link="blog" data-path="" target="_blank" rel="noopener"><b>How this was made<svg class="icon ext" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></b><span>The write-up, start to finish</span></a></li>
+          <li><a href="#" data-link="blog" data-path="history.html" target="_blank" rel="noopener"><b>Timeline<svg class="icon ext" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></b><span>Every step, in order</span></a></li>
+          <li><a href="#" data-link="blog" data-path="requirements.html" target="_blank" rel="noopener"><b>Requirements<svg class="icon ext" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></b><span>Every requirement, with evidence</span></a></li>
+          <li><a href="#" data-link="blog" data-path="build-guide.html" target="_blank" rel="noopener"><b>Build guide<svg class="icon ext" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></b><span>The 13 build steps, with code</span></a></li>
+          <li><a href="#" data-link="blog" data-path="prompt-optimization.html" target="_blank" rel="noopener"><b>Cutting the AI cost<svg class="icon ext" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></b><span>How we made each answer cheaper</span></a></li>
+          <li><a href="#" data-link="blog" data-path="design.html" target="_blank" rel="noopener"><b>How it looks<svg class="icon ext" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></b><span>The cassette-tape design</span></a></li>
+        </ul>
+      </div>
+      <div class="menu">
+        <button type="button" class="menu-btn" aria-expanded="false" aria-controls="menu-present">Present<svg class="icon chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+        <ul class="sub" id="menu-present">
+          <li><a href="#" data-link="pitch" data-path="" target="_blank" rel="noopener"><b>Pitch video<svg class="icon ext" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></b><span>The project in 60 seconds</span></a></li>
+          <li><a href="#" data-link="deck" data-path="" target="_blank" rel="noopener"><b>The presentation<svg class="icon ext" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></b><span>The slides for the six-minute demo</span></a></li>
+          <li><a href="#" data-link="blog" data-path="running-the-app.html" target="_blank" rel="noopener"><b>Running the demo<svg class="icon ext" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></b><span>What to click, and in what order</span></a></li>
+        </ul>
+      </div>
+      <div class="menu">
+        <button type="button" class="menu-btn" aria-expanded="false" aria-controls="menu-more">More<svg class="icon chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+        <ul class="sub" id="menu-more">
+          <li><a href="#" data-link="blog" data-path="getting-started.html" target="_blank" rel="noopener"><b>Run it on your laptop<svg class="icon ext" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></b><span>Step by step, Mac and Windows</span></a></li>
+          <li><a href="#" data-link="api" data-path="" target="_blank" rel="noopener"><b>API reference<svg class="icon ext" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></b><span>Every endpoint the app uses</span></a></li>
+          <li><a href="#" data-link="code" data-path="" target="_blank" rel="noopener"><b>The code on GitHub<svg class="icon ext" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></b><span>Everything, open source</span></a></li>
+          <li><a href="#" data-link="start" data-path="" target="_blank" rel="noopener"><b>Start page<svg class="icon ext" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></b><span>Every area of the project, on one page</span></a></li>
+        </ul>
+      </div>
+    </nav>
+    <div class="right">
+      <div class="modes" role="group" aria-label="Mode">
+        <button type="button" data-mode="live" aria-label="Live AI" title="Live AI: the real AI. Every run is recorded."><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.2"/><path d="M8.2 8.2a5.4 5.4 0 0 0 0 7.6M15.8 8.2a5.4 5.4 0 0 1 0 7.6M5.3 5.3a9.5 9.5 0 0 0 0 13.4M18.7 5.3a9.5 9.5 0 0 1 0 13.4"/></svg><span>Live AI</span></button>
+        <button type="button" data-mode="replay" aria-label="Replay" title="Replay: plays back a recorded live run, step by step."><svg class="icon" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4.5h4.5"/><path d="M10.5 9.2v5.6l4.4-2.8z"/></svg><span>Replay</span></button>
+        <button type="button" data-mode="dry" aria-label="Dry run" title="Dry run: no AI. Real tool steps, scripted wording. For testing only."><svg class="icon" viewBox="0 0 24 24"><path d="M9.5 3h5M10.5 3v6L5 19a1.3 1.3 0 0 0 1.1 2h11.8a1.3 1.3 0 0 0 1.1-2l-5.5-10V3"/><path d="M7.5 15h9"/></svg><span>Dry run</span></button>
+      </div>
+      <div class="counter" id="counter" aria-live="off">0:00<small></small></div>
+    </div>
+  </header>
+  <div class="position" aria-hidden="true"><span id="position"></span></div>
+  <div class="subbar">
+    <div class="aud-pick"><span class="lab">View for</span>
+      <div class="modes" role="group" aria-label="Audience">
+        <button type="button" data-aud="stakeholder" title="Only the answers, numbers and charts.">Stakeholder</button>
+        <button type="button" data-aud="developer" title="Everything underneath: every tool call, its arguments, SQL, timings and tokens.">Developer</button>
+      </div>
+    </div>
+    <button type="button" class="btn explain-btn" id="explain"><svg class="icon" viewBox="0 0 24 24"><path d="M4 9.5v5h3.5L12 19V5L7.5 9.5z"/><path d="M15.5 9a4 4 0 0 1 0 6"/><path d="M18 6.5a7.5 7.5 0 0 1 0 11"/></svg> Explain<span class="wide-only"> this page</span></button>
+  </div>
+  <main id="view" tabindex="-1"></main>
+  <footer class="course-note">Course demonstration: Capstone 2, Agentic AI Workshop 2026. Not a product. AdventureWorks is Microsoft's public sample data about a made-up bicycle company. <a href="?page=story" data-page="story">Our story</a> · <a href="https://victorsaly.github.io/business-analyst-agent-demo/blog/" data-blog>How this was made (blog)</a></footer>
+</div>
+<div class="explainer" id="explainer" hidden role="region" aria-label="Spoken explanation">
+  <button type="button" class="ex-toggle" id="ex-toggle" aria-label="Pause"></button>
+  <div class="ex-body">
+    <div class="ex-head"><span class="ex-who" id="ex-who"></span><span class="ex-time" id="ex-time"></span></div>
+    <p class="ex-text" id="ex-text"></p>
+  </div>
+  <button type="button" class="ex-close" id="ex-close" aria-label="Close explanation"><svg class="icon" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+</div>
+<script>window.STATIC_SITE = true;</script>
+<script src="app.js"></script>
+</body>
+</html>

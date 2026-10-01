@@ -1,0 +1,629 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prompt and Tool Optimization: Business Analyst Agent · Business Performance Analyst Agent</title>
+<meta name="description" content="A course demonstration (Agentic AI Workshop 2026, Capstone 2): how we built an AI analyst agent, step by step.">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="../blog.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/diff.min.js" defer></script>
+<script>addEventListener("DOMContentLoaded", () => window.hljs && hljs.highlightAll());</script><script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+mermaid.initialize({ startOnLoad: false, theme: "base", securityLevel: "strict",
+  flowchart: { curve: "basis", padding: 14, nodeSpacing: 34, rankSpacing: 40 }, sequence: { mirrorActors: false },
+  themeVariables: { fontFamily: '"Patrick Hand SC", "Marker Felt", cursive', fontSize: "17px",
+    background: "#fcfbf7", primaryColor: "#ffffff", primaryTextColor: "#1e3a8a", primaryBorderColor: "#1e3a8a",
+    secondaryColor: "#eef2fb", tertiaryColor: "#eef2fb", lineColor: "#3f5a9e", textColor: "#1d2433",
+    clusterBkg: "#eef2fb", clusterBorder: "#a9b8dc", edgeLabelBackground: "#ffffff",
+    noteBkgColor: "#eef2fb", noteBorderColor: "#a9b8dc", noteTextColor: "#1e3a8a", actorLineColor: "#a9b8dc", signalColor: "#3f5a9e",
+    cScale0: "#eef2fb", cScale1: "#ffffff", cScale2: "#eef2fb", cScale3: "#ffffff", cScale4: "#eef2fb",
+    cScaleLabel0: "#1e3a8a", cScaleLabel1: "#1e3a8a", cScaleLabel2: "#1e3a8a", cScaleLabel3: "#1e3a8a", cScaleLabel4: "#1e3a8a",
+    cScalePeer0: "#a9b8dc", cScalePeer1: "#a9b8dc", cScalePeer2: "#a9b8dc", cScalePeer3: "#a9b8dc", cScalePeer4: "#a9b8dc" } });
+await document.fonts.ready;   // measure the labels in the hand-lettered font, not the fallback
+await mermaid.run({ querySelector: "pre.mermaid" });
+</script>
+<script src="../blog.js" defer></script></head>
+<body><header class="top"><div class="stripe"></div><div class="in">
+<a class="brand" href="index.html"><img src="../logo.svg" alt="" width="32" height="32"> Business Performance Analyst Agent</a>
+<div class="search" role="search"><label class="sr" for="q">Search the docs</label><input id="q" type="search" placeholder="Search the docs" autocomplete="off" spellcheck="false" aria-controls="hits" aria-expanded="false" aria-autocomplete="list"><kbd aria-hidden="true">/</kbd><div id="hits" role="listbox" aria-label="Search results" hidden></div></div><nav aria-label="Blog"><a href="index.html">How this was made</a><a href="history.html">History</a><a href="requirements.html">Requirements</a><a href="build-guide.html">Build guide</a><a href="../demo/">Open the demo</a><a href="../api/">API</a><a href="../home/">Home</a></nav></div></header>
+<div class="wrap"><main><span class="course">Course demonstration · Capstone 2 · Agentic AI Workshop 2026</span>
+<h1 id="prompt-and-tool-optimization-business-analyst-agent">Prompt and Tool Optimization: Business Analyst Agent</h1>
+<p>This page shows the original and optimized versions of every prompt the agent reads, side by side.
+The aim is to use fewer tokens on the Groq free tier (about 8,000 tokens per minute and 200,000 per
+day) while keeping the grounding rules as strict as before.</p>
+<blockquote>
+<p><strong>Status:</strong> the token counts below are measured with the notebook's own estimate, which divides
+the number of characters by 3.3 (<code>_estimate_tokens</code> in §5.6). The optimized cells were run against
+the real tools and data, but they have <strong>not</strong> yet been scored against the live model. Run the
+scorecard (<code>run_eval</code>, §4) before adopting them.</p>
+</blockquote>
+<p>The estimate in the notebook:</p>
+<pre><code class="language-python">def _estimate_tokens(messages, extra=0):
+    return int(len(json.dumps(messages, default=str)) / 3.3) + _SCHEMA_TOKENS + extra
+
+_SCHEMA_TOKENS = int(len(json.dumps(TOOL_SCHEMAS)) / 3.3)
+</code></pre>
+<h2 id="why-the-agent-is-expensive">Why the agent is expensive</h2>
+<p>Every round of the agent loop sends the system prompt and the full tool menu again. Tool results
+are small (100–460 tokens), so the cost is mostly fixed text multiplied by the number of rounds.
+The recorded run of <em>"Was anything unusual going on in operations this year?"</em> took 3 rounds, with
+one <code>detect_anomalies</code> call in each. It used about 10,100 tokens and waited on the rate limit between
+every step.</p>
+<figure class="diagram"><pre class="mermaid">flowchart LR
+  accTitle: What every round of the agent loop sends
+  subgraph fixed[&quot;Sent again every round: ~2,650 tokens&quot;]
+    direction TB
+    M[&quot;Tool menu&lt;br/&gt;~2,021 tokens&quot;]
+    P[&quot;Rulebook&lt;br/&gt;~629 tokens&quot;]
+  end
+  H[&quot;The conversation&lt;br/&gt;so far&quot;] --&gt; AI[&quot;The AI&quot;]
+  fixed --&gt; AI
+  AI --&gt; T[&quot;Tool result&lt;br/&gt;100–460 tokens&quot;] --&gt; H
+  classDef red stroke:#c62828,stroke-width:2px,color:#b71c1c
+  class M,P red
+</pre></figure>
+<p>So the cuts below go after the fixed text, not the results: shorter menu cards, a shorter rulebook, and fewer rounds.</p>
+<h2 id="summary-of-changes">Summary of changes</h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>What</th>
+<th>Original</th>
+<th>Optimized</th>
+<th>Change</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tool menu (<code>TOOL_SCHEMAS</code>), sent every round</td>
+<td>~2,021 tokens</td>
+<td>~1,257 tokens</td>
+<td>−38%</td>
+</tr>
+<tr>
+<td>System prompt, sent every round</td>
+<td>~629 tokens</td>
+<td>~554 tokens</td>
+<td>−12%</td>
+</tr>
+<tr>
+<td><strong>Fixed cost per round</strong></td>
+<td><strong>~2,650</strong></td>
+<td><strong>~1,811</strong></td>
+<td><strong>−32%</strong></td>
+</tr>
+<tr>
+<td>Anomaly scan of 5 metrics</td>
+<td>5 calls, often 5 rounds</td>
+<td>1 call, 1 round (~323-token result)</td>
+<td>−4 rounds</td>
+</tr>
+<tr>
+<td>Briefing instructions</td>
+<td>~315 tokens</td>
+<td>~256 tokens</td>
+<td>−19%</td>
+</tr>
+<tr>
+<td>Answer room held back per call by the rate-limit guard</td>
+<td>750 tokens</td>
+<td>400 tokens</td>
+<td>−350 per call</td>
+</tr>
+</tbody>
+</table></div>
+<p>Per tool menu card: <code>get_data_overview</code> 106 → 72, <code>query_metric</code> 464 → 300,
+<code>compare_periods</code> 548 → 345, <code>make_chart</code> 426 → 309, <code>detect_anomalies</code> 472 → 227.</p>
+<p>Besides being shorter, the optimized system prompt adds five rules the original lacked:</p>
+<ul>
+<li>no causes without a tool result;</li>
+<li>challenge false premises;</li>
+<li>no proxies for missing data;</li>
+<li>definitions of relative times such as "last quarter";</li>
+<li>an explicit metric list for anomaly scans.</li>
+</ul>
+<h2 id="how-to-apply">How to apply</h2>
+<p>The changes go into the course notebook, which runs in Google Colab in your web browser. The steps
+are the same on Mac and Windows.</p>
+<ol>
+<li>Open the notebook in Colab and run it once from the top (<em>Runtime → Run all</em>), so that every
+    cell has worked at least once before you edit anything.</li>
+<li>For each row in the list below, find the section in the notebook (use the table of contents
+    on the left, or <em>Edit → Find and replace</em> to search for the section title).</li>
+<li>Click inside the code cell, select the old code shown under <strong>Original</strong> on this page, and
+    paste the code shown under <strong>Optimized</strong> over it.</li>
+<li>When all seven edits are done, click the §2.5 cell and choose <em>Runtime → Run after</em>. This re-runs
+    §2.5 and every cell below it.</li>
+<li>Run the scorecard (see <a href="#testing-the-change">Testing the change</a>).</li>
+</ol>
+<p>The cells to edit, in order:</p>
+<ol>
+<li>§2.5 tool menu cards (analysis tools): Change 1</li>
+<li>§3 "How the agent sees these two tools" (chart and anomaly tools): Change 2</li>
+<li>§5.4 the agent's toolbox: Change 3 (add to the end of the cell)</li>
+<li>§5.5 system prompt: Change 4</li>
+<li>§5.7 and §5.8 agent loops: Change 5 (one line in each)</li>
+<li>§5.9 <code>run_agent</code>: Change 6</li>
+<li>§5.11 weekly briefing: Change 7</li>
+</ol>
+<p>Attendees still edit tool descriptions in §2.5 and §3, as before. The oracle (§4) keeps using the
+original single-metric <code>detect_anomalies</code>, so its 15/15 baseline does not change.</p>
+<hr />
+<h2 id="change-1-analysis-tool-menu-cards-25">Change 1: Analysis tool menu cards (§2.5)</h2>
+<p><strong>Why:</strong> the list of 15 metric names was written out 4 times, once per tool, and the same guidance
+appeared in both the tool descriptions and the system prompt. The shared pieces (<code>_METRIC</code>,
+<code>_PERIOD</code>, <code>_FILTERS</code>) are now defined once, and guidance lives only in the system prompt.</p>
+<h3 id="original">Original</h3>
+<pre><code class="language-python">_PERIOD_HELP = ('Time period: &quot;all&quot;, a quarter &quot;Q1&quot;/&quot;Q2&quot;/&quot;Q3&quot;, a month &quot;2026-04&quot;, '
+                'an ISO week &quot;W23&quot;, or a week range &quot;W20-W24&quot;.')
+_FILTERS_SCHEMA = {
+    &quot;type&quot;: &quot;object&quot;,
+    &quot;description&quot;: &quot;Optional. Only include rows matching these values. Operations metrics can only be filtered by region.&quot;,
+    &quot;properties&quot;: {
+        &quot;region&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;enum&quot;: _REGIONS},
+        &quot;category&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;enum&quot;: _CATEGORIES},
+        &quot;channel&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;enum&quot;: _CHANNELS},
+    },
+}
+
+ANALYSIS_TOOL_SCHEMAS = [
+    {&quot;type&quot;: &quot;function&quot;, &quot;function&quot;: {
+        &quot;name&quot;: &quot;get_data_overview&quot;,
+        &quot;description&quot;: (&quot;Describe the data available: tables, date range, regions, categories, channels, &quot;
+                        &quot;every metric with its meaning, and the period formats. Call this first if unsure &quot;
+                        &quot;whether the data can answer a question.&quot;),
+        &quot;parameters&quot;: {&quot;type&quot;: &quot;object&quot;, &quot;properties&quot;: {}, &quot;required&quot;: []},
+    }},
+    {&quot;type&quot;: &quot;function&quot;, &quot;function&quot;: {
+        &quot;name&quot;: &quot;query_metric&quot;,
+        &quot;description&quot;: (&quot;Get the value of one business metric, optionally split by up to two dimensions &quot;
+                        &quot;(e.g. revenue by region, margin_pct by category and channel), filtered and for a &quot;
+                        &quot;period. Percentages are returned as numbers like 31.5 meaning 31.5%.&quot;),
+        &quot;parameters&quot;: {&quot;type&quot;: &quot;object&quot;, &quot;properties&quot;: {
+            &quot;metric&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;enum&quot;: list(METRICS), &quot;description&quot;: &quot;Which metric to measure.&quot;},
+            &quot;group_by&quot;: {&quot;type&quot;: &quot;string&quot;,
+                         &quot;description&quot;: (&quot;Optional. One dimension, or two separated by a comma &quot;
+                                         f&quot;(e.g. \&quot;region,category\&quot;). Options: {', '.join(_ALL_DIMS)}. &quot;
+                                         &quot;Operations metrics support region, quarter, week.&quot;)},
+            &quot;filters&quot;: _FILTERS_SCHEMA,
+            &quot;period&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: _PERIOD_HELP + ' Default &quot;all&quot;.'},
+        }, &quot;required&quot;: [&quot;metric&quot;]},
+    }},
+    {&quot;type&quot;: &quot;function&quot;, &quot;function&quot;: {
+        &quot;name&quot;: &quot;compare_periods&quot;,
+        &quot;description&quot;: (&quot;Compare a metric between two periods (e.g. Q1 vs Q2) and show the change. &quot;
+                        &quot;Add a dimension to see which regions/categories/channels drove the change. &quot;
+                        &quot;For margin_pct it also returns a 'margin bridge' that splits the change into &quot;
+                        &quot;discount, product cost, freight and sales-mix effects - use it to answer WHY margin moved.&quot;),
+        &quot;parameters&quot;: {&quot;type&quot;: &quot;object&quot;, &quot;properties&quot;: {
+            &quot;metric&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;enum&quot;: list(METRICS), &quot;description&quot;: &quot;Which metric to compare.&quot;},
+            &quot;period_a&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;The earlier / baseline period. &quot; + _PERIOD_HELP},
+            &quot;period_b&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;The later period to compare against period_a. &quot; + _PERIOD_HELP},
+            &quot;dimension&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;enum&quot;: [&quot;region&quot;, &quot;category&quot;, &quot;channel&quot;],
+                          &quot;description&quot;: &quot;Optional. Break the change down by this dimension, ranked by impact.&quot;},
+            &quot;filters&quot;: _FILTERS_SCHEMA,
+        }, &quot;required&quot;: [&quot;metric&quot;, &quot;period_a&quot;, &quot;period_b&quot;]},
+    }},
+]
+</code></pre>
+<h3 id="optimized">Optimized</h3>
+<pre><code class="language-python"># Shared pieces, defined once (the metric list used to be repeated in every tool)
+_METRIC = {&quot;type&quot;: &quot;string&quot;, &quot;enum&quot;: list(METRICS)}
+_PERIOD = {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;all | Q1-Q3 | 2026-04 | W23 | W20-W24&quot;}
+_FILTERS = {&quot;type&quot;: &quot;object&quot;, &quot;properties&quot;: {
+    &quot;region&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;enum&quot;: _REGIONS},
+    &quot;category&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;enum&quot;: _CATEGORIES},
+    &quot;channel&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;enum&quot;: _CHANNELS}}}
+
+ANALYSIS_TOOL_SCHEMAS = [
+    {&quot;type&quot;: &quot;function&quot;, &quot;function&quot;: {
+        &quot;name&quot;: &quot;get_data_overview&quot;,
+        &quot;description&quot;: &quot;List tables, dates, regions, categories, channels and metrics. Only if unsure the data covers a question.&quot;,
+        &quot;parameters&quot;: {&quot;type&quot;: &quot;object&quot;, &quot;properties&quot;: {}}}},
+    {&quot;type&quot;: &quot;function&quot;, &quot;function&quot;: {
+        &quot;name&quot;: &quot;query_metric&quot;,
+        &quot;description&quot;: &quot;Value of one metric, optionally split by up to 2 dimensions (comma-separated).&quot;,
+        &quot;parameters&quot;: {&quot;type&quot;: &quot;object&quot;, &quot;properties&quot;: {
+            &quot;metric&quot;: _METRIC,
+            &quot;group_by&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;e.g. region or region,category; ops metrics: region/quarter/week&quot;},
+            &quot;filters&quot;: _FILTERS, &quot;period&quot;: _PERIOD}, &quot;required&quot;: [&quot;metric&quot;]}}},
+    {&quot;type&quot;: &quot;function&quot;, &quot;function&quot;: {
+        &quot;name&quot;: &quot;compare_periods&quot;,
+        &quot;description&quot;: &quot;Change in a metric from period_a to period_b. dimension ranks which segment drove it. &quot;
+                       &quot;margin_pct adds a margin_bridge (discount/cogs/freight/mix).&quot;,
+        &quot;parameters&quot;: {&quot;type&quot;: &quot;object&quot;, &quot;properties&quot;: {
+            &quot;metric&quot;: _METRIC, &quot;period_a&quot;: _PERIOD, &quot;period_b&quot;: _PERIOD,
+            &quot;dimension&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;enum&quot;: [&quot;region&quot;, &quot;category&quot;, &quot;channel&quot;]},
+            &quot;filters&quot;: _FILTERS}, &quot;required&quot;: [&quot;metric&quot;, &quot;period_a&quot;, &quot;period_b&quot;]}}},
+]
+</code></pre>
+<p>Keep the <code>_REGIONS</code>, <code>_CATEGORIES</code>, <code>_CHANNELS</code> and <code>_ALL_DIMS</code> lines above this block, and the
+<code>ANALYSIS_TOOLS = {...}</code> dictionary below it, unchanged.</p>
+<hr />
+<h2 id="change-2-chart-and-anomaly-tool-menu-cards-3">Change 2: Chart and anomaly tool menu cards (§3)</h2>
+<p><strong>Why:</strong> <code>detect_anomalies</code> now takes a list of metrics, so one call replaces up to seven.
+The model no longer sees the rarely used <code>method</code> and <code>threshold</code> arguments; the Python defaults
+still apply, including <code>ANOMALY_THRESHOLD</code>. The long per-argument descriptions are removed.</p>
+<h3 id="original_1">Original</h3>
+<pre><code class="language-python">VIZ_TOOL_SCHEMAS = [
+    {&quot;type&quot;: &quot;function&quot;, &quot;function&quot;: {
+        &quot;name&quot;: &quot;make_chart&quot;,
+        &quot;description&quot;: (&quot;Draw a chart of one metric and save it for the weekly briefing. Use 'line' to show how a &quot;
+                        &quot;metric changed week by week (one line per group), or 'bar' to compare totals between &quot;
+                        &quot;groups for a period. Returns a caption and a short summary of the key numbers. Mention &quot;
+                        &quot;the chart_id in your answer so the reader knows a chart was made.&quot;),
+        &quot;parameters&quot;: {&quot;type&quot;: &quot;object&quot;, &quot;properties&quot;: {
+            &quot;metric&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;enum&quot;: _ALL_METRICS, &quot;description&quot;: &quot;Which number to chart.&quot;},
+            &quot;group_by&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;enum&quot;: [&quot;region&quot;, &quot;category&quot;, &quot;channel&quot;],
+                         &quot;description&quot;: &quot;Draw one line/bar per region, category or channel. Leave out for a single total line. Operations metrics can only be split by region.&quot;},
+            &quot;period&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;'all', 'Q1'/'Q2'/'Q3', a month like '2026-04', a week like 'W23', or a range like 'W20-W24'.&quot;},
+            &quot;chart_type&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;enum&quot;: [&quot;line&quot;, &quot;bar&quot;], &quot;description&quot;: &quot;'line' = weekly trend over time; 'bar' = one total per group.&quot;},
+            &quot;filters&quot;: {&quot;type&quot;: &quot;object&quot;, &quot;description&quot;: &quot;Optional, e.g. {\&quot;region\&quot;: \&quot;North\&quot;} or {\&quot;category\&quot;: \&quot;Electronics\&quot;}.&quot;},
+        }, &quot;required&quot;: [&quot;metric&quot;]}}},
+    {&quot;type&quot;: &quot;function&quot;, &quot;function&quot;: {
+        &quot;name&quot;: &quot;detect_anomalies&quot;,
+        &quot;description&quot;: (&quot;Find unusual weeks: weeks where a metric was far higher or lower than its recent normal, &quot;
+                        &quot;checked separately for each region (or category / channel). Use this for questions like &quot;
+                        &quot;'anything unusual?', 'any spikes?', 'what went wrong last month?'. Returns the flagged &quot;
+                        &quot;weeks, back-to-back flagged weeks grouped into runs, and which groups looked normal.&quot;),
+        &quot;parameters&quot;: {&quot;type&quot;: &quot;object&quot;, &quot;properties&quot;: {
+            &quot;metric&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;enum&quot;: _ALL_METRICS, &quot;description&quot;: &quot;Which number to check.&quot;},
+            &quot;dimension&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;enum&quot;: [&quot;region&quot;, &quot;category&quot;, &quot;channel&quot;, &quot;total&quot;],
+                          &quot;description&quot;: &quot;Check each region / category / channel separately (default 'region'), or 'total' for the whole company. Operations metrics only support region or total.&quot;},
+            &quot;method&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;enum&quot;: [&quot;rolling_zscore&quot;, &quot;zscore&quot;],
+                       &quot;description&quot;: &quot;'rolling_zscore' (default, compares each week with the 8 weeks before it) or 'zscore' (compares with the whole period's average).&quot;},
+            &quot;threshold&quot;: {&quot;type&quot;: &quot;number&quot;, &quot;description&quot;: &quot;How unusual a week must be to be flagged. Leave out to use the notebook's ANOMALY_THRESHOLD.&quot;},
+            &quot;period&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;Only report unusual weeks inside this period: 'all', 'Q2', '2026-05', 'W31', 'W20-W24'.&quot;},
+        }, &quot;required&quot;: [&quot;metric&quot;]}}},
+]
+</code></pre>
+<h3 id="optimized_1">Optimized</h3>
+<pre><code class="language-python">VIZ_TOOL_SCHEMAS = [
+    {&quot;type&quot;: &quot;function&quot;, &quot;function&quot;: {
+        &quot;name&quot;: &quot;make_chart&quot;,
+        &quot;description&quot;: &quot;Draw a chart; returns chart_id and summary. line = weekly trend, bar = totals per group.&quot;,
+        &quot;parameters&quot;: {&quot;type&quot;: &quot;object&quot;, &quot;properties&quot;: {
+            &quot;metric&quot;: _METRIC,
+            &quot;group_by&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;enum&quot;: [&quot;region&quot;, &quot;category&quot;, &quot;channel&quot;]},
+            &quot;period&quot;: _PERIOD,
+            &quot;chart_type&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;enum&quot;: [&quot;line&quot;, &quot;bar&quot;]},
+            &quot;filters&quot;: _FILTERS}, &quot;required&quot;: [&quot;metric&quot;]}}},
+    {&quot;type&quot;: &quot;function&quot;, &quot;function&quot;: {
+        &quot;name&quot;: &quot;detect_anomalies&quot;,
+        &quot;description&quot;: &quot;Unusual weeks vs the previous 8 weeks, per region (or category/channel/total). &quot;
+                       &quot;Pass ALL metrics to check in one call.&quot;,
+        &quot;parameters&quot;: {&quot;type&quot;: &quot;object&quot;, &quot;properties&quot;: {
+            &quot;metrics&quot;: {&quot;type&quot;: &quot;array&quot;, &quot;items&quot;: _METRIC, &quot;maxItems&quot;: 7},
+            &quot;dimension&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;enum&quot;: [&quot;region&quot;, &quot;category&quot;, &quot;channel&quot;, &quot;total&quot;]},
+            &quot;period&quot;: _PERIOD}, &quot;required&quot;: [&quot;metrics&quot;]}}},
+]
+</code></pre>
+<p>Keep <code>VIZ_TOOLS = {"make_chart": make_chart, "detect_anomalies": detect_anomalies}</code> below it unchanged.</p>
+<hr />
+<h2 id="change-3-multi-metric-anomaly-tool-append-to-54">Change 3: Multi-metric anomaly tool (append to §5.4)</h2>
+<p><strong>Why:</strong> the new schema needs a function that accepts <code>metrics</code>. Each metric is still recorded as its
+own trace entry, so the weekly briefing, its chart safety net, the app's anomaly table and the
+scorecard's tool check need no changes. The model receives one compact combined result: a summary
+and the list of normal segments for each metric.</p>
+<h3 id="original_2">Original</h3>
+<p>None. The agent called <code>detect_anomalies</code> once per metric.</p>
+<h3 id="optimized-add-at-the-end-of-the-54-cell">Optimized (add at the end of the §5.4 cell)</h3>
+<pre><code class="language-python"># --- detect_anomalies for several metrics in ONE call (one round instead of one per metric) ---
+def detect_anomalies_multi(metrics=None, dimension=&quot;region&quot;, period=&quot;all&quot;, metric=None):
+    metrics = metrics or metric or []
+    metrics = [metrics] if isinstance(metrics, str) else list(metrics)
+    if not metrics:
+        return {&quot;error&quot;: &quot;Give at least one metric in 'metrics'.&quot;, &quot;available&quot;: list(METRICS)}
+    results = [detect_anomalies(m, dimension=dimension, period=period) for m in dict.fromkeys(metrics[:7])]
+    summary = &quot; | &quot;.join(r.get(&quot;summary&quot;) or r.get(&quot;error&quot;, &quot;&quot;) for r in results)
+    return {&quot;metric&quot;: &quot;multiple&quot;, &quot;results&quot;: results, &quot;summary&quot;: summary}
+
+
+# The agent gets the multi-metric version; the oracle in Section 4 still uses the original via VIZ_TOOLS.
+TOOLS = {**ANALYSIS_TOOLS, **VIZ_TOOLS, &quot;detect_anomalies&quot;: detect_anomalies_multi}
+
+
+def _trace_entries(name, args, result):
+    &quot;&quot;&quot;One trace entry per metric, so the briefing, app and scorecard read results exactly as before.&quot;&quot;&quot;
+    if name == &quot;detect_anomalies&quot; and isinstance(result, dict) and &quot;results&quot; in result:
+        base = {k: v for k, v in args.items() if k not in (&quot;metrics&quot;, &quot;metric&quot;)}
+        return [{&quot;tool&quot;: name, &quot;args&quot;: {**base, &quot;metric&quot;: r.get(&quot;metric&quot;)}, &quot;result&quot;: r} for r in result[&quot;results&quot;]]
+    return [{&quot;tool&quot;: name, &quot;args&quot;: args, &quot;result&quot;: result}]
+
+
+_compact_for_llm_original = _compact_for_llm
+def _compact_for_llm(name, result, max_chars=1800):
+    if name == &quot;detect_anomalies&quot; and isinstance(result, dict) and &quot;results&quot; in result:
+        return {&quot;results&quot;: [{&quot;metric&quot;: r.get(&quot;metric&quot;), &quot;summary&quot;: r.get(&quot;summary&quot;) or r.get(&quot;error&quot;),
+                             &quot;normal&quot;: r.get(&quot;segments_without_flags&quot;)} for r in result[&quot;results&quot;]]}
+    return _compact_for_llm_original(name, result, max_chars)
+</code></pre>
+<hr />
+<h2 id="change-4-system-prompt-55">Change 4: System prompt (§5.5)</h2>
+<p><strong>Why:</strong> the new prompt is shorter and closes three gaps seen in the recorded runs:</p>
+<ul>
+<li>the operations question checked <code>return_rate</code> (a sales metric) and missed <code>on_time_pct</code>;</li>
+<li>the briefing skipped a required check;</li>
+<li>nothing stopped "I don't have competitor data, but…" followed by a guess.</li>
+</ul>
+<h3 id="original_3">Original</h3>
+<pre><code class="language-python">SYSTEM_PROMPT = f&quot;&quot;&quot;You are a business performance analyst. You answer questions from busy managers
+about the company's sales and operations data (Jan-Sep 2026), using ONLY the tools provided.
+
+RULES
+1. Every number you state must come from a tool result in this conversation. Never invent,
+   estimate or guess a number. If you need a number, call a tool.
+2. If unsure what data exists, call get_data_overview first.
+3. &quot;Why did X change?&quot; -&gt; call compare_periods. For margin_pct its margin_bridge splits the
+   change into discount, freight, product cost (cogs) and mix: name the top 2 drivers with
+   their pts, and where they happened (region / category).
+4. &quot;Anything unusual / wrong / any spikes?&quot; -&gt; call detect_anomalies, for several metrics if
+   needed, including operations metrics (stockout_rate, on_time_pct, avg_delivery_days).
+   Prefer rates (return_rate, margin_pct, stockout_rate) over raw counts, and check by region
+   (the default) so you can say WHERE. Report each unusual run: where, which weeks, peak value
+   vs the expected value.
+5. &quot;Is X growing / what's the trend?&quot; -&gt; compare the first and the latest quarter (Q1 vs Q3;
+   Q3 is complete) and give the % change.
+6. Make a chart with make_chart when a trend or comparison helps (at most 1-2 per question)
+   and mention its chart_id.
+7. If the question is about something this data does not contain (e.g. competitors or their
+   prices, customer satisfaction, marketing spend, weather, website traffic, staff morale),
+   do NOT answer with other metrics. Say plainly: &quot;The data does not include &lt;topic&gt;&quot;, and
+   suggest what data would be needed to answer it.
+8. Percentages from tools are already in % (31.5 means 31.5%). Changes in % metrics are
+   percentage points (pts).
+9. Periods: quarters &quot;Q1&quot;..&quot;Q3&quot;, months &quot;2026-04&quot;, weeks &quot;W23&quot; or &quot;W20-W24&quot;. The latest full
+   week of sales data is W{LATEST_FULL_WEEK}.
+10. You may call several tools at once. Stop calling tools as soon as you can answer.
+
+ANSWER FORMAT: start with a one-sentence headline answer, then 2-4 short bullets with the key
+numbers. Plain English, no preamble.
+&quot;&quot;&quot;
+</code></pre>
+<h3 id="optimized_2">Optimized</h3>
+<pre><code class="language-python">_quarters = sorted(sales_df[&quot;quarter&quot;].astype(str).unique())
+FIRST_Q, LATEST_Q = _quarters[0], _quarters[-1]
+DATE_FROM, DATE_TO = f&quot;{sales_df['date'].min():%d %b %Y}&quot;, f&quot;{sales_df['date'].max():%d %b %Y}&quot;
+
+SYSTEM_PROMPT = f&quot;&quot;&quot;You are a business performance analyst for a retailer. Answer managers' questions about
+sales and warehouse data ({DATE_FROM} to {DATE_TO}) using ONLY the tools.
+
+GROUNDING
+1. Every number must come from a tool result in this conversation. Never invent or estimate one.
+2. Only state a cause if a tool result shows it; otherwise say it needs checking.
+3. If the question assumes something the data contradicts, say so with the numbers.
+
+SCOPE
+4. The data covers sales (revenue, units, margin, discount, cogs, freight, returns) and warehouse
+   operations (stockouts, on-time %, delivery days, orders, headcount) by region, category,
+   channel and week. For anything else (competitors, satisfaction/NPS, marketing, weather,
+   web traffic, staff morale) reply &quot;The data does not include &lt;topic&gt;.&quot; with no proxies or
+   estimates, and name the data that would be needed. No tool call is needed for this.
+
+TIME
+5. Latest full week = W{LATEST_FULL_WEEK}; last quarter = {LATEST_Q}; &quot;this year&quot; = all.
+   Trends: compare {FIRST_Q} with {LATEST_Q} and give the % change.
+
+TOOLS
+6. Request every tool you need in ONE turn; stop as soon as you can answer.
+7. Why did X change -&gt; compare_periods. For margin_pct give the top 2 margin_bridge drivers in pts
+   and where_it_happened. Use filters to focus; use dimension to find who drove a change.
+8. Anything unusual -&gt; ONE detect_anomalies call with all relevant metrics:
+   sales: margin_pct, return_rate, revenue; operations: stockout_rate, on_time_pct,
+   avg_delivery_days, orders_fulfilled. Report each run: where, weeks, peak vs expected.
+   If none: say &quot;nothing unusual&quot; and list what you checked.
+9. Chart (max 2) only for a trend or comparison; cite its chart_id.
+10. % values are already percentages; changes in % metrics are pts.
+
+FORMAT: one-sentence headline, then 2-4 bullets, each with a number and its period.&quot;&quot;&quot;
+</code></pre>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>What it fixes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2</td>
+<td>Rule 1 covered numbers but not causes ("due to seasonal promotions")</td>
+</tr>
+<tr>
+<td>3</td>
+<td>False-premise questions ("Why did East's margin collapse?")</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Lists what the data does cover, so out-of-scope questions need no <code>get_data_overview</code> call (~655 tokens) and no proxies or estimates are given</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Defines "last quarter" and "latest week"; quarters come from the data instead of a hard-coded "Q1 vs Q3"</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Request every tool in one turn, which cuts rounds</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Names the exact metrics for "anything unusual" and requires one combined call</td>
+</tr>
+</tbody>
+</table></div>
+<p>The phrases the scorecard looks for are kept: "The data does not include" (X1–X3) and
+"nothing unusual" (N1–N3).</p>
+<hr />
+<h2 id="change-5-agent-loops-57-and-58">Change 5: Agent loops (§5.7 and §5.8)</h2>
+<p><strong>Why:</strong> record one trace entry per metric for the multi-metric tool (see Change 3).</p>
+<h3 id="original_4">Original</h3>
+<pre><code class="language-python"># §5.7 (Groq loop)
+            trace.append({&quot;tool&quot;: tc.function.name, &quot;args&quot;: args, &quot;result&quot;: result})
+
+# §5.8 (Gemini loop)
+            trace.append({&quot;tool&quot;: fc.name, &quot;args&quot;: args, &quot;result&quot;: result})
+</code></pre>
+<h3 id="optimized_3">Optimized</h3>
+<pre><code class="language-python"># §5.7 (Groq loop)
+            trace.extend(_trace_entries(tc.function.name, args, result))
+
+# §5.8 (Gemini loop)
+            trace.extend(_trace_entries(fc.name, args, result))
+</code></pre>
+<hr />
+<h2 id="change-6-answer-room-59">Change 6: Answer room (§5.9)</h2>
+<p><strong>Why:</strong> before every Groq call, the loop holds back half of <code>max_answer_tokens</code> when it checks the
+rate limit:</p>
+<pre><code class="language-python">_groq_wait_for_budget(_estimate_tokens(msgs, extra=max_answer_tokens // 2))
+</code></pre>
+<p>Answers are 4–6 lines, so the default of 1,500 reserves 750 tokens, far more than needed, and causes
+waits that are not necessary. At 800 the reserve is 400.</p>
+<h3 id="original_5">Original</h3>
+<pre><code class="language-python">def run_agent(question, system_prompt=None, max_iterations=None, max_answer_tokens=1500):
+</code></pre>
+<h3 id="optimized_4">Optimized</h3>
+<pre><code class="language-python">def run_agent(question, system_prompt=None, max_iterations=None, max_answer_tokens=800):
+</code></pre>
+<p>If answers come back cut off (<code>gpt-oss</code> counts its reasoning against this limit), raise it to 1000.</p>
+<hr />
+<h2 id="change-7-weekly-briefing-511">Change 7: Weekly briefing (§5.11)</h2>
+<p><strong>Why:</strong> the original listed five anomaly checks in prose, and the recorded run made them one per round
+and skipped <code>on_time_pct</code>. The optimized version asks for one combined anomaly call, the
+comparison and the first chart in a single turn. The reply format is unchanged because
+<code>_parse_briefing</code> depends on it.</p>
+<h3 id="original_6">Original</h3>
+<pre><code class="language-python">BRIEFING_INSTRUCTIONS = &quot;&quot;&quot;Write the weekly leadership briefing for week W{week}.
+The KPI table was already looked up for you (do not re-query it):
+{kpi_text}
+
+Investigate with your tools (call several at once where you can):
+1. detect_anomalies with period &quot;{recent}&quot; for revenue, margin_pct, return_rate, stockout_rate
+   and on_time_pct (by region).
+2. compare_periods with period_a &quot;W{prev}&quot; and period_b &quot;W{week}&quot; and dimension &quot;region&quot; for the
+   KPI with the biggest change above, to see which region drove it.
+3. make_chart at least twice with period &quot;{recent}&quot;: revenue by region (line), plus a line chart
+   of any anomaly you found (e.g. return_rate by region).
+
+Only give a reason for a change if a tool result shows it; otherwise say it needs checking.
+Then reply in EXACTLY this format (plain text, every number from a tool result or the table):
+HEADLINE: &lt;one sentence&gt;
+WHAT CHANGED AND WHY:
+- &lt;2-3 bullets&gt;
+WATCH LIST:
+- &lt;1-3 bullets, one per unusual run found, with weeks and numbers&gt;
+FOLLOW-UPS:
+- &lt;2-3 recommended actions or questions for the team&gt;
+&quot;&quot;&quot;
+</code></pre>
+<h3 id="optimized_5">Optimized</h3>
+<pre><code class="language-python">BRIEFING_INSTRUCTIONS = &quot;&quot;&quot;Write the weekly leadership briefing for W{week}.
+KPI table (already looked up, do not re-query):
+{kpi_text}
+
+Make ALL of these calls in ONE turn:
+1. detect_anomalies: metrics [revenue, margin_pct, return_rate, stockout_rate, on_time_pct], period &quot;{recent}&quot;.
+2. compare_periods: period_a &quot;W{prev}&quot;, period_b &quot;W{week}&quot;, dimension &quot;region&quot;, for the KPI with the
+   largest vs-last-week change.
+3. make_chart (line, group_by region, period &quot;{recent}&quot;): revenue.
+Then one more turn at most: make_chart for one metric with an unusual run, if any.
+
+Only give a cause if a tool result shows it. Reply in EXACTLY this format, every number from a tool or the table:
+HEADLINE: &lt;one sentence&gt;
+WHAT CHANGED AND WHY:
+- &lt;2-3 bullets&gt;
+WATCH LIST:
+- &lt;1-3 bullets, one per unusual run, with weeks and numbers&gt;
+FOLLOW-UPS:
+- &lt;2-3 recommended actions or questions&gt;
+&quot;&quot;&quot;
+</code></pre>
+<p>And in <code>weekly_briefing()</code>:</p>
+<pre><code class="language-python"># Original
+                       max_iterations=MAX_ITERATIONS + 4, max_answer_tokens=2500)
+# Optimized
+                       max_iterations=MAX_ITERATIONS + 4, max_answer_tokens=1500)
+</code></pre>
+<hr />
+<h2 id="testing-the-change">Testing the change</h2>
+<p>Run each line in the table once before you apply the changes and once after, and fill in the
+right-hand columns. The "before" figures are from the recorded Colab run.</p>
+<ol>
+<li>In Colab, click <em>+ Code</em> (top left) to add a new code cell at the bottom of the notebook.</li>
+<li>Paste one line from the first column of the table below into the cell.</li>
+<li>Press Shift+Enter (the same on Mac and Windows) to run it.</li>
+<li>Read the token count on the last line of the output, and note whether the answer was right.</li>
+</ol>
+<p>For example, the cell</p>
+<pre><code class="language-python">ask(&quot;Why did margin drop in the North region in Q2?&quot;)
+</code></pre>
+<p>ends with a line in this form; the token count is the number to write in the table:</p>
+<pre><code class="language-text">Done: &lt;calls&gt; tool call(s), &lt;charts&gt; chart(s), about &lt;tokens&gt; tokens used.
+</code></pre>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Run</th>
+<th>Tokens before</th>
+<th>Tokens after</th>
+<th>Result before</th>
+<th>Result after</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ask("Why did margin drop in the North region in Q2?")</code></td>
+<td>4,966</td>
+<td></td>
+<td>correct</td>
+<td></td>
+</tr>
+<tr>
+<td><code>ask("Was anything unusual going on in operations this year?")</code></td>
+<td>10,103</td>
+<td></td>
+<td>3 metrics checked</td>
+<td></td>
+</tr>
+<tr>
+<td><code>ask("How do our prices compare with our competitors'?")</code></td>
+<td>2,155</td>
+<td></td>
+<td>declined</td>
+<td></td>
+</tr>
+<tr>
+<td><code>weekly_briefing()</code></td>
+<td>~30,000</td>
+<td></td>
+<td>4 of 5 checks</td>
+<td></td>
+</tr>
+<tr>
+<td><code>run_eval(agent_fn)</code></td>
+<td>~65,000</td>
+<td></td>
+<td>15/15</td>
+<td></td>
+</tr>
+</tbody>
+</table></div>
+<p>The full set of runs uses about 110,000 tokens, more than half of the 200,000 daily allowance. For a
+quick check that uses less, score four questions only:</p>
+<pre><code class="language-python">run_eval(agent_fn, qids=[&quot;A1&quot;, &quot;N2&quot;, &quot;N3&quot;, &quot;X1&quot;])
+</code></pre>
+<h2 id="risks-to-watch">Risks to watch</h2>
+<ul>
+<li><strong>Fewer argument descriptions.</strong> For example, "operations metrics can only be filtered by region" is
+    gone from the menu. A wrong call returns an error that lists the allowed values, which costs one extra
+    round each time. If the trace shows this often, put that sentence back.</li>
+<li><strong>"Everything in one turn"</strong> can make the model ask for a chart before it has seen the numbers.
+    Check that charts still match what the answer says.</li>
+<li><strong>Lower answer room</strong> can truncate long answers. See Change 6.</li>
+<li><strong>The scorecard is lenient.</strong> It can pass some wrong answers, for example an invented figure in the
+    same sentence as "I don't have the data", "normal" counted as "nothing unusual", or "not growing"
+    matching "grow". Read the answers, not only the score, when comparing versions.</li>
+</ul>
+<nav class="pager" aria-label="Previous and next page"><a class="prev" href="design.html"><span>Previous</span>How it looks</a><a class="next" href="audio-sources.html"><span>Next</span>Audio sources</a></nav>
+<p class="foot">A learning project, not a product. AdventureWorks is Microsoft's public sample data about a made-up bicycle
+company. Source of this page: <a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/docs/prompt-optimization.md">docs/prompt-optimization.md</a>.</p></main>
+<aside class="areas" aria-label="All documents"><details open><summary>All pages</summary><h2>Start here</h2><ul><li><a href="getting-started.html">Run it on your laptop (Mac and Windows)</a></li></ul><h2>The story</h2><ul><li><a href="index.html">How this was made</a></li><li><a href="history.html">Timeline, step by step</a></li></ul><h2>The brief</h2><ul><li><a href="requirements.html">Every requirement, with evidence</a></li><li><a href="build-guide.html">The 13 build steps</a></li></ul><h2>The app</h2><ul><li><a href="running-the-app.html">Running the demo</a></li><li><a href="product.html">Who it's for</a></li><li><a href="design.html">How it looks</a></li></ul><h2>Behind the scenes</h2><ul><li><a href="prompt-optimization.html" aria-current="page">Cutting the AI cost</a></li><li><a href="audio-sources.html">Audio sources</a></li></ul><h2>Try it</h2><ul><li><a href="../home/">Home: every area</a></li><li><a href="../demo/">Open the demo</a></li><li><a href="../demo/?page=story">Ask the course chat</a></li><li><a href="../api/">API reference</a></li><li><a href="../pitch/">60-second pitch video</a></li><li><a href="../deck/">The presentation</a></li><li><a href="getting-started.html">Run it on your laptop</a></li><li><a href="https://github.com/victorsaly/business-analyst-agent-demo">The code on GitHub</a></li></ul></details></aside>
+<nav class="toc" aria-label="On this page"><h2>On this page</h2><ul><li><a href="#why-the-agent-is-expensive">Why the agent is expensive</a></li><li><a href="#summary-of-changes">Summary of changes</a></li><li><a href="#how-to-apply">How to apply</a></li><li><a href="#change-1-analysis-tool-menu-cards-25">Change 1: Analysis tool menu cards (§2.5)</a></li><li><a href="#change-2-chart-and-anomaly-tool-menu-cards-3">Change 2: Chart and anomaly tool menu cards (§3)</a></li><li><a href="#change-3-multi-metric-anomaly-tool-append-to-54">Change 3: Multi-metric anomaly tool (append to §5.4)</a></li><li><a href="#change-4-system-prompt-55">Change 4: System prompt (§5.5)</a></li><li><a href="#change-5-agent-loops-57-and-58">Change 5: Agent loops (§5.7 and §5.8)</a></li><li><a href="#change-6-answer-room-59">Change 6: Answer room (§5.9)</a></li><li><a href="#change-7-weekly-briefing-511">Change 7: Weekly briefing (§5.11)</a></li><li><a href="#testing-the-change">Testing the change</a></li><li><a href="#risks-to-watch">Risks to watch</a></li></ul></nav></div></body></html>

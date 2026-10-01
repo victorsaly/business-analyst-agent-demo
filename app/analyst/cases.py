@@ -11,7 +11,7 @@ import json
 import os
 import time
 
-from . import data, tools as T
+from . import competitors as competitors_mod, data, tools as T
 from .agent import queries_used, run_agent, run_tool, with_history
 
 REC_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "recordings")
@@ -54,13 +54,18 @@ CASES = [
      "question": "Why did margin drop in the Northwest in May 2024?", "db": "planted",
      "point": "REHEARSAL DATA: we planted a 25% Bikes discount in Northwest, May 2024. The agent must find it.",
      "judging": "Demo moment"},
+    {"id": "competitor_mock", "group": "Rehearsal", "title": "Competitor prices (mock list attached)",
+     "question": "How do our bike prices compare with our competitors' prices?", "competitors": "mock",
+     "point": "MOCK DATA: the guardrail track again, now with a fictional competitor price list attached. "
+              "It answers, says the prices are mock, and finds Velo Direct undercutting our Road Bikes.",
+     "judging": "Demo moment"},
 ]
 # The tape: side A plays the brief's questions, side B the guardrails, briefing and scorecard.
 # Running times (seconds) are the presenter's budget; both sides together fill the 6-minute slot.
 for _c, _side, _secs in [("sales_territory", "A", 40), ("followup_category", "A", 30), ("northwest_margin", "A", 60),
                           ("growing_fastest", "A", 35), ("unusual_last_quarter", "A", 55),
                           ("guard_competitors", "B", 25), ("guard_forecast", "B", 25), ("guard_write", "B", 20),
-                          ("planted_anomaly", "bonus", 60)]:
+                          ("planted_anomaly", "bonus", 60), ("competitor_mock", "bonus", 45)]:
     next(c for c in CASES if c["id"] == _c).update(side=_side, budget=_secs)
 EXTRA_TRACKS = [   # side B tracks that open their own screen instead of asking a question
     {"id": "briefing", "side": "B", "budget": 40, "title": "Weekly leadership briefing", "page": "briefing",
@@ -243,6 +248,29 @@ def _dry_planted(call):
             f"Chart: {c['chart_id']}. Checked with: {r['result_id']}")
 
 
+def _dry_competitor_mock(call):
+    s = call("get_schema")
+    comp = s["dictionary"].get("competitor_prices")
+    if not comp:   # a typed-in question with no list attached: same answer as the guardrail track
+        return _dry_competitors(lambda name, **args: s)
+    r = call("run_sql", query="SELECT subcategory, competitor, COUNT(*) AS products,\n"
+                              "       ROUND(AVG(list_gap_pct), 1) AS avg_gap_pct\n"
+                              "FROM price_comparison\nWHERE category = 'Bikes'\n"
+                              "GROUP BY subcategory, competitor ORDER BY subcategory, competitor")
+    c = call("make_chart", data=r["result_id"], chart_type="bar", x="subcategory", y="avg_gap_pct", series="competitor",
+             title="Our bike list prices vs competitors, % (MOCK data)")
+    top = max(r["rows"], key=lambda x: x["avg_gap_pct"])
+    low = min(r["rows"], key=lambda x: x["avg_gap_pct"])
+    return (f"Note: the competitor prices are MOCK demo data, not real market prices. On that list, our "
+            f"{top['subcategory']} are {top['avg_gap_pct']}% dearer than {top['competitor']}'s.\n\n"
+            f"- Covers {sum(x['products'] for x in r['rows'])} product-competitor pairs from "
+            f"{', '.join(comp['competitors'])}.\n"
+            f"- Biggest gap: {top['subcategory']} vs {top['competitor']}, {top['avg_gap_pct']:+}% on average "
+            f"({top['products']} products).\n"
+            f"- Where we are cheapest: {low['subcategory']} vs {low['competitor']}, {low['avg_gap_pct']:+}%.\n\n"
+            f"Chart: {c['chart_id']}. Checked with: {r['result_id']}")
+
+
 def _dry_returns(call):
     call("get_schema")
     return ("The data does not include returns or refunds, so I can't give a return rate.\n\n"
@@ -254,7 +282,7 @@ DRY_SCRIPTS = {
     "northwest_margin": _dry_northwest_margin, "growing_fastest": _dry_growing_fastest,
     "unusual_last_quarter": _dry_unusual, "guard_competitors": _dry_competitors,
     "guard_forecast": _dry_forecast, "guard_write": _dry_write, "planted_anomaly": _dry_planted,
-    "returns": _dry_returns,
+    "returns": _dry_returns, "competitor_mock": _dry_competitor_mock,
 }
 DRY_BY_QUESTION = {c["question"].lower(): c["id"] for c in CASES}
 DRY_BY_QUESTION["what is our return rate by territory?"] = "returns"
@@ -285,16 +313,29 @@ def run_dry_plan(plan, on_step=None, step_delay=0.0):
 
 
 # ---------------------------------------------------------------- one entry point for every screen
-def answer(question, mode, case=None, history=None, on_step=None, on_wait=None, step_delay=0.0, on_think=None):
-    """Run a question (or a demo case) in live / replay / dry mode. Always returns a result dict."""
+def answer(question, mode, case=None, history=None, on_step=None, on_wait=None, step_delay=0.0, on_think=None,
+           competitors="selected"):
+    """Run a question (or a demo case) in live / replay / dry mode. Always returns a result dict.
+
+    Competitor prices: a demo case sees only the list it names (none for every track but competitor_mock,
+    so the guardrail track always runs without one). Your own questions see the list picked on the Tools
+    screen, unless competitors= says otherwise (the scorecard passes None).
+    """
+    comp = data.selected_competitors() if competitors == "selected" else competitors
     if case is None:   # a demo-case question typed in (or asked by the scorecard) shares that case's recording
         case = next((c for c in CASES if c["question"].lower() == question.strip().lower()
-                     and not c.get("follow_up_of") and not c.get("db")), None)
+                     and not c.get("follow_up_of") and not c.get("db") and not c.get("competitors")
+                     and not (comp and c["id"] == "guard_competitors")), None)
     db = (case or {}).get("db", "real")
-    previous = data.current()
+    if case:
+        comp = case.get("competitors")
+        if comp == "mock":
+            competitors_mod.build_mock()
+    previous, previous_comp = data.current(), data.competitors()
     data.use(db)
+    data.use_competitors(comp)
     try:
-        key = case_key(case) if case else case_key(question, db)
+        key = case_key(case) if case else case_key(question, db + (f"+competitors-{comp}" if comp else ""))
         if mode == "replay":
             rec = load_recording(key)
             if rec is None:
@@ -317,3 +358,4 @@ def answer(question, mode, case=None, history=None, on_step=None, on_wait=None, 
         return res
     finally:
         data.use(previous)
+        data.use_competitors(previous_comp)

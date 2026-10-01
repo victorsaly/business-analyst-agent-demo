@@ -1,0 +1,14 @@
+# The online Ask chat. Deploy: cd worker && npx wrangler@3 deploy   (after: cd ../app && ./demo.sh knowledge <course folder>)
+# The OpenAI key is a secret, set once with: npx wrangler@3 secret put OPENAI_API_KEY
+name = "analyst-agent-ask"
+main = "src/index.js"
+compatibility_date = "2024-09-23"
+
+[vars]
+MODEL = "gpt-5.4-mini"
+DAILY_LIMIT = "300"          # questions per day, for everyone together
+PER_VISITOR_LIMIT = "25"     # questions per day, per visitor
+
+[[kv_namespaces]]
+binding = "LIMITS"
+id = "c7f7b9634a2347889ecf3ab582805924"

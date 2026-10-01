@@ -5,3 +5,9 @@ app/data/
 app/video/
 __pycache__/
 .DS_Store
+
+# the Ask chat's knowledge base holds course material: built locally, never committed
+app/data/knowledge.json
+worker/knowledge.json
+worker/node_modules/
+worker/.wrangler/

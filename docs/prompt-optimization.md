@@ -1,61 +1,105 @@
 # Prompt and Tool Optimization: Business Analyst Agent
 
-The original and optimized versions of every prompt the agent reads, side by side, to cut token use
-on the Groq free tier (about 8,000 tokens per minute and 200,000 per day) without weakening the
-grounding rules.
+This page shows the original and optimized versions of every prompt the agent reads, side by side.
+The aim is to use fewer tokens on the Groq free tier (about 8,000 tokens per minute and 200,000 per
+day) while keeping the grounding rules as strict as before.
 
-> **Status:** token counts below are **measured** with the notebook's own estimate
-> (characters ÷ 3.3, as in `_estimate_tokens`). The optimized cells were run against the real
-> tools and data. They have **not** yet been scored against the live model: run the scorecard
-> (§5.15) before adopting them.
+> **Status:** the token counts below are measured with the notebook's own estimate, which divides
+> the number of characters by 3.3 (`_estimate_tokens` in §5.6). The optimized cells were run against
+> the real tools and data, but they have **not** yet been scored against the live model. Run the
+> scorecard (`run_eval`, §4) before adopting them.
+
+The estimate in the notebook:
+
+```python
+def _estimate_tokens(messages, extra=0):
+    return int(len(json.dumps(messages, default=str)) / 3.3) + _SCHEMA_TOKENS + extra
+
+_SCHEMA_TOKENS = int(len(json.dumps(TOOL_SCHEMAS)) / 3.3)
+```
 
 ## Why the agent is expensive
 
-Every round of the agent loop re-sends the system prompt **and** the full tool menu. Tool results
-themselves are small (100–460 tokens). So the cost is driven by **fixed text × number of rounds**.
-The recorded run of *"Was anything unusual going on in operations this year?"* took 3 rounds of one
-`detect_anomalies` call each, used about 10,100 tokens, and waited on the rate limit between every step.
+Every round of the agent loop sends the system prompt and the full tool menu again. Tool results
+are small (100–460 tokens), so the cost is mostly fixed text multiplied by the number of rounds.
+The recorded run of *"Was anything unusual going on in operations this year?"* took 3 rounds, with
+one `detect_anomalies` call in each. It used about 10,100 tokens and waited on the rate limit between
+every step.
+
+```mermaid
+flowchart LR
+  accTitle: What every round of the agent loop sends
+  subgraph fixed["Sent again every round: ~2,650 tokens"]
+    direction TB
+    M["Tool menu<br/>~2,021 tokens"]
+    P["Rulebook<br/>~629 tokens"]
+  end
+  H["The conversation<br/>so far"] --> AI["The AI"]
+  fixed --> AI
+  AI --> T["Tool result<br/>100–460 tokens"] --> H
+  classDef red stroke:#c62828,stroke-width:2px,color:#b71c1c
+  class M,P red
+```
+
+So the cuts below go after the fixed text, not the results: shorter menu cards, a shorter rulebook, and fewer rounds.
 
 ## Summary of changes
 
 | What | Original | Optimized | Change |
 |---|---|---|---|
-| Tool menu (`TOOL_SCHEMAS`), sent every round | ~2,021 tokens | ~1,257 tokens | **−38%** |
+| Tool menu (`TOOL_SCHEMAS`), sent every round | ~2,021 tokens | ~1,257 tokens | −38% |
 | System prompt, sent every round | ~629 tokens | ~554 tokens | −12% |
 | **Fixed cost per round** | **~2,650** | **~1,811** | **−32%** |
-| Anomaly scan of 5 metrics | 5 calls, often 5 rounds | **1 call, 1 round** (~323-token result) | −4 rounds |
+| Anomaly scan of 5 metrics | 5 calls, often 5 rounds | 1 call, 1 round (~323-token result) | −4 rounds |
 | Briefing instructions | ~315 tokens | ~256 tokens | −19% |
 | Answer room held back per call by the rate-limit guard | 750 tokens | 400 tokens | −350 per call |
 
 Per tool menu card: `get_data_overview` 106 → 72, `query_metric` 464 → 300,
 `compare_periods` 548 → 345, `make_chart` 426 → 309, `detect_anomalies` 472 → 227.
 
-The optimized system prompt is shorter and also adds rules the original lacked: no causes without
-a tool result, challenge false premises, no proxies for missing data, relative-time definitions,
-and an explicit metric list for anomaly scans.
+Besides being shorter, the optimized system prompt adds five rules the original lacked:
+
+- no causes without a tool result;
+- challenge false premises;
+- no proxies for missing data;
+- definitions of relative times such as "last quarter";
+- an explicit metric list for anomaly scans.
 
 ## How to apply
 
-Edit these cells in order, then choose *Runtime → Run after* from §2.5:
+The changes go into the course notebook, which runs in Google Colab in your web browser. The steps
+are the same on Mac and Windows.
 
-1. **§2.5** tool menu cards (analysis tools): Change 1
-2. **§3** "How the agent sees these two tools" (chart and anomaly tools): Change 2
-3. **§5.4** the agent's toolbox: Change 3 (append to the end of the cell)
-4. **§5.5** system prompt: Change 4
-5. **§5.7 / §5.8** agent loops: Change 5 (two one-line edits)
-6. **§5.9** `run_agent`: Change 6
-7. **§5.11** weekly briefing: Change 7
+1. Open the notebook in Colab and run it once from the top (*Runtime → Run all*), so that every
+   cell has worked at least once before you edit anything.
+2. For each row in the list below, find the section in the notebook (use the table of contents
+   on the left, or *Edit → Find and replace* to search for the section title).
+3. Click inside the code cell, select the old code shown under **Original** on this page, and
+   paste the code shown under **Optimized** over it.
+4. When all seven edits are done, click the §2.5 cell and choose *Runtime → Run after*. This re-runs
+   §2.5 and every cell below it.
+5. Run the scorecard (see [Testing the change](#testing-the-change)).
 
-The workshop lever is unchanged: attendees still edit tool descriptions in §2.5 and §3. The oracle
-(§4) keeps using the original single-metric `detect_anomalies`, so its 15/15 baseline is unaffected.
+The cells to edit, in order:
+
+1. §2.5 tool menu cards (analysis tools): Change 1
+2. §3 "How the agent sees these two tools" (chart and anomaly tools): Change 2
+3. §5.4 the agent's toolbox: Change 3 (add to the end of the cell)
+4. §5.5 system prompt: Change 4
+5. §5.7 and §5.8 agent loops: Change 5 (one line in each)
+6. §5.9 `run_agent`: Change 6
+7. §5.11 weekly briefing: Change 7
+
+Attendees still edit tool descriptions in §2.5 and §3, as before. The oracle (§4) keeps using the
+original single-metric `detect_anomalies`, so its 15/15 baseline does not change.
 
 ---
 
 ## Change 1: Analysis tool menu cards (§2.5)
 
-**Why:** the list of 15 metric names was written out in every tool (4 times in total), and guidance was
-repeated between the tool descriptions and the system prompt. Shared pieces are now defined once,
-and guidance lives in one place (the system prompt).
+**Why:** the list of 15 metric names was written out 4 times, once per tool, and the same guidance
+appeared in both the tool descriptions and the system prompt. The shared pieces (`_METRIC`,
+`_PERIOD`, `_FILTERS`) are now defined once, and guidance lives only in the system prompt.
 
 ### Original
 
@@ -154,9 +198,9 @@ Keep the `_REGIONS`, `_CATEGORIES`, `_CHANNELS` and `_ALL_DIMS` lines above this
 
 ## Change 2: Chart and anomaly tool menu cards (§3)
 
-**Why:** `detect_anomalies` now takes a **list** of metrics, so one call replaces up to seven.
-The rarely used `method` and `threshold` arguments are hidden from the model (the Python defaults
-still apply, including `ANOMALY_THRESHOLD`). Long per-argument descriptions are removed.
+**Why:** `detect_anomalies` now takes a list of metrics, so one call replaces up to seven.
+The model no longer sees the rarely used `method` and `threshold` arguments; the Python defaults
+still apply, including `ANOMALY_THRESHOLD`. The long per-argument descriptions are removed.
 
 ### Original
 
@@ -226,8 +270,8 @@ Keep `VIZ_TOOLS = {"make_chart": make_chart, "detect_anomalies": detect_anomalie
 
 **Why:** the new schema needs a function that accepts `metrics`. Each metric is still recorded as its
 own trace entry, so the weekly briefing, its chart safety net, the app's anomaly table and the
-scorecard's tool check all keep working without changes. The model receives one compact combined
-result: a summary and the list of normal segments per metric.
+scorecard's tool check need no changes. The model receives one compact combined result: a summary
+and the list of normal segments for each metric.
 
 ### Original
 
@@ -271,9 +315,11 @@ def _compact_for_llm(name, result, max_chars=1800):
 
 ## Change 4: System prompt (§5.5)
 
-**Why:** shorter, and closes gaps seen in the recorded runs. The operations question checked
-`return_rate` (a sales metric) and missed `on_time_pct`. The briefing skipped a required check.
-Nothing stopped "I don't have competitor data, but…" followed by a guess.
+**Why:** the new prompt is shorter and closes three gaps seen in the recorded runs:
+
+- the operations question checked `return_rate` (a sales metric) and missed `on_time_pct`;
+- the briefing skipped a required check;
+- nothing stopped "I don't have competitor data, but…" followed by a guess.
 
 ### Original
 
@@ -356,7 +402,7 @@ FORMAT: one-sentence headline, then 2-4 bullets, each with a number and its peri
 |---|---|
 | 2 | Rule 1 covered numbers but not causes ("due to seasonal promotions") |
 | 3 | False-premise questions ("Why did East's margin collapse?") |
-| 4 | Lists what the data **does** cover, so out-of-scope questions need no `get_data_overview` call (~655 tokens) and no proxies or estimates are given |
+| 4 | Lists what the data does cover, so out-of-scope questions need no `get_data_overview` call (~655 tokens) and no proxies or estimates are given |
 | 5 | Defines "last quarter" and "latest week"; quarters come from the data instead of a hard-coded "Q1 vs Q3" |
 | 6 | Request every tool in one turn, which cuts rounds |
 | 8 | Names the exact metrics for "anything unusual" and requires one combined call |
@@ -394,8 +440,15 @@ The phrases the scorecard looks for are kept: "The data does not include" (X1–
 
 ## Change 6: Answer room (§5.9)
 
-**Why:** `_groq_wait_for_budget` holds back half of `max_answer_tokens` before every call. Answers are
-4–6 lines, so 1,500 reserves far more than needed and causes avoidable waits.
+**Why:** before every Groq call, the loop holds back half of `max_answer_tokens` when it checks the
+rate limit:
+
+```python
+_groq_wait_for_budget(_estimate_tokens(msgs, extra=max_answer_tokens // 2))
+```
+
+Answers are 4–6 lines, so the default of 1,500 reserves 750 tokens, far more than needed, and causes
+waits that are not necessary. At 800 the reserve is 400.
 
 ### Original
 
@@ -416,7 +469,7 @@ If answers come back cut off (`gpt-oss` counts its reasoning against this limit)
 ## Change 7: Weekly briefing (§5.11)
 
 **Why:** the original listed five anomaly checks in prose, and the recorded run made them one per round
-(and skipped `on_time_pct`). The optimized version asks for one combined anomaly call, the
+and skipped `on_time_pct`. The optimized version asks for one combined anomaly call, the
 comparison and the first chart in a single turn. The reply format is unchanged because
 `_parse_briefing` depends on it.
 
@@ -485,8 +538,25 @@ And in `weekly_briefing()`:
 
 ## Testing the change
 
-Run each line before and after, and fill in the right-hand columns. The "before" figures are from
-the recorded Colab run.
+Run each line in the table once before you apply the changes and once after, and fill in the
+right-hand columns. The "before" figures are from the recorded Colab run.
+
+1. In Colab, click *+ Code* (top left) to add a new code cell at the bottom of the notebook.
+2. Paste one line from the first column of the table below into the cell.
+3. Press Shift+Enter (the same on Mac and Windows) to run it.
+4. Read the token count on the last line of the output, and note whether the answer was right.
+
+For example, the cell
+
+```python
+ask("Why did margin drop in the North region in Q2?")
+```
+
+ends with a line in this form; the token count is the number to write in the table:
+
+```text
+Done: <calls> tool call(s), <charts> chart(s), about <tokens> tokens used.
+```
 
 | Run | Tokens before | Tokens after | Result before | Result after |
 |---|---|---|---|---|
@@ -496,16 +566,21 @@ the recorded Colab run.
 | `weekly_briefing()` | ~30,000 | | 4 of 5 checks | |
 | `run_eval(agent_fn)` | ~65,000 | | 15/15 | |
 
-For a quick check that stays within the daily allowance: `run_eval(agent_fn, qids=["A1", "N2", "N3", "X1"])`.
+The full set of runs uses about 110,000 tokens, more than half of the 200,000 daily allowance. For a
+quick check that uses less, score four questions only:
+
+```python
+run_eval(agent_fn, qids=["A1", "N2", "N3", "X1"])
+```
 
 ## Risks to watch
 
 - **Fewer argument descriptions.** For example, "operations metrics can only be filtered by region" is
   gone from the menu. A wrong call returns an error that lists the allowed values, which costs one extra
-  round when it happens. If the trace shows this often, put that one sentence back.
-- **"Everything in one turn"** can make the model request a chart before it has seen the numbers.
+  round each time. If the trace shows this often, put that sentence back.
+- **"Everything in one turn"** can make the model ask for a chart before it has seen the numbers.
   Check that charts still match what the answer says.
 - **Lower answer room** can truncate long answers. See Change 6.
-- **The scorecard is lenient.** It can pass some wrong answers (an invented figure in the same sentence
-  as "I don't have the data", "normal" counted as "nothing unusual", "not growing" matching "grow").
-  Read the answers, not only the score, when comparing versions.
+- **The scorecard is lenient.** It can pass some wrong answers, for example an invented figure in the
+  same sentence as "I don't have the data", "normal" counted as "nothing unusual", or "not growing"
+  matching "grow". Read the answers, not only the score, when comparing versions.

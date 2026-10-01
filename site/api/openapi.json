@@ -1,0 +1,836 @@
+{
+ "openapi": "3.1.0",
+ "info": {
+  "title": "Business Performance Analyst Agent",
+  "description": "**A course demonstration** (Capstone 2, Agentic AI Workshop 2026): an AI agent that answers plain-English\nquestions about sales on Microsoft's AdventureWorks sample data, and shows the query behind every number.\n\nThis is the API behind the demo app's screens. It runs **on your machine** (`cd app && ./demo.sh app`, then\n`http://localhost:8501`); only the **Ask chat (online)** runs on the internet.\n\n## Modes\n\nEvery run endpoint takes `mode`:\n\n| Mode | Uses the AI? | What happens |\n|---|---|---|\n| `live` | Yes | The real agent. The run is recorded to `app/recordings/` for replay. |\n| `replay` | No | Plays back a recorded live run, step by step. Errors if there's no recording yet. |\n| `dry` | No | Real tool calls with scripted wording. For testing the screens only. |\n\n## Streaming runs\n\n`/api/run`, `/api/briefing` and `/api/scorecard` answer with **Server-Sent Events** (`text/event-stream`): one\n`data: {json}` line per event, in this order. Lines starting with `:` are keep-alives; ignore them.\n\n| `type` | When | Fields |\n|---|---|---|\n| `start` | first | the question or week, `mode` |\n| `wait` | any time | `message`: e.g. waiting for a rate limit, switching AI service, stopping the previous run |\n| `think` | before each AI round (live only) | `n` (round), `model` |\n| `kpis` | briefing only, before the AI starts | `kpis` (the final KPI table), `query` (its SQL) |\n| `step` | after each tool call | `n`, `tool`, `args`, `summary`, `error`, `body` (the SQL or code), `lang` |\n| `result` | scorecard only, per question | `row`: `qid`, `question`, `passed`, `reasons`, `answer`, `seconds` |\n| `done` | last | `result` (see each endpoint) |\n| `error` | instead of `done` | `message` |\n\n**One run at a time.** Starting a run stops the previous one, and a run stops when its browser goes away.\n\n## Guardrails\n\nThe database file is opened **read-only**, and `run_sql` refuses anything but one `SELECT`. Answers list the\nexact queries from the tool log. The agent says when the data can't answer, and never states a forecast as fact.",
+  "version": "1.0"
+ },
+ "paths": {
+  "/api/meta": {
+   "get": {
+    "tags": [
+     "App"
+    ],
+    "summary": "Everything the screens need to start",
+    "description": "Data range, demo tracks (and whether each has a recording), weeks for the briefing, AI services in\norder, the agent's tools, the follow-up memory and the competitor-price status.",
+    "operationId": "meta_api_meta_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/changes": {
+   "get": {
+    "tags": [
+     "App"
+    ],
+    "summary": "The agent's rulebook before and after, and its tool cards",
+    "description": "The starting notebook's system prompt, today's, and each tool's description exactly as the AI reads it.",
+    "operationId": "changes_api_changes_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/run": {
+   "get": {
+    "tags": [
+     "Agent runs"
+    ],
+    "summary": "Ask the agent a question (streamed)",
+    "description": "The agent plans, runs read-only tools, and answers. `done.result` holds `answer`, `queries` (the exact\nSQL or code, from the tool log), `charts` (PNG, base64), `tokens`, `seconds` and `model`. Follow-up\nquestions remember the last answers until `POST /api/new-chat`.",
+    "operationId": "run_api_run_get",
+    "parameters": [
+     {
+      "name": "mode",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string",
+       "description": "`live` (the AI), `replay` (a recorded live run) or `dry` (no AI, scripted).",
+       "enum": [
+        "live",
+        "replay",
+        "dry"
+       ],
+       "example": "replay",
+       "default": "dry",
+       "title": "Mode"
+      },
+      "description": "`live` (the AI), `replay` (a recorded live run) or `dry` (no AI, scripted)."
+     },
+     {
+      "name": "case",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string",
+       "description": "A demo track's id (from `/api/meta` `tracks`), e.g. `northwest_margin`. Takes priority over `question`.",
+       "default": "",
+       "title": "Case"
+      },
+      "description": "A demo track's id (from `/api/meta` `tracks`), e.g. `northwest_margin`. Takes priority over `question`."
+     },
+     {
+      "name": "question",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string",
+       "description": "Your own question, in plain English. `live` mode only, unless it matches a demo track.",
+       "examples": [
+        "What were total sales by territory last year?"
+       ],
+       "default": "",
+       "title": "Question"
+      },
+      "description": "Your own question, in plain English. `live` mode only, unless it matches a demo track."
+     },
+     {
+      "name": "delay",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "number",
+       "description": "Seconds to pause after each step, so a replay or dry run is easy to follow (used by the video recorder).",
+       "default": 0.0,
+       "title": "Delay"
+      },
+      "description": "Seconds to pause after each step, so a replay or dry run is easy to follow (used by the video recorder)."
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "A stream of Server-Sent Events: see **Streaming runs** above.",
+      "content": {
+       "text/event-stream": {
+        "example": "data: {\"type\": \"start\", \"question\": \"...\", \"mode\": \"replay\"}\n\ndata: {\"type\": \"step\", \"n\": 1, \"tool\": \"run_sql\", \"summary\": \"10 rows back, saved as q1\", \"body\": \"SELECT ...\"}\n\ndata: {\"type\": \"done\", \"result\": {\"answer\": \"...\", \"queries\": [...], \"charts\": [...]}}\n\n"
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/new-chat": {
+   "post": {
+    "tags": [
+     "Agent runs"
+    ],
+    "summary": "Forget earlier questions",
+    "description": "Clears the follow-up memory, so the next question starts a new conversation.",
+    "operationId": "new_chat_api_new_chat_post",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/briefing": {
+   "get": {
+    "tags": [
+     "Agent runs"
+    ],
+    "summary": "Write the weekly leadership briefing (streamed)",
+    "description": "A `kpis` event comes first: the KPI table straight from SQL, final before the AI starts. `done.result`\nholds `headline` and the sections in `parts`, `kpis`, `charts`, `queries`, and `html`: the whole page,\nready to save or email.",
+    "operationId": "run_briefing_api_briefing_get",
+    "parameters": [
+     {
+      "name": "mode",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string",
+       "description": "`live` (the AI), `replay` (a recorded live run) or `dry` (no AI, scripted).",
+       "enum": [
+        "live",
+        "replay",
+        "dry"
+       ],
+       "example": "replay",
+       "default": "dry",
+       "title": "Mode"
+      },
+      "description": "`live` (the AI), `replay` (a recorded live run) or `dry` (no AI, scripted)."
+     },
+     {
+      "name": "week",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string",
+       "description": "Monday the week starts, `YYYY-MM-DD` (from `/api/meta` `weeks`). Default: the latest full week.",
+       "examples": [
+        "2025-06-23"
+       ],
+       "default": "",
+       "title": "Week"
+      },
+      "description": "Monday the week starts, `YYYY-MM-DD` (from `/api/meta` `weeks`). Default: the latest full week."
+     },
+     {
+      "name": "delay",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "number",
+       "description": "Seconds to pause after each step, so a replay or dry run is easy to follow (used by the video recorder).",
+       "default": 0.0,
+       "title": "Delay"
+      },
+      "description": "Seconds to pause after each step, so a replay or dry run is easy to follow (used by the video recorder)."
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "A stream of Server-Sent Events: see **Streaming runs** above.",
+      "content": {
+       "text/event-stream": {
+        "example": "data: {\"type\": \"start\", \"question\": \"...\", \"mode\": \"replay\"}\n\ndata: {\"type\": \"step\", \"n\": 1, \"tool\": \"run_sql\", \"summary\": \"10 rows back, saved as q1\", \"body\": \"SELECT ...\"}\n\ndata: {\"type\": \"done\", \"result\": {\"answer\": \"...\", \"queries\": [...], \"charts\": [...]}}\n\n"
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/scorecard": {
+   "get": {
+    "tags": [
+     "Agent runs"
+    ],
+    "summary": "Mark the agent's answers (streamed)",
+    "description": "Asks the brief's four questions and three guardrail traps, and streams one `result` event per question,\nmarked against answers worked out from the database.",
+    "operationId": "scorecard_api_scorecard_get",
+    "parameters": [
+     {
+      "name": "mode",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string",
+       "description": "`live` (the AI), `replay` (a recorded live run) or `dry` (no AI, scripted).",
+       "enum": [
+        "live",
+        "replay",
+        "dry"
+       ],
+       "example": "replay",
+       "default": "dry",
+       "title": "Mode"
+      },
+      "description": "`live` (the AI), `replay` (a recorded live run) or `dry` (no AI, scripted)."
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "A stream of Server-Sent Events: see **Streaming runs** above.",
+      "content": {
+       "text/event-stream": {
+        "example": "data: {\"type\": \"start\", \"question\": \"...\", \"mode\": \"replay\"}\n\ndata: {\"type\": \"step\", \"n\": 1, \"tool\": \"run_sql\", \"summary\": \"10 rows back, saved as q1\", \"body\": \"SELECT ...\"}\n\ndata: {\"type\": \"done\", \"result\": {\"answer\": \"...\", \"queries\": [...], \"charts\": [...]}}\n\n"
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/scorecard/key": {
+   "get": {
+    "tags": [
+     "Agent runs"
+    ],
+    "summary": "The scorecard's questions and what each answer needs",
+    "operationId": "scorecard_key_api_scorecard_key_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/story": {
+   "post": {
+    "tags": [
+     "Ask chat"
+    ],
+    "summary": "Ask the course chat (local)",
+    "description": "Answers only from the brief, the build guide and the history (docs/), plus the passages that best match the\nquestion from the course's training guide and starting notebook and our notebook, cited as [1], [2]. Uses the\nAI service in `.env`. Errors come back as `{\"error\": \"...\"}`.",
+    "operationId": "story_chat_api_story_post",
+    "requestBody": {
+     "description": "`question` (up to 500 characters) and optional `history`: the last few turns, oldest first.",
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object"
+       },
+       "example": {
+        "question": "How do I do Step 2?",
+        "history": [
+         {
+          "role": "user",
+          "content": "What does the brief ask for?"
+         },
+         {
+          "role": "assistant",
+          "content": "It asks for an agent that..."
+         }
+        ]
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "The answer, and the passages it cited.",
+      "content": {
+       "application/json": {
+        "schema": {},
+        "example": {
+         "answer": "The training guide says the free plan allows about 8,000 tokens a minute [1]...",
+         "sources": [
+          {
+           "n": 1,
+           "source": "Course training guide",
+           "title": "Free-tier limits",
+           "url": ""
+          }
+         ],
+         "model": "openai \u00b7 gpt-5.4-mini"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/story/stream": {
+   "post": {
+    "tags": [
+     "Ask chat"
+    ],
+    "summary": "Ask the course chat, streamed (local)",
+    "description": "Same as `POST /api/story`, but the answer arrives word by word.",
+    "operationId": "story_chat_stream_api_story_stream_post",
+    "requestBody": {
+     "description": "`question` (up to 500 characters) and optional `history`: the last few turns, oldest first.",
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object"
+       },
+       "example": {
+        "question": "How do I do Step 2?",
+        "history": [
+         {
+          "role": "user",
+          "content": "What does the brief ask for?"
+         },
+         {
+          "role": "assistant",
+          "content": "It asks for an agent that..."
+         }
+        ]
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Server-Sent Events: `delta` events with each piece of the answer as it's written, then `done` with the whole `answer`, its `sources` and the `model` (or `error`).",
+      "content": {
+       "text/event-stream": {
+        "example": "data: {\"type\": \"delta\", \"text\": \"The training guide\"}\n\ndata: {\"type\": \"done\", \"answer\": \"...\", \"sources\": [], \"model\": \"openai \u00b7 gpt-5.4-mini\"}\n\n"
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/anomalies": {
+   "get": {
+    "tags": [
+     "Tools (no AI)"
+    ],
+    "summary": "Scan for values off their own recent trend",
+    "description": "The `detect_anomalies` tool. Returns a plain-English `summary`, the unusual `runs` (segment, periods, value,\nexpected value, z-score) and the `query` it ran. Bad arguments come back as `{\"error\", \"available\"}`.",
+    "operationId": "anomalies_api_anomalies_get",
+    "parameters": [
+     {
+      "name": "metric",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string",
+       "description": "What to scan.",
+       "enum": [
+        "revenue",
+        "margin",
+        "cost",
+        "margin_pct",
+        "units",
+        "orders",
+        "avg_discount_pct"
+       ],
+       "default": "revenue",
+       "title": "Metric"
+      },
+      "description": "What to scan."
+     },
+     {
+      "name": "by",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string",
+       "description": "Split by.",
+       "enum": [
+        "total",
+        "channel",
+        "territory",
+        "category",
+        "country",
+        "territory_group",
+        "subcategory"
+       ],
+       "default": "channel",
+       "title": "By"
+      },
+      "description": "Split by."
+     },
+     {
+      "name": "grain",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string",
+       "description": "Compare months or weeks.",
+       "enum": [
+        "month",
+        "week"
+       ],
+       "default": "month",
+       "title": "Grain"
+      },
+      "description": "Compare months or weeks."
+     },
+     {
+      "name": "period",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string",
+       "description": "`YYYY-Qn`, `YYYY-MM`, `YYYY` or `all`. Default: the latest quarter.",
+       "examples": [
+        "2025-Q2"
+       ],
+       "default": "",
+       "title": "Period"
+      },
+      "description": "`YYYY-Qn`, `YYYY-MM`, `YYYY` or `all`. Default: the latest quarter."
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/sql": {
+   "post": {
+    "tags": [
+     "Tools (no AI)"
+    ],
+    "summary": "Run one read-only SELECT",
+    "description": "The `run_sql` tool: `columns`, `rows`, `row_count` and a `result_id` the agent can chart. Anything that\nchanges data is refused: try `DELETE FROM SalesOrderHeader` to see the `error`.",
+    "operationId": "sql_api_sql_post",
+    "requestBody": {
+     "description": "`query`: one SELECT (or WITH \u2026 SELECT) on the `sales_lines` view or the raw tables.",
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object"
+       },
+       "example": {
+        "query": "SELECT channel, ROUND(SUM(revenue)) AS revenue FROM sales_lines GROUP BY channel"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/competitors": {
+   "get": {
+    "tags": [
+     "Competitor prices"
+    ],
+    "summary": "Which competitor list is attached",
+    "operationId": "competitors_status_api_competitors_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/competitors/template.csv": {
+   "get": {
+    "tags": [
+     "Competitor prices"
+    ],
+    "summary": "Download a CSV template",
+    "operationId": "competitors_template_api_competitors_template_csv_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/competitors/use": {
+   "post": {
+    "tags": [
+     "Competitor prices"
+    ],
+    "summary": "Attach the mock list, your upload, or none",
+    "description": "{\"source\": \"mock\" | \"uploaded\" | null}: which list your own questions can see.",
+    "operationId": "competitors_use_api_competitors_use_post",
+    "requestBody": {
+     "description": "`source`: `mock`, `uploaded` or `null` (none).",
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object"
+       },
+       "example": {
+        "source": "mock"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/competitors/upload": {
+   "post": {
+    "tags": [
+     "Competitor prices"
+    ],
+    "summary": "Upload your own competitor price list",
+    "description": "The CSV file as the raw request body; its name in the X-Filename header.",
+    "operationId": "competitors_upload_api_competitors_upload_post",
+    "requestBody": {
+     "description": "The CSV file as the raw body; its name in `X-Filename`. Columns: product, competitor, competitor_price, observed_date (optional).",
+     "content": {
+      "text/csv": {
+       "schema": {
+        "type": "string"
+       },
+       "example": "product,competitor,competitor_price,observed_date\nRoad-150 Red, 62,Velo Direct,3299.00,2025-06-01"
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/ask": {
+   "post": {
+    "tags": [
+     "Ask chat (online)"
+    ],
+    "summary": "Ask the course chat (online)",
+    "operationId": "worker_ask",
+    "servers": [
+     {
+      "url": "https://analyst-agent-ask.still-union-ef8a.workers.dev",
+      "description": "Cloudflare Worker"
+     }
+    ],
+    "description": "Same answers as `POST /api/story`, from the same knowledge base. Only requests from the demo site are answered (checked by the `Origin` header).",
+    "requestBody": {
+     "required": true,
+     "description": "`question` (up to 500 characters) and optional `history`: the last few turns, oldest first.",
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object"
+       },
+       "example": {
+        "question": "How do I do Step 2?",
+        "history": [
+         {
+          "role": "user",
+          "content": "What does the brief ask for?"
+         },
+         {
+          "role": "assistant",
+          "content": "It asks for an agent that..."
+         }
+        ]
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "The answer, and the passages it cited.",
+      "content": {
+       "application/json": {
+        "example": {
+         "answer": "The training guide says the free plan allows about 8,000 tokens a minute [1]...",
+         "sources": [
+          {
+           "n": 1,
+           "source": "Course training guide",
+           "title": "Free-tier limits",
+           "url": ""
+          }
+         ],
+         "model": "openai \u00b7 gpt-5.4-mini"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Not from the demo site."
+     },
+     "429": {
+      "description": "Today's limit is reached (300 in total, or 25 for you)."
+     },
+     "502": {
+      "description": "The AI service didn't answer."
+     }
+    }
+   }
+  },
+  "/health": {
+   "get": {
+    "tags": [
+     "Ask chat (online)"
+    ],
+    "summary": "Is the online chat up?",
+    "operationId": "worker_health",
+    "servers": [
+     {
+      "url": "https://analyst-agent-ask.still-union-ef8a.workers.dev",
+      "description": "Cloudflare Worker"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Up, with the size of its knowledge base.",
+      "content": {
+       "application/json": {
+        "example": {
+         "ok": true,
+         "passages": 549,
+         "model": "gpt-5.4-mini"
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "components": {
+  "schemas": {
+   "HTTPValidationError": {
+    "properties": {
+     "detail": {
+      "items": {
+       "$ref": "#/components/schemas/ValidationError"
+      },
+      "type": "array",
+      "title": "Detail"
+     }
+    },
+    "type": "object",
+    "title": "HTTPValidationError"
+   },
+   "ValidationError": {
+    "properties": {
+     "loc": {
+      "items": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "integer"
+        }
+       ]
+      },
+      "type": "array",
+      "title": "Location"
+     },
+     "msg": {
+      "type": "string",
+      "title": "Message"
+     },
+     "type": {
+      "type": "string",
+      "title": "Error Type"
+     },
+     "input": {
+      "title": "Input"
+     },
+     "ctx": {
+      "type": "object",
+      "title": "Context"
+     }
+    },
+    "type": "object",
+    "required": [
+     "loc",
+     "msg",
+     "type"
+    ],
+    "title": "ValidationError"
+   }
+  }
+ },
+ "tags": [
+  {
+   "name": "App",
+   "description": "What the screens need to start: data range, demo tracks, AI services, prompts."
+  },
+  {
+   "name": "Agent runs",
+   "description": "Ask the agent: a question, the weekly briefing or the scorecard. Streamed as Server-Sent Events; see **Streaming runs** above."
+  },
+  {
+   "name": "Tools (no AI)",
+   "description": "The agent's own read-only tools, called directly: no AI involved."
+  },
+  {
+   "name": "Ask chat",
+   "description": "The course students' chat, local version: answers about the task, its steps, the course material and how the project was built, citing its sources."
+  },
+  {
+   "name": "Ask chat (online)",
+   "description": "The same chat, online, as a Cloudflare Worker at `https://analyst-agent-ask.still-union-ef8a.workers.dev`. It holds the AI key, answers only the demo site, and caps questions per day: 300 in total and 25 per visitor."
+  },
+  {
+   "name": "Competitor prices",
+   "description": "Optional, for demos. AdventureWorks has no competitor data, so a mock price list or your own CSV can be attached, read-only."
+  }
+ ],
+ "servers": [
+  {
+   "url": "http://localhost:8501",
+   "description": "The demo app on your machine (./demo.sh app)"
+  }
+ ]
+}

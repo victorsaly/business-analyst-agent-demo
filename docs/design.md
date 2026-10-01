@@ -188,13 +188,14 @@ components:
 
 **Creative North Star: "The Six-Minute Mixtape"**
 
-The demo is an unfolded cassette J-card, written up by hand. A vertical spine runs down the left edge with the title, a red triple stripe and an A/B box. The main panel is ruled inlay stock. Every screen is a part of the card: the tracklist is the demo plan, each prepared case is a track with a running time, side A holds the brief's questions and side B the guardrails. The tape counter and a thin red position bar move while a run plays. Text is ballpoint ink throughout. Red is the printed second colour: the stripe, the running bar, corrections and refusals. Charts are drawn in the same ink on the same paper.
+The demo looks like an unfolded cassette J-card (the paper insert in a cassette case), written up by hand. A vertical spine runs down the left edge with the title, a red triple stripe and an A/B box. The main panel is ruled inlay stock. Every screen is a part of the card: the tracklist is the demo plan, each prepared case is a track with a running time, side A holds the brief's questions and side B the guardrails. The tape counter and a thin red position bar move while a run plays. Text is ballpoint ink throughout. Red is the printed second colour: the stripe, the running bar, corrections and refusals. Charts are drawn in the same ink on the same paper.
 
-The system is deliberately flat, square and inked. Depth comes from rules and boxes, not from light. Type does the brand work: hand-lettered block caps for anything you would letter onto a card, hand-written prose for answers, and typewriter for anything the machine produced (SQL, tool names, counters, figures). The world rejects the usual dark AI dashboard with KPI tiles and chat bubbles.
+The system is flat, square and inked. Depth comes from rules and boxes; there are no shadows. Type carries the brand: hand-lettered block caps for anything you would letter onto a card, handwritten prose for answers, and typewriter for anything the machine produced (SQL, tool names, counters, figures). It deliberately avoids the usual dark AI dashboard with KPI tiles and chat bubbles.
 
-It is built to be read from the back of a lit room on a washed-out projector. The root size is large (18px, rising to 21px at 1800px and wider), contrast is ink on near-white, and no state relies on colour alone: the active screen gets an underline, the current track gets a wash and a red number, and a dry run gets a red box plus written words.
+It is built to be read from the back of a lit room on a washed-out projector. The root font size is large (18px, rising to 21px at 1800px and wider), contrast is ink on near-white, and no state relies on colour alone: the active screen gets an underline, the current track gets a wash and a red number, and a dry run gets a red box plus written words.
 
-**Key Characteristics:**
+Main characteristics:
+
 - Two-ink print: ballpoint blue for everything, one printed red for signals; ochre appears only in charts.
 - Ruled paper ground: a faint blue line every 2rem across the whole page, so content sits on lines like handwriting.
 - Three voices of type: lettered caps (Patrick Hand SC), handwriting (Patrick Hand), typewriter (Courier Prime).
@@ -205,10 +206,27 @@ It is built to be read from the back of a lit room on a washed-out projector. Th
 
 A two-ink print on cream-white stock: one deep ballpoint blue carries all text and structure, one printed red carries signals, and a set of pale blues is used for rules and washes.
 
+In `app/web/app.css` the colours are CSS custom properties on `:root`. The CSS names are shorter than the token names used on this page (`--ink` is Ballpoint Ink, `--ink-2` is Faded Ink, `--rule-mid` is Mid Rule, `--pencil` is Pencil Grey):
+
+```css
+:root {
+  --paper: #fcfbf7;     /* inlay-paper */
+  --wash: #eef2fb;      /* blue-wash */
+  --ink: #1e3a8a;       /* ballpoint-ink */
+  --ink-2: #3f5a9e;     /* faded-ink */
+  --rule: #dbe2f1;      /* ruled-line */
+  --rule-mid: #a9b8dc;  /* mid-rule */
+  --red: #c62828;       /* printed-red */
+  --red-ink: #b71c1c;   /* red-ink */
+  --pencil: #687083;    /* pencil-grey */
+  ...
+}
+```
+
 ### Primary
 - **Ballpoint Ink** (`ballpoint-ink`): all text, every box outline, heading rules, the spine border, filled primary buttons, the active mode and the active side tab. Inverted (paper on ink) for selection and solid tags.
 - **Pressed Ink** (`ink-pressed`): hover state of the filled primary button only.
-- **Faded Ink** (`faded-ink`): secondary text such as track numbers, notes, figure captions, query labels, the "how I got this" footer and the side-budget line. It is still ink, just older and less pressed.
+- **Faded Ink** (`faded-ink`): secondary text such as track numbers, notes, figure captions, query labels, the "how I got this" footer and the side-budget line. It is still ink, only older and less pressed.
 
 ### Secondary
 - **Printed Red** (`printed-red`): the brand stripe on the spine, the run-position bar, the active-nav underline, the margin line beside the tracklist, list bullets, the focus ring, the text caret and the "writing…" cursor block, plus outlines for refusals, slips and margin notes.
@@ -223,7 +241,14 @@ A two-ink print on cream-white stock: one deep ballpoint blue carries all text a
 - **Pencil Grey** (`pencil-grey`): disabled controls, placeholders and the track sub-line (for example "No recording yet"). It means "not available", not hierarchy.
 
 ### Chart palette
-Charts are rendered by matplotlib in `app/analyst/tools.py` on the same paper, with the same fonts.
+Charts are drawn by matplotlib in `app/analyst/tools.py` on the same paper, with the same fonts. The colours are set at the top of the chart code:
+
+```python
+_INK, _INK_SOFT, _PAPER, _RULE, _OTHER = "#1E3A8A", "#3F5A9E", "#FCFBF7", "#D3DBEE", "#8E98AE"
+_SERIES = ["#2B4BB0", "#B7791F", "#6B86C5"]   # red is kept for negative values only
+_NEG = "#C62828"
+```
+
 - **Chart Ink Blue** (`chart-ink-blue`): series 1, and every bar in a single-series chart.
 - **Chart Pencil Ochre** (`chart-pencil-ochre`): series 2. The only place ochre appears in the system.
 - **Chart Faded Blue** (`chart-faded-blue`): series 3.
@@ -245,9 +270,20 @@ This categorical set was checked for colour-blind separation and contrast agains
 **Body Font:** Patrick Hand (with Marker Felt, cursive)
 **Label/Mono Font:** Courier Prime (with Courier New, monospace)
 
-All three are self-hosted OFL fonts in `app/web/fonts`, loaded with `font-display: block` so the card never flashes a system face. The downloadable briefing embeds them as base64, so it looks the same when emailed or printed.
+All three are self-hosted OFL (open-licence) fonts in `app/web/fonts`, loaded with `font-display: block` so the card never flashes a system font while they load. The downloadable briefing embeds them as base64, so it looks the same when emailed or printed.
 
-**Character:** Block caps lettered with a marker for anything a person would write on the card, a looser hand for the answer prose, and a typewriter label for anything the machine produced. Hand-lettered headings (h1–h3) carry a thin `-webkit-text-stroke` of 0.035em in the current colour (`paint-order: stroke fill`) so they read with marker weight. Track titles, nav links, buttons, scorecard questions, the side total and the spine title carry a lighter 0.02em stroke.
+```css
+@font-face { font-family: "Patrick Hand SC"; src: url("fonts/PatrickHandSC-Regular.ttf") format("truetype"); font-display: block; }
+@font-face { font-family: "Patrick Hand"; src: url("fonts/PatrickHand-Regular.ttf") format("truetype"); font-display: block; }
+@font-face { font-family: "Courier Prime"; src: url("fonts/CourierPrime-Regular.ttf") format("truetype"); font-weight: 400; font-display: block; }
+```
+
+**Character:** Block caps lettered with a marker for anything a person would write on the card, a looser hand for the answer prose, and a typewriter label for anything the machine produced. Hand-lettered headings (h1–h3) carry a thin `-webkit-text-stroke` of 0.035em in the current colour (`paint-order: stroke fill`) so they look as if drawn with a marker. Track titles, nav links, buttons, scorecard questions, the side total and the spine title carry a lighter 0.02em stroke:
+
+```css
+h1, h2, h3 { font-family: var(--hand-sc); font-weight: 400; -webkit-text-stroke: 0.035em currentColor; paint-order: stroke fill; }
+.track .t, .list li .t, .score-row .q, .masthead nav a, .btn, .rule-head .total, .spine .title { -webkit-text-stroke: 0.02em currentColor; }
+```
 
 ### Hierarchy
 - **Display** (`display`): the Cover title only, set over three lines with a 4px ink underline bar.
@@ -262,7 +298,13 @@ All three are self-hosted OFL fonts in `app/web/fonts`, loaded with `font-displa
 - **Note** (`note`): secondary text in Faded Ink: notes, captions, track descriptions (1.05–1.2rem).
 - **Typed** (`typed`, `typed-strong`): SQL, tool names in the step log (bold), the tape counter (bold, 1.35rem), the catalogue mark, the footer metrics, the numeric table cells (right-aligned, tabular) and the margin formula.
 
-The root is 18px; 21px at 1800px and wider for projectors; 16px at 1100px and below. All sizes scale in rem from that root.
+The root is 18px, 21px at 1800px and wider (for projectors), and 16px at 1100px and below. All sizes are in rem, so they scale from that root:
+
+```css
+html { font-size: 18px; }
+@media (min-width: 1800px) { html { font-size: 21px; } }
+@media (max-width: 1100px) { html { font-size: 16px; } }
+```
 
 ### Named Rules
 **The Three Voices Rule.** Lettered caps for labels and titles, handwriting for prose, typewriter for anything the machine produced. Never set SQL or numbers from a query in a hand face, and never set prose in the typewriter.
@@ -271,9 +313,17 @@ The root is 18px; 21px at 1800px and wider for projectors; 16px at 1100px and be
 
 ## Layout
 
-The page is a two-column grid: a 6rem spine and the card. The spine is sticky and full height: the red triple stripe (three 5px bars, 4px apart), the catalogue mark ("6:00 / AW-06"), the vertical title rotated to read bottom-up, and the A/B box with the date span. The masthead is sticky, 4.5rem high, ruled underneath with 2px ink, and holds the screen nav on the left with the mode switch and tape counter on the right. Directly under it is a 4px red position bar that scales from the left as a run plays.
+The page is a two-column grid: a 6rem spine and the card. The spine is sticky and full height: the red triple stripe (three 5px bars, 4px apart), the catalogue mark ("6:00 / CP-02 / 1–2 Oct 26": the demo running time, Capstone Project 2 of 5, and the workshop dates), the vertical title rotated to read bottom-up, and the A/B box with the date span. The masthead is sticky, 4.5rem high, ruled underneath with 2px ink, and holds the screen nav on the left with the mode switch and tape counter on the right. Directly under it is a 4px red position bar that scales from the left as a run plays.
 
-Main content has 2.25rem side gutters and 2rem top padding. The paper is ruled every 2rem (`ruled-line`), and list rows, requirement rows and track rows keep a minimum height of one ruled line so they sit on the paper's rhythm.
+Main content has 2.25rem side gutters and 2rem top padding. The paper is ruled every 2rem (`ruled-line`), and list rows, requirement rows and track rows are at least one ruled line high so they sit on the lines. The rules are a hard-stop gradient on the page background:
+
+```css
+body {
+  background-color: var(--paper);
+  background-image: linear-gradient(to bottom, transparent calc(var(--line) - 1px), var(--rule) calc(var(--line) - 1px), var(--rule) var(--line), transparent var(--line));
+  background-size: 100% var(--line);   /* --line: 2rem */
+}
+```
 
 - **Tracks** is a deck: the tapelist on the left (minimum 27rem, about a third, sticky under the masthead), the now-playing inlay on the right; 2rem gap.
 - **Cover** is a 1.25 : 1 split: the title block on the left, a ruled panel ("How it plays", "House rules") on the right; 3rem gap, vertically centred.
@@ -281,14 +331,14 @@ Main content has 2.25rem side gutters and 2rem top padding. The paper is ruled e
 - **Briefing / Scorecard** sit on one ruled sheet, max 66rem wide.
 - Reading widths are capped: answer 58rem, charts and notes 62rem, notes and slips 52rem.
 
-**Responsive.** At 1100px and below the root drops to 16px, and every split collapses to one column; the tapelist stops being sticky. At 700px and below the spine becomes a horizontal top strip (no A/B box, a wrapping title), the masthead wraps and stops being sticky, gutters shrink to 1rem, and requirement rows drop their category and points columns.
+On smaller screens: at 1100px and below the root drops to 16px, and every split collapses to one column; the tapelist stops being sticky. At 700px and below the spine becomes a horizontal top strip (no A/B box, a wrapping title), the masthead wraps and stops being sticky, gutters shrink to 1rem, and requirement rows drop their category and points columns.
 
 ## Elevation & Depth
 
 The system is flat. There is no `box-shadow` anywhere in the build. Hierarchy comes from line weight and from the paper: 1px Mid Rule for row dividers, 1.5px ink for boxes, tags and controls, 2px ink for structural edges (spine, masthead, buttons), 2.5px ink under section heads, and 3–4px ink bars under the big titles. The only "lift" is the Blue Wash on hover and on the current row, and the inverted ink fill for active states.
 
 ### Named Rules
-**The Ink, Not Light Rule.** Depth is drawn, not lit. To separate something, give it a heavier rule or a box. Do not use a shadow, a blur or a soft gradient. Hard-stop gradients are fine only as a way to draw ruled lines (the paper rules, the tracklist margin line).
+**The Ink, Not Light Rule.** To separate something, give it a heavier rule or a box. Do not use a shadow, a blur or a soft gradient. Hard-stop gradients are fine only as a way to draw ruled lines (the paper rules, the tracklist margin line).
 
 ## Shapes
 
@@ -304,7 +354,7 @@ The one rounded shape is the WebKit scrollbar thumb (6px), which is browser chro
 ## Components
 
 ### Buttons
-Lettered, square and inked: they read like boxes ruled onto the card.
+Buttons use lettered caps in square ink boxes, like boxes ruled onto the card.
 - **Shape:** square (`rounded.none`), 2px ink border, icon and label 0.55rem apart.
 - **Primary:** ink fill with paper text; for the main action on a screen ("Play side A", "Ask").
 - **Secondary:** paper fill with an ink outline and ink text.
@@ -330,7 +380,12 @@ A segmented box of three lettered buttons (Live AI, Replay, Dry run) joined by 1
 ### Inputs / Fields
 - **Style:** 1.5px ink border, Blank White fill, square, handwriting at 1.2–1.25rem. The textarea switches to the typewriter. Placeholders are Pencil Grey.
 - **Labels:** lettered caps above the field.
-- **Focus:** the global focus ring, a 2px Printed Red outline offset 3px. The caret is red too.
+- **Focus:** the global focus ring, a 2px Printed Red outline offset 3px. The caret is red too:
+
+```css
+:focus-visible { outline: 2px solid var(--red); outline-offset: 3px; }
+body { caret-color: var(--red); }
+```
 
 ### Navigation
 Lettered caps links in the masthead, 1.6rem apart, with no default underline. Hover shows a 2.5px Mid Rule underline. The current page gets a 2.5px Printed Red underline (`aria-current="page"`). At 700px and below the links wrap.
@@ -339,10 +394,17 @@ Lettered caps links in the masthead, 1.6rem apart, with no default underline. Ho
 The demo plan as a cassette tracklist inside a ruled box. Side A / Side B tabs (a segmented box like the mode switch) flip the face with a y-axis turn (rotate to 90°, 220ms, opacity to 0.2). Each track is a full-width button laid out as number · title · running time, with a Pencil Grey sub-line when a recording is missing. Hover and current rows get Blue Wash, and the current number turns Red Ink. The side's summed time sits in the heading against 6:00, and the "both sides" budget sits underneath. A hidden bonus track sits below a typed gap marker and is labelled as a planted rehearsal anomaly. Pressing a track plays it: this is the screen's primary action.
 
 ### Step log (signature)
-A numbered list where each tool step is inked in as it arrives: a left-to-right `clip-path` reveal of 340ms. Each row shows a lettered number, the bold typed tool name and a handwriting summary. Refused or errored steps turn Red Ink. Queries fold open in a typed SQL block. While the agent works, a "writing…" line ends in a blinking red caret block (1s, stepped).
+A numbered list where each tool step is inked in as it arrives, with a left-to-right `clip-path` reveal of 340ms:
+
+```css
+@keyframes ink { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+.steps li { border-bottom: 1px solid var(--rule-mid); animation: ink 340ms var(--ease) both; }
+```
+
+Each row shows a lettered number, the bold typed tool name and a handwriting summary. Refused or errored steps turn Red Ink. Queries fold open in a typed SQL block. While the agent works, a "writing…" line ends in a blinking red caret block (1s, stepped).
 
 ### Liner notes
-"How I got this": an ordered list of the exact queries from the tool log. Each has a red bracketed number, a typed label and a typed SQL block (Blank White, 1px Mid Rule border). A typed footer gives tool calls, tokens, seconds and model.
+The "How I got this" section is an ordered list of the exact queries from the tool log. Each has a red bracketed number, a typed label and a typed SQL block (Blank White, 1px Mid Rule border). A typed footer gives tool calls, tokens, seconds and model.
 
 ### Tape counter and position bar
 A bold typed counter (tabular numbers) in the masthead counts up while a run plays, with a smaller Faded Ink suffix, and turns Red Ink when over. A 4px red bar under the masthead scales across in step (250ms linear).
@@ -354,7 +416,7 @@ Presenter-only "Point out:" notes, and refusal or limit slips: handwriting in Re
 Lettered header cells on a 2.5px ink rule, rows on 1px Mid Rule, numeric cells in the typewriter, right-aligned with tabular numbers. Used for KPIs, tool results and the briefing.
 
 ### Chart figure
-A matplotlib PNG on Inlay Paper: a lettered caps title on the left (19pt), handwriting tick labels (15pt), typewriter value labels (14pt), gridlines only on the value axis, and a single ink baseline. Shown with a 1px Mid Rule border and a Faded Ink caption ("chart_1: …").
+Charts are matplotlib PNGs on Inlay Paper, with a lettered caps title on the left (19pt), handwriting tick labels (15pt), typewriter value labels (14pt), gridlines only on the value axis, and a single ink baseline. They are shown with a 1px Mid Rule border and a Faded Ink caption ("chart_1: …").
 
 ### Downloadable briefing page
 A self-contained miniature of the card at fixed pixel sizes: a 64px spine with a 3-bar red stripe and vertical title, 17px handwriting body, rules every 28px, a 32px lettered h1 on a 3px rule, tables and liner notes as in the app, and embedded fonts. The outer border is dropped when printing.
@@ -362,19 +424,26 @@ A self-contained miniature of the card at fixed pixel sizes: a 64px spine with a
 ## Do's and Don'ts
 
 ### Do:
-- **Do** set every surface on Inlay Paper with the 2rem ruled lines, and keep row heights at a minimum of one ruled line.
-- **Do** separate content with ink rules and 1.5px boxes: 1px Mid Rule between rows, 2.5px ink under headings.
-- **Do** use the three voices strictly: lettered caps for titles and labels, handwriting for prose, Courier Prime for SQL, tool names, counters and figures.
-- **Do** give hand-lettered headings the 0.035em text stroke (0.02em on lettered labels) instead of a bold weight.
-- **Do** reserve Printed Red for the stripe, the running bar, the current position, corrections, refusals and focus.
-- **Do** draw chart series in Chart Ink Blue, Chart Pencil Ochre and Chart Faded Blue, in that order, with "Other" in Chart Other Grey and negatives in red.
-- **Do** state every mode in words as well as style (solid, outline or red tag, plus the dry-run note).
-- **Do** keep motion short and meaningful (160ms hovers, 220ms side flip, 340ms ink reveal), and drop all of it under `prefers-reduced-motion`.
+- Do set every surface on Inlay Paper with the 2rem ruled lines, and keep row heights at a minimum of one ruled line.
+- Do separate content with ink rules and 1.5px boxes: 1px Mid Rule between rows, 2.5px ink under headings.
+- Do use the three voices strictly: lettered caps for titles and labels, handwriting for prose, Courier Prime for SQL, tool names, counters and figures.
+- Do give hand-lettered headings the 0.035em text stroke (0.02em on lettered labels) instead of a bold weight.
+- Do reserve Printed Red for the stripe, the running bar, the current position, corrections, refusals and focus.
+- Do draw chart series in Chart Ink Blue, Chart Pencil Ochre and Chart Faded Blue, in that order, with "Other" in Chart Other Grey and negatives in red.
+- Do state every mode in words as well as style (solid, outline or red tag, plus the dry-run note).
+- Do keep motion short and purposeful (160ms hovers, 220ms side flip, 340ms ink reveal), and turn all of it off for people who ask their system for reduced motion:
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+```
+
 
 ### Don't:
-- **Don't** use rounded corners, drop shadows, blurs or soft colour gradients on any card element (hard-stop gradients that draw ruled lines are the paper itself, and are fine).
-- **Don't** use red as a data series, or ochre in interface chrome.
-- **Don't** use pure white as a surface; it is only for fields and typed blocks.
-- **Don't** set prose or headings in a system sans or serif. If a hand face fails to load, the fallback is Marker Felt or cursive, never Arial or Inter.
-- **Don't** fake bold on Patrick Hand or Patrick Hand SC with `font-weight: 700`.
-- **Don't** turn the screens into a dark AI dashboard with KPI tiles and chat bubbles; answers are inked onto the card, not spoken in bubbles.
+- Don't use rounded corners, drop shadows, blurs or soft colour gradients on any card element (hard-stop gradients that draw ruled lines are the paper itself, and are fine).
+- Don't use red as a data series, or ochre in interface chrome.
+- Don't use pure white as a surface; it is only for fields and typed blocks.
+- Don't set prose or headings in a system sans or serif. If a hand face fails to load, the fallback is Marker Felt or cursive, never Arial or Inter.
+- Don't fake bold on Patrick Hand or Patrick Hand SC with `font-weight: 700`.
+- Don't turn the screens into a dark AI dashboard with KPI tiles and chat bubbles; answers are inked onto the card, not spoken in bubbles.

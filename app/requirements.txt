@@ -5,3 +5,4 @@ numpy>=1.26
 matplotlib>=3.8
 requests>=2.31
 playwright>=1.45
+markdown>=3.5

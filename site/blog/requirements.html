@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The brief, line by line · Business Performance Analyst Agent</title>
+<meta name="description" content="A course demonstration (Agentic AI Workshop 2026, Capstone 2): how we built an AI analyst agent, step by step.">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="../blog.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/diff.min.js" defer></script>
+<script>addEventListener("DOMContentLoaded", () => window.hljs && hljs.highlightAll());</script><script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+mermaid.initialize({ startOnLoad: false, theme: "base", securityLevel: "strict",
+  flowchart: { curve: "basis", padding: 14, nodeSpacing: 34, rankSpacing: 40 }, sequence: { mirrorActors: false },
+  themeVariables: { fontFamily: '"Patrick Hand SC", "Marker Felt", cursive', fontSize: "17px",
+    background: "#fcfbf7", primaryColor: "#ffffff", primaryTextColor: "#1e3a8a", primaryBorderColor: "#1e3a8a",
+    secondaryColor: "#eef2fb", tertiaryColor: "#eef2fb", lineColor: "#3f5a9e", textColor: "#1d2433",
+    clusterBkg: "#eef2fb", clusterBorder: "#a9b8dc", edgeLabelBackground: "#ffffff",
+    noteBkgColor: "#eef2fb", noteBorderColor: "#a9b8dc", noteTextColor: "#1e3a8a", actorLineColor: "#a9b8dc", signalColor: "#3f5a9e",
+    cScale0: "#eef2fb", cScale1: "#ffffff", cScale2: "#eef2fb", cScale3: "#ffffff", cScale4: "#eef2fb",
+    cScaleLabel0: "#1e3a8a", cScaleLabel1: "#1e3a8a", cScaleLabel2: "#1e3a8a", cScaleLabel3: "#1e3a8a", cScaleLabel4: "#1e3a8a",
+    cScalePeer0: "#a9b8dc", cScalePeer1: "#a9b8dc", cScalePeer2: "#a9b8dc", cScalePeer3: "#a9b8dc", cScalePeer4: "#a9b8dc" } });
+await document.fonts.ready;   // measure the labels in the hand-lettered font, not the fallback
+await mermaid.run({ querySelector: "pre.mermaid" });
+</script>
+<script src="../blog.js" defer></script></head>
+<body><header class="top"><div class="stripe"></div><div class="in">
+<a class="brand" href="index.html"><img src="../logo.svg" alt="" width="32" height="32"> Business Performance Analyst Agent</a>
+<div class="search" role="search"><label class="sr" for="q">Search the docs</label><input id="q" type="search" placeholder="Search the docs" autocomplete="off" spellcheck="false" aria-controls="hits" aria-expanded="false" aria-autocomplete="list"><kbd aria-hidden="true">/</kbd><div id="hits" role="listbox" aria-label="Search results" hidden></div></div><nav aria-label="Blog"><a href="index.html">How this was made</a><a href="history.html">History</a><a href="requirements.html" aria-current="page">Requirements</a><a href="build-guide.html">Build guide</a><a href="../demo/">Open the demo</a><a href="../api/">API</a><a href="../home/">Home</a></nav></div></header>
+<div class="wrap"><main><span class="course">Course demonstration · Capstone 2 · Agentic AI Workshop 2026</span>
+<h1 id="the-brief-line-by-line">The brief, line by line</h1>
+<p>Every requirement in the Capstone 2 brief (Agentic AI Workshop 2026, "Business Performance Analyst Agent"),
+and where to see that it's met. "Recording" means a recorded live AI run in <code>app/recordings/</code>. You can watch
+each one in the app's Replay mode or <a href="https://victorsaly.github.io/business-analyst-agent-demo/demo/">online</a>.
+Checked on 1 October 2026.</p>
+<p><strong>Result: every requirement is met.</strong> The one optional item not used is the backup dataset.</p>
+<h2 id="your-mission">Your mission</h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Brief</th>
+<th>Status</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Answer plain-English business questions by writing and running analysis over sales, operations and finance data</td>
+<td>Met</td>
+<td>Tracks screen; <a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/app/analyst/agent.py">agent loop</a></td>
+</tr>
+<tr>
+<td>Produce a chart and a clear explanation</td>
+<td>Met</td>
+<td>Every answer with numbers by group or over time draws one chart (rulebook rule 12)</td>
+</tr>
+<tr>
+<td>Flag anything unusual</td>
+<td>Met</td>
+<td><code>detect_anomalies</code>; track "Anything unusual last quarter?"</td>
+</tr>
+<tr>
+<td>At the end of the week, write a one-page briefing for the leadership team</td>
+<td>Met</td>
+<td>Briefing screen; downloadable as one HTML page</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="what-your-agent-must-do">What your agent must do</h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>Brief</th>
+<th>Status</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Map each question to the right tables and metrics (revenue, margin, volume, returns, cost)</td>
+<td>Met</td>
+<td><code>get_schema</code> gives the tables and a plain-English data dictionary. Metrics: revenue, margin, cost, volume (<code>units</code>), orders, margin %, discount %. <strong>Returns aren't in the data</strong>, so the agent says so (scorecard X2)</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Write and run SQL or pandas code, and fix its own errors</td>
+<td>Met</td>
+<td><code>run_sql</code>, <code>run_python</code>. Errors come back with a hint, and rule 7 says to fix and retry (up to 3 times). Example: the briefing recording, where 3 queries failed and the agent rewrote and re-ran all 3. A sample error is shown below the table</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Choose and draw a chart that suits the question</td>
+<td>Met</td>
+<td><code>make_chart</code> draws bar, line or breakdown charts. Recordings: bar for sales by territory, line for trends over time, a breakdown chart for "why did margin drop"</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Explain the result and what drove it ("Margin fell because…")</td>
+<td>Met</td>
+<td>Track "Why Northwest margin dropped, Q2 2023": margin per unit, the Reseller channel and Mountain Bikes, with numbers. <code>explain_change</code> splits a change into volume, price and mix</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Flag anomalies, such as a region or product well off its trend</td>
+<td>Met</td>
+<td><code>detect_anomalies</code> compares each month or week with its own recent trend, by territory, category, channel and more</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Show its working: the query it ran, so the answer can be checked</td>
+<td>Met</td>
+<td>"How I got this" under every answer (Developer view) lists the exact queries, taken from the tool log, never from the AI's own words (<a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/app/analyst/agent.py"><code>queries_used</code></a>)</td>
+</tr>
+</tbody>
+</table></div>
+<p>What a self-correction looks like. The AI guesses a column name that doesn't exist, and <code>run_sql</code> sends back
+the error with a hint (real output from <a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/app/analyst/tools.py">tools.py</a>):</p>
+<pre><code class="language-json">{
+  &quot;error&quot;: &quot;SQL error: ... no such column: yr&quot;,
+  &quot;query&quot;: &quot;SELECT territory, SUM(revenue) FROM sales_lines WHERE yr = 2024 GROUP BY 1&quot;,
+  &quot;hint&quot;: &quot;Check names with get_schema(). This is SQLite: strftime(), LIMIT, ||. Fix the query and try again.&quot;
+}
+</code></pre>
+<p>The AI then rewrites the query with the right column (<code>year = 2024</code>) and runs it again.</p>
+<h2 id="tools-to-build">Tools to build</h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Purpose (brief)</th>
+<th>Status</th>
+<th>Where</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>get_schema()</code></td>
+<td>Tables, columns, data dictionary</td>
+<td>Met</td>
+<td><a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/app/analyst/tools.py">tools.py</a></td>
+</tr>
+<tr>
+<td><code>run_sql(query)</code></td>
+<td>Read-only query execution</td>
+<td>Met</td>
+<td>Refuses anything but one SELECT; the database file is opened read-only (<code>mode=ro</code>)</td>
+</tr>
+<tr>
+<td><code>run_python(code)</code></td>
+<td>pandas analysis in a sandbox</td>
+<td>Met</td>
+<td>pandas and numpy only, on earlier query results; no imports, files or system access; 10-second limit. Example call: <code>result = df.assign(growth_pct=df['rev_2024'] / df['rev_2023'] * 100 - 100)</code></td>
+</tr>
+<tr>
+<td><code>make_chart(data, type)</code></td>
+<td>Bar, line or breakdown chart</td>
+<td>Met</td>
+<td><code>chart_type</code>: <code>bar</code>, <code>line</code>, <code>breakdown</code></td>
+</tr>
+<tr>
+<td><code>detect_anomalies(metric)</code></td>
+<td>Flags values off trend</td>
+<td>Met</td>
+<td>Also takes <code>by</code>, <code>grain</code> and <code>period</code></td>
+</tr>
+<tr>
+<td><em>(extra)</em> <code>explain_change</code></td>
+<td>Volume / price / mix (stretch goal)</td>
+<td>Met</td>
+<td>The three parts always add up to the total change</td>
+</tr>
+</tbody>
+</table></div>
+<p>A typical <code>run_sql</code> call and the start of its result. The result id (<code>q1</code>) is what <code>make_chart</code> and
+<code>run_python</code> use to pick up the rows:</p>
+<pre><code class="language-text">run_sql(&quot;SELECT territory, ROUND(SUM(revenue), 0) AS revenue
+         FROM sales_lines WHERE year = 2024 GROUP BY 1 ORDER BY 2 DESC&quot;)
+
+10 row(s) [q1]
+Southwest  9,121,932
+Canada     6,231,210
+Northwest  6,018,433
+...
+</code></pre>
+<h2 id="how-it-works">How it works</h2>
+<p>The brief's flow is: question → plan the analysis → write query or code → run and self-correct → chart and
+explanation → weekly briefing. Met: every stage shows up as a step on the Tracks screen, and Developer view adds
+the arguments, SQL, timings and AI rounds for each one.</p>
+<figure class="diagram"><pre class="mermaid">flowchart LR
+  accTitle: The brief's flow, from question to briefing
+  Q([&quot;Question&quot;]) --&gt; P[&quot;Plan the&lt;br/&gt;analysis&quot;] --&gt; W[&quot;Write query&lt;br/&gt;or code&quot;] --&gt; R[&quot;Run it&quot;]
+  R -- &quot;error: fix and retry,&lt;br/&gt;up to 3 times&quot; --&gt; W
+  R --&gt; C[&quot;Chart and&lt;br/&gt;explanation&quot;] --&gt; B([&quot;Weekly&lt;br/&gt;briefing&quot;])
+  classDef red stroke:#c62828,stroke-width:2px,color:#b71c1c
+  class R red
+</pre></figure>
+<h2 id="your-data">Your data</h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Brief</th>
+<th>Status</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Microsoft AdventureWorks (MIT licence)</td>
+<td>Met</td>
+<td>Downloaded from Microsoft's sql-server-samples repo by <code>./demo.sh setup</code> and built into a read-only SQLite file: 31,465 orders, May 2022 to June 2025, ten territories</td>
+</tr>
+<tr>
+<td>UCI Online Retail II (backup)</td>
+<td>Optional, not used</td>
+<td>AdventureWorks has cost data, so margin can be calculated; the backup has none</td>
+</tr>
+<tr>
+<td>Margin = LineTotal − (OrderQty × StandardCost)</td>
+<td>Met</td>
+<td>The <code>sales_lines</code> view: <code>d.LineTotal - d.OrderQty * p.StandardCost AS margin</code> (<a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/app/analyst/data.py">data.py</a>)</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="guardrails-non-negotiable">Guardrails (non-negotiable)</h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Guardrail</th>
+<th>How it's enforced</th>
+<th>Tested by</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Read-only access to the database</td>
+<td>SQLite opened with <code>mode=ro</code>; <code>run_sql</code> refuses anything but one SELECT, and any word that changes data</td>
+<td>Track "Delete all the 2022 orders…" (refused); Tools screen "Try: delete the orders"; automated checks</td>
+</tr>
+<tr>
+<td>Always show the query behind an answer</td>
+<td>Queries listed from the tool log under every answer and in the briefing</td>
+<td>Every recording</td>
+</tr>
+<tr>
+<td>Say when the data can't answer</td>
+<td>Rule 3, with the list of what's not in the data; no stand-ins from other columns</td>
+<td>Scorecard X1 (competitor prices) and X2 (return rate): both pass</td>
+</tr>
+<tr>
+<td>Never present a forecast or guess as a fact</td>
+<td>Rule 4: show the past trend; any projection is labelled "ESTIMATE, not a fact"</td>
+<td>Scorecard X3 and track "What will our revenue be next quarter?": pass</td>
+</tr>
+</tbody>
+</table></div>
+<p>Read-only is enforced three times over, so a mistake in one check can't change the data:</p>
+<figure class="diagram"><pre class="mermaid">flowchart LR
+  accTitle: Three locks between the AI and the data
+  Q[&quot;SQL the AI wrote&quot;] --&gt; L1{&quot;Starts with&lt;br/&gt;SELECT or WITH?&quot;}
+  L1 -- yes --&gt; L2{&quot;One statement, no&lt;br/&gt;data-changing words?&quot;}
+  L2 -- yes --&gt; L3[(&quot;Database file&lt;br/&gt;opened read-only&quot;)]
+  L3 --&gt; R[&quot;Rows, and the query&lt;br/&gt;kept for the answer&quot;]
+  L1 -- no --&gt; X[&quot;Refused,&lt;br/&gt;with a hint&quot;]
+  L2 -- no --&gt; X
+  classDef red stroke:#c62828,stroke-width:2px,color:#b71c1c
+  class X red
+</pre></figure>
+<p>A delete sent straight to <code>run_sql</code> (as on the Tools screen) is refused before it reaches the database:</p>
+<pre><code class="language-json">{
+  &quot;error&quot;: &quot;Only SELECT (or WITH ... SELECT) queries are allowed. The database is read-only.&quot;,
+  &quot;query&quot;: &quot;DELETE FROM SalesOrderHeader WHERE OrderDate &lt; '2023-01-01'&quot;
+}
+</code></pre>
+<p>In the recorded track the AI doesn't even try: it answers "I can’t help delete or alter data; the database is
+read-only, and I’m only able to run SELECT queries." What the agent is told is missing from the data
+(<a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/app/analyst/tools.py">tools.py</a>, <code>AW_DICTIONARY</code>):</p>
+<pre><code class="language-python">&quot;not_in_data&quot;: [&quot;returns or refunds&quot;, &quot;competitors or their prices&quot;, &quot;customer satisfaction&quot;,
+                &quot;marketing spend&quot;, &quot;website traffic&quot;, &quot;budgets or targets&quot;, &quot;weather&quot;, &quot;staff morale&quot;,
+                &quot;any future figures (no forecasts)&quot;],
+</code></pre>
+<h2 id="try-these-first">Try these first</h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Status</th>
+<th>Where</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>"What were total sales by territory last year?"</td>
+<td>Met</td>
+<td>Track 01, scorecard T1</td>
+</tr>
+<tr>
+<td>"Why did margin drop in the Northwest in Q2?"</td>
+<td>Met</td>
+<td>Track 03 (names the year: Q2 2023), scorecard T2</td>
+</tr>
+<tr>
+<td>"Which product category is growing fastest?"</td>
+<td>Met</td>
+<td>Track 04, scorecard T3</td>
+</tr>
+<tr>
+<td>"Is anything unusual in last quarter's numbers?"</td>
+<td>Met</td>
+<td>Track 05, scorecard T4</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Scorecard on the recordings: 7 of 7</strong>: the 4 questions above plus the 3 guardrail traps, each marked
+against an answer worked out from the database at marking time.</p>
+<h2 id="stretch-goals-and-live-demo">Stretch goals and live demo</h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Brief</th>
+<th>Status</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Follow-up drill-downs ("…and by product?")</td>
+<td>Met</td>
+<td>Track 02 "…and by product category?" remembers the previous answer</td>
+</tr>
+<tr>
+<td>Break a change into its causes (volume, price, mix)</td>
+<td>Met</td>
+<td><code>explain_change</code>, used in the Northwest margin answer</td>
+</tr>
+<tr>
+<td>Generate the one-page weekly leadership briefing automatically</td>
+<td>Met</td>
+<td>Briefing screen: the KPI table comes straight from SQL, the AI writes the commentary</td>
+</tr>
+<tr>
+<td>Demo moment: the leadership team asks a question that leads to a planted anomaly the agent must explain</td>
+<td>Met</td>
+<td>Hidden track on side B, using a separate copy of the database with a planted 25% bike discount in Northwest, May 2024. Recorded: the agent found the reseller discount jump (to about 22%) and the margin loss ($96,403)</td>
+</tr>
+<tr>
+<td>Builds on Lab 2 (data analyst agent)</td>
+<td>Met</td>
+<td>Sections 1 to 5 of the notebook (the Lab 2 engine) kept unchanged; Section 6 added</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="workshop-schedule-and-judging">Workshop schedule and judging</h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Brief</th>
+<th>How we prepared</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>6-minute demo</td>
+<td>The Tracks screen is the plan: side A plus side B add up to exactly 6:00, with a counter per track</td>
+</tr>
+<tr>
+<td>2-minute Q&amp;A</td>
+<td>Prepared answers in the <a href="build-guide.html#step-13-the-6-minute-demo-plan">build guide</a>; the Story screen answers "how did you build it?"</td>
+</tr>
+<tr>
+<td>Business value</td>
+<td>Cover screen (managers wait days for an analyst), weekly briefing</td>
+</tr>
+<tr>
+<td>Agent design</td>
+<td>"What changed" screen: tools, rulebook before and after; Developer view</td>
+</tr>
+<tr>
+<td>Working demo</td>
+<td>Live AI, with labelled Replay as a backup if the AI or wifi fails</td>
+</tr>
+<tr>
+<td>Trust &amp; safety</td>
+<td>Read-only database, guardrail tracks, scorecard</td>
+</tr>
+<tr>
+<td>Pitch</td>
+<td>60-second pitch video, spoken "Explain this page" on every screen</td>
+</tr>
+</tbody>
+</table></div>
+<nav class="pager" aria-label="Previous and next page"><a class="prev" href="history.html"><span>Previous</span>Timeline, step by step</a><a class="next" href="build-guide.html"><span>Next</span>The 13 build steps</a></nav>
+<p class="foot">A learning project, not a product. AdventureWorks is Microsoft's public sample data about a made-up bicycle
+company. Source of this page: <a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/docs/requirements.md">docs/requirements.md</a>.</p></main>
+<aside class="areas" aria-label="All documents"><details open><summary>All pages</summary><h2>Start here</h2><ul><li><a href="getting-started.html">Run it on your laptop (Mac and Windows)</a></li></ul><h2>The story</h2><ul><li><a href="index.html">How this was made</a></li><li><a href="history.html">Timeline, step by step</a></li></ul><h2>The brief</h2><ul><li><a href="requirements.html" aria-current="page">Every requirement, with evidence</a></li><li><a href="build-guide.html">The 13 build steps</a></li></ul><h2>The app</h2><ul><li><a href="running-the-app.html">Running the demo</a></li><li><a href="product.html">Who it's for</a></li><li><a href="design.html">How it looks</a></li></ul><h2>Behind the scenes</h2><ul><li><a href="prompt-optimization.html">Cutting the AI cost</a></li><li><a href="audio-sources.html">Audio sources</a></li></ul><h2>Try it</h2><ul><li><a href="../home/">Home: every area</a></li><li><a href="../demo/">Open the demo</a></li><li><a href="../demo/?page=story">Ask the course chat</a></li><li><a href="../api/">API reference</a></li><li><a href="../pitch/">60-second pitch video</a></li><li><a href="../deck/">The presentation</a></li><li><a href="getting-started.html">Run it on your laptop</a></li><li><a href="https://github.com/victorsaly/business-analyst-agent-demo">The code on GitHub</a></li></ul></details></aside>
+<nav class="toc" aria-label="On this page"><h2>On this page</h2><ul><li><a href="#your-mission">Your mission</a></li><li><a href="#what-your-agent-must-do">What your agent must do</a></li><li><a href="#tools-to-build">Tools to build</a></li><li><a href="#how-it-works">How it works</a></li><li><a href="#your-data">Your data</a></li><li><a href="#guardrails-non-negotiable">Guardrails (non-negotiable)</a></li><li><a href="#try-these-first">Try these first</a></li><li><a href="#stretch-goals-and-live-demo">Stretch goals and live demo</a></li><li><a href="#workshop-schedule-and-judging">Workshop schedule and judging</a></li></ul></nav></div></body></html>

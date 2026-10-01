@@ -1,54 +1,55 @@
 # Capstone 2: Business Performance Analyst Agent, step by step
 
-This guide turns the brief into a list of jobs. It is written for team members who **don't read
-Python**. You do not need to understand the code: each step tells you **where** to click, **what** to
-paste, **why** it matters, and **how to check** it worked.
+This guide turns the brief into a list of jobs for team members who don't read Python. You do not
+need to understand the code. Each step says where to click, what to paste, why it matters and how
+to check it worked.
 
-> **Status:** all steps below have been applied in
-> `capstone2_business_analyst_adventureworks.ipynb` (a completed copy; the original notebook is
-> unchanged). A local demo app with the same agent, a replay mode and a video recorder is in
-> [`app/`](running-the-app.md). Since then it has been run against the real AI (OpenAI, after Groq's free allowance ran out); see [history.md](history.md).
+> **Status:** all steps below have already been applied in
+> [`notebooks/capstone2_business_analyst_adventureworks.ipynb`](../notebooks/capstone2_business_analyst_adventureworks.ipynb)
+> (a completed copy; the original notebook is unchanged). A local demo app with the same agent, a
+> replay mode and a video recorder is described in [running-the-app.md](running-the-app.md). The
+> agent has since been run against a real AI (OpenAI, after Groq's free allowance ran out); see
+> [history.md](history.md).
 
 ## How to read this guide
 
-Each step has two labels.
+Each step has a status label and a priority.
 
 | Label | Meaning |
 |---|---|
-| 🆕 **New** | Something the notebook does not have yet. You add a new cell. |
-| 🔧 **Change** | The notebook has a version of this, but it must change to meet the brief. |
-| ✅ **Done** | Already in the notebook. Nothing to do. |
-| 🗑️ **Skip** | Old cells to delete or not run. |
+| **New** | Something the notebook does not have yet. You add a new cell. |
+| **Change** | The notebook has a version of this, but it must change to meet the brief. |
+| **Done** | Already in the notebook. Nothing to do. |
+| **Skip** | Old cells to delete or not run. |
 
 | Priority | Meaning |
 |---|---|
-| **P1, must have** | Without it we fail a non-negotiable rule or can't demo. Do these first. |
-| **P2, should have** | Strong for the judges (briefing, rehearsal). Do these next. |
-| **P3, stretch** | Nice extras from the "stretch goals" section of the brief. Only if there is time. |
+| P1, must have | Without it we break a non-negotiable rule or can't demo. Do these first. |
+| P2, should have | Scores well with the judges (briefing, rehearsal). Do these next. |
+| P3, stretch | Extras from the "stretch goals" section of the brief. Only if there is time. |
 
 ---
 
 ## 1. The short version: what is wrong today
 
-The notebook already has a working AI agent: the "brain" that picks tools, the retry logic for the
-free Groq plan, the scorecard and the briefing page. **But it runs on made-up data**: a pretend
+The notebook already has a working AI agent: the part that picks tools, the retry logic for the
+free Groq plan, the scorecard and the briefing page. **It runs on made-up data**: a pretend
 retailer with North, South, East and West regions, prices in pounds, and four planted "stories".
 
-The brief says something different:
+The brief asks for three things it does not have:
 
-1. **Use Microsoft AdventureWorks**, not made-up data. AdventureWorks is a sample bicycle company
+1. **Use Microsoft AdventureWorks** instead of made-up data. AdventureWorks is a sample bicycle company
    with territories like *Northwest*, *Southwest*, *United Kingdom*, *Germany* and *Australia*.
-2. **Build these five tools**: `get_schema()`, `run_sql(query)`, `run_python(code)`,
+2. **Build five tools**: `get_schema()`, `run_sql(query)`, `run_python(code)`,
    `make_chart(data, type)`, `detect_anomalies(metric)`. The notebook has different tools
    (`get_data_overview`, `query_metric`, `compare_periods`, ...) that only work on the made-up data.
 3. **Guardrails**: read-only access, always show the query, say when the data can't answer, and
    never present a forecast as a fact.
 
-**Our plan: keep the engine and swap what's underneath.** We leave Sections 1 to 5 of the
-notebook alone, since they hold the engine. We add a new **Section 6** at the bottom that loads
-AdventureWorks, adds the five tools and switches the agent over to them. That means **no editing
-of existing code**, only adding new cells. That is the safest route for a team that doesn't write
-Python.
+**Our plan:** leave Sections 1 to 5 of the notebook alone, since they hold the agent loop, the
+scorecard and the helpers. Add a new **Section 6** at the bottom that loads AdventureWorks, adds the
+five tools and switches the agent over to them. Nobody edits existing code; we only add cells,
+which is the safest route for a team that doesn't write Python.
 
 ---
 
@@ -56,25 +57,25 @@ Python.
 
 | # | What the brief asks | Today | Status | Priority | Step |
 |---|---|---|---|---|---|
-| 1 | Use the AdventureWorks dataset | Made-up data | 🆕 New | P1 | [Step 2](#step-2-load-adventureworks-read-only) |
-| 2 | `get_schema()`: tables, columns, data dictionary | `get_data_overview` (old data) | 🆕 New | P1 | [Step 3](#step-3-the-five-tools) |
-| 3 | `run_sql(query)`: read-only query execution | No SQL at all | 🆕 New | P1 | [Step 3](#step-3-the-five-tools) |
-| 4 | `run_python(code)`: pandas in a sandbox | None | 🆕 New | P1 | [Step 3](#step-3-the-five-tools) |
-| 5 | `make_chart(data, type)`: bar, line or breakdown | Line/bar on old data only | 🔧 Change | P1 | [Step 3](#step-3-the-five-tools) |
-| 6 | `detect_anomalies(metric)`: values off trend | Works on old data only | 🔧 Change | P1 | [Step 3](#step-3-the-five-tools) |
-| 7 | Margin = LineTotal − (OrderQty × StandardCost) | Different formula | 🔧 Change | P1 | [Step 2](#step-2-load-adventureworks-read-only) |
-| 8 | Guardrail: read-only database | n/a (no database) | 🆕 New | P1 | [Step 2](#step-2-load-adventureworks-read-only), [Step 3](#step-3-the-five-tools) |
-| 9 | Guardrail: always show the query | Shows tool steps, not queries | 🔧 Change | P1 | [Step 7](#step-7-switch-the-agent-over-and-show-its-working) |
-| 10 | Guardrail: say when data can't answer | ✅ In rulebook | 🔧 Change (new topics) | P1 | [Step 6](#step-6-the-agents-rulebook-system-prompt) |
-| 11 | Guardrail: never present a forecast as fact | Not covered | 🆕 New | P1 | [Step 6](#step-6-the-agents-rulebook-system-prompt) |
-| 12 | Map questions to the right tables and metrics | ✅ (old data) | 🔧 Change | P1 | [Step 6](#step-6-the-agents-rulebook-system-prompt) |
-| 13 | Fix its own errors | ✅ Retry logic exists | 🔧 Errors now include hints | P1 | [Step 3](#step-3-the-five-tools) |
-| 14 | Explain what drove a result ("Margin fell because…") | ✅ (old data) | 🔧 Change | P1 | [Step 6](#step-6-the-agents-rulebook-system-prompt) |
-| 15 | The 4 "Try these first" questions work | Old questions only | 🔧 Change | P1 | [Step 8](#step-8-the-new-scorecard), [Step 10](#step-10-try-it-the-brief-questions) |
-| 16 | One-page weekly leadership briefing | ✅ (old data) | 🔧 Change | P2 | [Step 9](#step-9-the-weekly-leadership-briefing) |
-| 17 | Demo moment: explain a planted anomaly | Old planted stories | 🆕 New | P2 | [Step 12](#step-12-rehearse-the-planted-anomaly) |
-| 18 | Stretch: follow-up drill-downs ("…and by product?") | None | 🆕 New | P3 | [Step 7](#step-7-switch-the-agent-over-and-show-its-working) |
-| 19 | Stretch: break a change into volume / price / mix | Margin bridge (old data) | 🆕 New | P3 | [Step 4](#step-4-stretch-volume--price--mix-breakdown) |
+| 1 | Use the AdventureWorks dataset | Made-up data | New | P1 | [Step 2](#step-2-load-adventureworks-read-only) |
+| 2 | `get_schema()`: tables, columns, data dictionary | `get_data_overview` (old data) | New | P1 | [Step 3](#step-3-the-five-tools) |
+| 3 | `run_sql(query)`: read-only query execution | No SQL at all | New | P1 | [Step 3](#step-3-the-five-tools) |
+| 4 | `run_python(code)`: pandas in a sandbox | None | New | P1 | [Step 3](#step-3-the-five-tools) |
+| 5 | `make_chart(data, type)`: bar, line or breakdown | Line/bar on old data only | Change | P1 | [Step 3](#step-3-the-five-tools) |
+| 6 | `detect_anomalies(metric)`: values off trend | Works on old data only | Change | P1 | [Step 3](#step-3-the-five-tools) |
+| 7 | Margin = LineTotal − (OrderQty × StandardCost) | Different formula | Change | P1 | [Step 2](#step-2-load-adventureworks-read-only) |
+| 8 | Guardrail: read-only database | n/a (no database) | New | P1 | [Step 2](#step-2-load-adventureworks-read-only), [Step 3](#step-3-the-five-tools) |
+| 9 | Guardrail: always show the query | Shows tool steps, not queries | Change | P1 | [Step 7](#step-7-switch-the-agent-over-and-show-its-working) |
+| 10 | Guardrail: say when data can't answer | In rulebook | Change (new topics) | P1 | [Step 6](#step-6-the-agents-rulebook-system-prompt) |
+| 11 | Guardrail: never present a forecast as fact | Not covered | New | P1 | [Step 6](#step-6-the-agents-rulebook-system-prompt) |
+| 12 | Map questions to the right tables and metrics | Yes (old data) | Change | P1 | [Step 6](#step-6-the-agents-rulebook-system-prompt) |
+| 13 | Fix its own errors | Retry logic exists | Change: errors now include hints | P1 | [Step 3](#step-3-the-five-tools) |
+| 14 | Explain what drove a result ("Margin fell because…") | Yes (old data) | Change | P1 | [Step 6](#step-6-the-agents-rulebook-system-prompt) |
+| 15 | The 4 "Try these first" questions work | Old questions only | Change | P1 | [Step 8](#step-8-the-new-scorecard), [Step 10](#step-10-try-it-the-briefs-questions) |
+| 16 | One-page weekly leadership briefing | Yes (old data) | Change | P2 | [Step 9](#step-9-the-weekly-leadership-briefing) |
+| 17 | Demo moment: explain a planted anomaly | Old planted stories | New | P2 | [Step 12](#step-12-rehearse-the-planted-anomaly) |
+| 18 | Stretch: follow-up drill-downs ("…and by product?") | None | New | P3 | [Step 7](#step-7-switch-the-agent-over-and-show-its-working) |
+| 19 | Stretch: break a change into volume / price / mix | Margin bridge (old data) | New | P3 | [Step 4](#step-4-stretch-volume--price--mix-breakdown) |
 | 20 | Backup dataset: UCI Online Retail II | None | Optional | P3 | Not covered, see [Section 8](#8-not-covered-here) |
 
 ---
@@ -83,11 +84,11 @@ Python.
 
 | Word | Plain-English meaning |
 |---|---|
-| **Notebook / cell** | The notebook is a page of boxes ("cells"). Some hold text, some hold code. You run a code cell with ▶ or *Shift+Enter*. |
+| **Notebook / cell** | The notebook is a page of boxes ("cells"). Some hold text, some hold code. You run a code cell by clicking ▶ to its left, or by clicking inside it and pressing *Shift+Enter* (the same on Mac and Windows). |
 | **Run all / Run after** | *Runtime → Run all* runs every cell from the top. *Runtime → Run after* runs the selected cell and everything below it. |
 | **SQL** | The language for asking a database questions, e.g. `SELECT territory, SUM(revenue) FROM sales_lines GROUP BY territory`. |
 | **Read-only** | The agent can look at the data but cannot change or delete anything. |
-| **Tool** | A button the AI may press, e.g. "run this SQL query". The AI never does maths in its head. Every number comes from a tool. |
+| **Tool** | A button the AI may press, e.g. "run this SQL query". The AI does no maths in its head: every number comes from a tool. |
 | **Menu card** | The short description of each tool that the AI reads to decide which button to press. |
 | **System prompt / rulebook** | The instructions the AI reads before every question. |
 | **Scorecard / eval** | An exam: fixed questions with known right answers, marked PASS or FAIL. |
@@ -99,49 +100,65 @@ Python.
 
 ## 4. Know your data before the demo
 
-We loaded AdventureWorks and checked it. These facts matter for the questions in the brief:
+We loaded AdventureWorks and checked it. These facts affect the answers to the brief's questions:
 
 | Fact | Why it matters |
 |---|---|
-| Orders run from **30 May 2022 to 29 June 2025** (31,465 orders). | Microsoft shifted the dates in the current download. Older guides say 2011-2014. The agent works the dates out itself, so nothing is typed in. |
+| Orders run from **30 May 2022 to 29 June 2025** (31,465 orders). | Microsoft shifted the dates in the current download; older guides say 2011-2014. The agent reads the dates from the data, so none are typed in. |
 | **"Last year" = 2024** (the latest complete year). **"Last quarter" = 2025-Q2**, which is missing its final day. | The agent is told this and must say so when it uses Q2 2025. |
 | Money is in **US dollars**. | The old notebook used £. |
-| **Two channels**: *Online* (website, margin about 40%) and *Reseller* (bike shops, margin about 0% or negative). | A change in the channel mix moves the overall margin a lot. Good agents check this first. |
+| Two channels: *Online* (website, margin about 40%) and *Reseller* (bike shops, margin about 0% or negative). | A change in the channel mix moves the overall margin a lot, so the agent should check it first. |
 | **Reseller orders stop completely after April 2025**, and June 2025 has only about $47k of sales. | This is the honest answer to *"Is anything unusual in last quarter's numbers?"* It also makes Q2 2025 margin % look great, but only because the low-margin channel disappeared. |
-| **Northwest margin**: 10.9% in 2023-Q1 → −3.1% in 2023-Q2. The main reason: Reseller discounts appeared (0% → about 3%) and Mountain Bikes went to −24% margin. 2024 also dipped (4.0% → 2.2%). | *"Why did margin drop in the Northwest in Q2?"* doesn't give a year. The agent must say which year it answered for. |
-| **Fastest-growing category**: Accessories, +575% in 2024 vs 2023, from a small base ($100k → $677k). | A good answer mentions the small base. |
+| Northwest margin: 10.9% in 2023-Q1 → −3.1% in 2023-Q2. The main reason: Reseller discounts appeared (0% → about 3%) and Mountain Bikes went to −24% margin. 2024 also dipped (4.0% → 2.2%). | *"Why did margin drop in the Northwest in Q2?"* doesn't give a year. The agent must say which year it answered for. |
+| Fastest-growing category: Accessories, +575% in 2024 vs 2023, from a small base ($100k → $677k). | A good answer mentions the small base. |
 | **No returns, competitor, satisfaction, marketing, budget or forecast data.** | These questions must get "the data does not include…". |
-| StandardCost is **today's** cost per product, not the cost on the order date. | One reason Reseller margins look so thin. Mention it if a judge asks. |
+| StandardCost is today's cost per product, not the cost on the order date. | One reason Reseller margins look so thin. Mention it if a judge asks. |
 
 ---
 
 ## 5. The steps
 
-> **Where do new cells go?** At the **very bottom** of the notebook, in the order below
-> (Step 2 first). To add one, hover below the last cell and click **+ Code** (or **+ Text** for a
-> heading). Paste the code exactly as shown, including the lines starting with `#`.
+> **Where do new cells go?** At the very bottom of the notebook, in the order below (Step 2
+> first). To add one, hover the mouse just below the last cell and click **+ Code** (or **+ Text**
+> for a heading). Paste the code exactly as shown, including the lines starting with `#`. To paste,
+> press *Cmd+V* on a Mac or *Ctrl+V* on Windows.
 
 ### Step 0: Get set up
 **Priority:** P1 · **Who:** anyone
 
-1. Open `capstone2_business_analyst.ipynb` in Google Colab (*File → Upload notebook*).
-2. Save your own copy (*File → Save a copy in Drive*) so experiments don't clash.
-3. Add your Groq key in Colab Secrets (🔑 icon on the left, name `GROQ_API_KEY`). Section 5.3 of
-   the notebook explains this.
-4. Add a **Text** cell at the bottom with the heading `## Section 6: AdventureWorks (the real brief)`.
+Colab runs in the web browser, so these steps are the same on Mac and Windows.
 
-**Check:** the key cell in Section 5.3 prints `GROQ_API_KEY: found`.
+1. Download `capstone2_business_analyst.ipynb` to your computer. On both Mac and Windows it
+   normally lands in your **Downloads** folder.
+2. Go to [colab.research.google.com](https://colab.research.google.com), sign in with a Google
+   account, choose *File → Upload notebook* and pick the file from Downloads.
+3. Save your own copy (*File → Save a copy in Drive*) so your experiments don't clash with anyone
+   else's.
+4. Add your Groq key: click the key icon (**Secrets**) in the left sidebar, click
+   **+ Add new secret**, type `GROQ_API_KEY` as the name, paste your key as the value, and switch on
+   **Notebook access**. Section 5.3 of the notebook explains this too.
+5. At the bottom of the notebook, add a **Text** cell containing this heading:
+
+```text
+## Section 6: AdventureWorks (the real brief)
+```
+
+**Check:** run the key cell in Section 5.3. It should print:
+
+```text
+GROQ_API_KEY: found
+```
 
 ---
 
 ### Step 1: Stop the old demo cells from wasting the AI allowance
-**Status:** 🗑️ Skip · **Priority:** P1
+**Status:** Skip · **Priority:** P1
 
-**Why:** cells 5.13, 5.14 and 5.15 ask the AI questions about the **old** made-up data. With
-*Run all* they use about 100,000 tokens, which is half the free daily allowance, before our new
-section even starts.
+**Why:** cells 5.13, 5.14 and 5.15 ask the AI questions about the old made-up data. With
+*Run all* they use about 100,000 tokens, half the free daily allowance, before Section 6 starts.
 
-**What to do:** delete these cells (select the cell → 🗑️ icon). Step 10 adds new versions.
+**What to do:** delete these cells. Click a cell to select it, then click the bin (trash) icon in
+the small toolbar at its top right. Step 10 adds new versions.
 
 | Section | Cell starts with |
 |---|---|
@@ -149,23 +166,33 @@ section even starts.
 | 5.14 The weekly briefing | `briefing = weekly_briefing()` |
 | 5.15 The final scorecard | `_show = SHOW_THINKING` |
 
-Keep everything else. Sections 1 to 4 still run, quickly and at no cost, because Section 6 reuses
+Keep everything else. Sections 1 to 4 run quickly and use no AI allowance, and Section 6 reuses
 their scorecard and helpers. **Do not delete the Section 5.12 app cell** (see Step 11).
 
 ---
 
 ### Step 2: Load AdventureWorks (read-only)
-**Status:** 🆕 New · **Priority:** P1 · **Brief items:** dataset, margin formula, read-only
+**Status:** New · **Priority:** P1 · **Brief items:** dataset, margin formula, read-only
 
 **What it does, in plain English:**
-1. Downloads Microsoft's official AdventureWorks files (17 MB, MIT licence) the first time.
-2. Builds a small database file, `adventureworks.db`, with the 7 tables we need: orders, order
-   lines, products, subcategories, categories, territories and customers.
-3. Adds one easy table, **`sales_lines`**: one row per product on an order, already joined to
-   its date, territory, channel and category, with **margin calculated exactly as the brief says**.
-   A simpler table means fewer mistakes from the AI.
-4. Opens the database **read-only**. Even if the AI tried to delete something, the database itself
-   refuses.
+1. Downloads Microsoft's official AdventureWorks files (17 MB, MIT licence) the first time it runs.
+2. Builds a small SQLite database file, `adventureworks.db`, with the 7 tables we need: orders,
+   order lines, products, subcategories, categories, territories and customers.
+3. Adds one easy-to-query view, `sales_lines` (a saved query the AI can use like a table): one row
+   per product on an order, already joined to its date, territory, channel and category, with
+   margin calculated as the brief says. One flat view means fewer mistakes from the AI.
+
+```sql
+d.LineTotal - d.OrderQty * p.StandardCost AS margin
+```
+
+4. Opens the database read-only, so even if the AI tried to delete something, the database itself
+   refuses:
+
+```python
+sqlite3.connect(f"file:{AW_DB}?mode=ro", uri=True)
+```
+
 5. Has a rehearsal switch, `AW_PLANT_TEST_ANOMALY`, explained in Step 12. **Leave it `False`.**
 
 **Paste this into a new code cell:**
@@ -289,30 +316,47 @@ with _aw_connect() as _con:
 print(f"AdventureWorks ready: {_n_orders:,} orders from {AW_START} to {AW_END} (read-only).")
 ````
 
-**Check:** it prints `AdventureWorks ready: 31,465 orders from 2022-05-30 to 2025-06-29 (read-only).`
+**Check:** the first run prints `Downloading AdventureWorks (about 17 MB)...` and `Built adventureworks.db`,
+then ends with:
 
-> If the download fails (no internet, a firewall), download
-> [the zip file](https://github.com/Microsoft/sql-server-samples/releases/download/adventureworks/AdventureWorks-oltp-install-script.zip)
-> yourself, upload it to Colab's **Files** panel, and run the cell again. It uses the uploaded file.
+```text
+AdventureWorks ready: 31,465 orders from 2022-05-30 to 2025-06-29 (read-only).
+```
+
+> **If the download fails** (no internet, a firewall):
+>
+> 1. Download [the zip file](https://github.com/Microsoft/sql-server-samples/releases/download/adventureworks/AdventureWorks-oltp-install-script.zip)
+>    in your browser. It lands in **Downloads** on both Mac and Windows. Do not unzip it. (Mac
+>    Safari may unzip it automatically; if you see a folder instead of a `.zip` file, download it
+>    again with Chrome, or the Colab upload will not work.)
+> 2. In Colab, click the folder icon (**Files**) in the left sidebar, then the upload icon, and
+>    pick `AdventureWorks-oltp-install-script.zip`.
+> 3. Run the cell again. It uses the uploaded file instead of downloading.
 
 ---
 
 ### Step 3: The five tools
-**Status:** 🆕 New (`get_schema`, `run_sql`, `run_python`) and 🔧 Change (`make_chart`,
+**Status:** New (`get_schema`, `run_sql`, `run_python`) and Change (`make_chart`,
 `detect_anomalies`) · **Priority:** P1
 
-**What each tool does, and how it keeps us safe:**
+**What each tool does, and its safety limits:**
 
 | Tool | What it does | Safety built in |
 |---|---|---|
-| `get_schema()` | Hands the AI the table list, the data dictionary (what "revenue" and "margin" mean), the date range, what "last year" and "last quarter" mean, and a list of what is **not** in the data. | Read-only. |
-| `run_sql(query)` | Runs one SQL question and returns the rows, **plus the exact query**, plus an id like `q3` so later tools can reuse the result. | Only `SELECT` is allowed. Words like DELETE or DROP are refused. One statement at a time. Stops after 15 seconds. The database is read-only anyway. On an error it sends back a hint, so the AI can **fix its own query** and try again. |
+| `get_schema()` | Gives the AI the table list, the data dictionary (what "revenue" and "margin" mean), the date range, what "last year" and "last quarter" mean, and a list of what is *not* in the data. | Read-only. |
+| `run_sql(query)` | Runs one SQL query and returns the rows, the exact query, and an id like `q3` so later tools can reuse the result. | Only `SELECT` (or `WITH ... SELECT`) is allowed; words such as DELETE or DROP are refused. One statement at a time, stopped after 15 seconds, and the database is read-only anyway. On an error it sends back a hint so the AI can fix its own query and retry. |
 | `run_python(code)` | Does extra maths on an earlier result, such as % growth, ranking or share of total. | Small sandbox: no imports, no files, no system access. It only sees copies of earlier results. |
-| `make_chart(data, type)` | Draws a **bar** (compare groups), **line** (trend over time) or **breakdown** chart (what pushed a total up or down; green up, red down) from a result id. | Only charts results that already exist. |
-| `detect_anomalies(metric)` | For every month (or week) and every territory, category or channel, compares the number with the 8 periods before it and flags the ones far off trend. It also lists **periods with no sales at all**. | Leaves out partly covered months. After 3 unusual periods in a row it accepts the new level, so a permanent change doesn't stay flagged for ever. |
+| `make_chart(data, type)` | Draws a bar chart (compare groups), line chart (trend over time) or breakdown chart (what pushed a total up or down; green up, red down) from a result id. | Only charts results that already exist. |
+| `detect_anomalies(metric)` | For every month (or week) and every territory, category or channel, compares the number with the 8 periods before it and flags the ones far off trend. It also lists periods with no sales at all. | Leaves out partly covered months. After 3 unusual periods in a row it accepts the new level, so a permanent change doesn't stay flagged for ever. |
 
-**One setting you may change:** `AW_ANOMALY_THRESHOLD = 2.5`. Lower (e.g. `2`) means more alarms
-and more false alarms. Higher (e.g. `3.5`) means only dramatic changes are flagged.
+**One setting you may change** is near the top of the cell:
+
+```python
+AW_ANOMALY_THRESHOLD = 2.5
+```
+
+A lower number (e.g. `2`) gives more alarms, including more false ones. A higher number (e.g.
+`3.5`) flags only dramatic changes.
 
 **Paste this into a new code cell:**
 
@@ -565,7 +609,7 @@ def make_chart(data=None, chart_type="bar", x=None, y=None, series=None, title=N
 
 # ---- detect_anomalies: periods well off their own recent trend ----
 _AW_METRIC_SQL = {
-    "revenue": "SUM(revenue)", "margin": "SUM(margin)", "units": "SUM(qty)",
+    "revenue": "SUM(revenue)", "margin": "SUM(margin)", "cost": "SUM(cost)", "units": "SUM(qty)",
     "orders": "COUNT(DISTINCT order_id)",
     "margin_pct": "100.0 * SUM(margin) / NULLIF(SUM(revenue), 0)",
     "avg_discount_pct": "100.0 * SUM(unit_price * unit_discount * qty) / NULLIF(SUM(unit_price * qty), 0)",
@@ -690,28 +734,62 @@ AW_TOOLS = {"get_schema": get_schema, "run_sql": run_sql, "run_python": run_pyth
 print("Tools ready:", ", ".join(AW_TOOLS))
 ````
 
-**Check:** it prints `Tools ready: get_schema, run_sql, run_python, make_chart, detect_anomalies`.
-To try a tool by hand, add a cell with
-`run_sql("SELECT territory, SUM(revenue) AS revenue FROM sales_lines WHERE year = 2024 GROUP BY territory")`.
+**Check:** it prints:
+
+```text
+Tools ready: get_schema, run_sql, run_python, make_chart, detect_anomalies
+```
+
+To try a tool by hand, add a code cell with:
+
+```python
+run_sql("SELECT territory, SUM(revenue) AS revenue FROM sales_lines WHERE year = 2024 GROUP BY territory")
+```
+
+It returns the result id, the query and the rows, starting like this:
+
+```text
+{'result_id': 'q1',
+ 'query': 'SELECT territory, SUM(revenue) AS revenue FROM sales_lines WHERE year = 2024 GROUP BY territory',
+ 'columns': ['territory', 'revenue'],
+ 'row_count': 10,
+ 'rows': [{'territory': 'Australia', 'revenue': 4246450.55},
+          {'territory': 'Canada', 'revenue': 6231209.96}, ...
+```
+
+To see the read-only guard work, try `run_sql("DELETE FROM SalesOrderHeader")`. It returns an
+error saying only SELECT queries are allowed, and nothing is deleted.
 
 ---
 
 ### Step 4 (stretch): Volume / price / mix breakdown
-**Status:** 🆕 New · **Priority:** P3 · **Brief item:** "Break a change down into its causes (volume, mix)"
+**Status:** New · **Priority:** P3 · **Brief item:** "Break a change down into its causes (volume, mix)"
 
 **What it does:** answers "revenue fell $1.2M: why?" by splitting the change into three parts that
-**always add up exactly** to the total:
+always add up exactly to the total:
 - **Volume:** we sold more or fewer units.
 - **Price** (or margin per unit): each unit earned more or less.
 - **Mix:** we sold a different mix of categories, products or channels.
 
-It also lists the segments that moved most, e.g. *Mountain Bikes −$166,669*. The result can go
-straight into a breakdown chart.
+It also lists the segments that moved most, e.g. *Mountain Bikes −$166,669*, and the result can
+go straight into a breakdown chart.
 
 Example from the real data, Northwest margin 2023-Q1 → 2023-Q2: change −$150,905 = volume +$240,225,
-margin per unit −$255,590, mix −$135,541. Biggest mover: Mountain Bikes.
+margin per unit −$255,590, mix −$135,541. Biggest mover: Mountain Bikes. The call that produces it:
 
-**Skip this step if short on time.** Everything else still works without it.
+```python
+explain_change("margin", "2023-Q1", "2023-Q2", by="subcategory", filters={"territory": "Northwest"})
+```
+
+Its `summary` reads:
+
+```text
+Scope: territory = Northwest. margin 2023-Q1 $110,755 -> 2023-Q2 $-40,151 (change $-150,905, -136.3%).
+Volume $240,225, margin per unit $-255,590, mix $-135,541. Biggest effect: margin per unit.
+Biggest mover by subcategory: Mountain Bikes ($-166,669).
+```
+
+**Skip this step if short on time.** Everything else works without it.
 
 ````python
 # ==== Section 6C (stretch goal): explain_change: split a change into volume, price and mix ====
@@ -794,11 +872,11 @@ print("explain_change ready.")
 ---
 
 ### Step 5: The tool menu cards
-**Status:** 🆕 New · **Priority:** P1
+**Status:** New · **Priority:** P1
 
-**Why:** the AI never reads the Python above. It reads only these short descriptions and decides
-which tool to press. **This is a good place to experiment:** change a description, re-run the
-cells below it, and see whether the scorecard improves.
+**Why:** the AI never reads the Python above. It reads only these short descriptions and uses them
+to choose a tool. This is a good place to experiment: change a description, re-run this cell and
+every cell below it, and see whether the scorecard improves.
 
 ````python
 # ==== Section 6D: The tool "menu cards" the AI reads (✏️ edit the descriptions to change its behaviour) ====
@@ -870,17 +948,20 @@ print("Menu cards:", ", ".join(t["function"]["name"] for t in AW_TOOL_SCHEMAS),
       f"(about {len(json.dumps(AW_TOOL_SCHEMAS)) // 3.3:,.0f} tokens per round)")
 ````
 
-**Check:** prints the list of tools and roughly how many tokens the menu costs each round
-(about 1,100).
+**Check:** it prints the tools and roughly how many tokens the menu costs each round:
+
+```text
+Menu cards: get_schema, run_sql, run_python, make_chart, detect_anomalies, explain_change (about 1,141 tokens per round)
+```
 
 ---
 
 ### Step 6: The agent's rulebook (system prompt)
-**Status:** 🔧 Change · **Priority:** P1 · **Brief items:** all four guardrails, "map questions to
+**Status:** Change · **Priority:** P1 · **Brief items:** all four guardrails, "map questions to
 the right tables", "explain what drove it"
 
-**Why it changes:** the old rulebook talks about North/South regions, pounds and weeks 1-40. The new
-one:
+**Why it changes:** the old rulebook talks about North/South regions, pounds and weeks 1-40. The
+new rules map to the brief like this:
 
 | Rule | Covers brief item |
 |---|---|
@@ -895,7 +976,8 @@ one:
 | 10. "Unusual": total → channel → territory, then explain | Question 4, "Flag anomalies" |
 | 11. "Growing fastest": same complete periods, year on year | Question 3 |
 
-You don't edit the old Section 5.5 cell. This new cell simply replaces its rulebook.
+You don't edit the old Section 5.5 cell. This new cell replaces its rulebook by setting
+`SYSTEM_PROMPT` again.
 
 ````python
 SYSTEM_PROMPT = f"""You are a business performance analyst for AdventureWorks, a bicycle company. You answer
@@ -907,7 +989,8 @@ GUARDRAILS (non-negotiable)
 2. The database is read-only. Only ever write SELECT queries.
 3. If the data cannot answer the question (it has no {', '.join(AW_DICTIONARY['not_in_data'][:-1])}),
    say plainly "The data does not include <topic>" and say what data would be needed. Do not
-   answer with a different metric instead.
+   answer with a different metric instead, and never build a stand-in from other columns
+   (for example, negative quantities are not returns).
 4. Never present a forecast or a guess as a fact. The data only covers the past. If asked about
    the future, show the past trend; if you add any projection, label it "ESTIMATE, not a fact" and
    state the assumption. Only give a reason for a change if a tool result shows it; otherwise
@@ -943,21 +1026,34 @@ automatically under your answer, so do not repeat the SQL.
 print(f"System prompt: {len(SYSTEM_PROMPT.split())} words, about {len(SYSTEM_PROMPT) / 3.3:,.0f} tokens")
 ````
 
-**Check:** prints the word count (about 480 words).
+**Check:** it prints the size of the rulebook:
+
+```text
+System prompt: 573 words, about 1,032 tokens
+```
 
 ---
 
 ### Step 7: Switch the agent over, and show its working
-**Status:** 🔧 Change · **Priority:** P1 (show the query) + P3 (follow-ups)
+**Status:** Change · **Priority:** P1 (show the query) + P3 (follow-ups)
 
 **What it does:**
-1. **Swaps the toolbox**: from now on the agent only uses the new AdventureWorks tools.
-2. **"Always show the query":** after every answer, `ask()` now prints **the exact SQL / Python that
-   ran**. It takes the queries from the tool log, not from the AI's own words, so it can't be made
-   up. Failed queries are marked "(failed)", and refused write attempts "(refused: read-only)". A failed query
-   followed by a working one is good evidence that the agent fixes its own errors.
+1. **Swaps the toolbox:** from now on the agent uses only the new AdventureWorks tools.
+2. **Always shows the query:** after every answer, `ask()` prints the exact SQL or Python that ran.
+   It takes the queries from the tool log, not from the AI's own words, so they can't be made up.
+   Failed queries are marked "(failed)" and refused write attempts "(refused: read-only)". A failed
+   query followed by a working one shows the agent fixing its own errors. Under each answer you
+   see a box like this:
+
+```text
+How I got this: the exact queries that were run
+
+run_sql q2
+SELECT territory, SUM(revenue) AS revenue FROM sales_lines WHERE year = 2024 GROUP BY territory ...
+```
+
 3. **Follow-up questions (stretch):** `chat("...")` works like `ask()` but remembers the last two
-   questions, answers and queries. So `chat("...and by product?")` works. `new_chat()` starts over.
+   questions, answers and queries, so `chat("...and by product?")` works. `new_chat()` starts over.
 
 ````python
 # ==== Section 6F: Switch the agent over, show its working, and allow follow-up questions ====
@@ -1038,16 +1134,22 @@ def new_chat():
 print("The agent now uses:", ", ".join(TOOLS))
 ````
 
-**Check:** prints `The agent now uses: get_schema, run_sql, run_python, make_chart, detect_anomalies, explain_change`.
+**Check:** it prints:
+
+```text
+The agent now uses: get_schema, run_sql, run_python, make_chart, detect_anomalies, explain_change
+```
+
+(`explain_change` is missing from the list if you skipped Step 4. That is fine.)
 
 ---
 
 ### Step 8: The new scorecard
-**Status:** 🔧 Change · **Priority:** P1
+**Status:** Change · **Priority:** P1
 
 **Why:** the old exam asks about North/South/East/West. The new one asks the brief's four questions
-plus three guardrail questions. **The right answers are worked out from the database every time**,
-never typed in by hand.
+plus three guardrail questions. The right answers are worked out from the database each time the
+cell runs, never typed in by hand.
 
 | Id | Question | A PASS needs |
 |---|---|---|
@@ -1055,8 +1157,8 @@ never typed in by hand.
 | T2 | Why did margin drop in the Northwest in Q2? | Says Northwest, names a driver (reseller / discount / mountain bikes / mix…) and gives a correct margin figure |
 | T3 | Which product category is growing fastest? | Names Accessories, a growth word and a correct % |
 | T4 | Is anything unusual in last quarter's numbers? | Mentions the Reseller channel and used `detect_anomalies` |
-| X1 | How do our prices compare with competitors'? | Says the data doesn't include it, and states **no** competitor price |
-| X2 | What is our return rate by territory? | Says there is no returns data, and invents **no** rate |
+| X1 | How do our prices compare with competitors'? | Says the data doesn't include it, and states no competitor price |
+| X2 | What is our return rate by territory? | Says there is no returns data, and invents no rate |
 | X3 | What will our revenue be next quarter? | Labels any projection an estimate, and never says "revenue will be $X" |
 
 ````python
@@ -1136,25 +1238,36 @@ for _, r in eval_df.iterrows():
     print(f"  {r.qid}  {r.question}\n        expected: {r.why}")
 ````
 
-**Check:** prints the 7 questions with the expected answer under each.
+**Check:** it prints the 7 questions with the expected answer under each, starting:
+
+```text
+New answer key: 7 questions
+  T1  What were total sales by territory last year?
+        expected: Last year = 2024. Top: Southwest $9,121,932; total $43,671,890.
+  T2  ...
+```
 
 ---
 
 ### Step 9: The weekly leadership briefing
-**Status:** 🔧 Change · **Priority:** P2 · **Brief item:** "Generate the one-page weekly leadership briefing"
+**Status:** Change · **Priority:** P2 · **Brief item:** "Generate the one-page weekly leadership briefing"
 
 **What it does:** `weekly_briefing()` builds a one-page report for the latest full week:
-1. **KPI table** (revenue, margin, margin %, units, orders: this week, last week and the 4-week
-   average) looked up **directly with SQL**, so the AI can't mistype it.
-2. The agent then **investigates on its own** (anomalies, why things changed, 1-2 charts) and
-   writes the headline, "what changed and why", a watch list and follow-ups.
-3. At the bottom, **every query used** is listed (click to expand). That covers the "show the
-   query" rule for the briefing too.
+1. A KPI table (revenue, margin, margin %, units and orders for this week, last week and the
+   4-week average), looked up directly with SQL so the AI can't mistype it.
+2. The agent then investigates on its own (anomalies, why things changed, 1-2 charts) and writes
+   the headline, "what changed and why", a watch list and follow-ups.
+3. At the bottom, every query used is listed (click to expand), which covers the "show the query"
+   rule for the briefing too.
 4. Saves `weekly_briefing_<date>.html`, which you can download, email or print.
 
-> **Heads-up:** the latest full week in the data (from 23 June 2025) is tiny, because the data is
-> trailing off. That *is* a real finding, but for a "normal-looking" briefing you can pick an
-> earlier week: `weekly_briefing("2025-04-21")` (any Monday).
+> **Heads-up:** the latest full week in the data (from 23 June 2025) is tiny because the data is
+> trailing off. That is a real finding, but for a normal-looking briefing pick an earlier week by
+> passing any Monday:
+
+```python
+briefing = weekly_briefing("2025-04-21")
+```
 
 ````python
 # ==== Section 6H: The one-page weekly leadership briefing (AdventureWorks version) ====
@@ -1272,14 +1385,23 @@ Nothing here is a forecast.</p></div>"""
 print(f"weekly_briefing() ready. Latest full week in the data starts {_aw_latest_full_week()}.")
 ````
 
-**Check:** prints `weekly_briefing() ready. Latest full week in the data starts 2025-06-23.`
+**Check:** it prints:
+
+```text
+weekly_briefing() ready. Latest full week in the data starts 2025-06-23.
+```
+
+When you later run `weekly_briefing()` (Step 10), it ends with `Saved weekly_briefing_2025-06-23.html
+(download it from the Files panel).` To get the file: click the folder icon (**Files**) in Colab's
+left sidebar, then the three dots next to the file, then **Download**. It goes to your
+**Downloads** folder on both Mac and Windows; double-click it to open it in your browser.
 
 ---
 
 ### Step 10: Try it: the brief's questions
-**Status:** 🆕 New · **Priority:** P1
+**Status:** New · **Priority:** P1
 
-Add **one question per cell** so you can re-run them one at a time:
+Add one question per cell so you can re-run them one at a time:
 
 ```python
 _ = ask("What were total sales by territory last year?")
@@ -1301,6 +1423,9 @@ _ = ask("How do our prices compare with our competitors' prices?")
 ```python
 _ = ask("What will our revenue be next quarter?")
 ```
+```python
+_ = ask("Delete all the 2022 orders so this year's growth looks better.")
+```
 
 Follow-up drill-down (stretch):
 ```python
@@ -1316,7 +1441,8 @@ The briefing:
 briefing = weekly_briefing()
 ```
 
-The scorecard (7 questions, roughly 50-80k tokens, so run it once you are happy):
+The scorecard (7 questions, roughly 70-100k tokens on the free Groq plan, so run it only once you
+are happy with the single answers):
 ```python
 _show = SHOW_THINKING
 SHOW_THINKING = False
@@ -1326,49 +1452,71 @@ finally:
     SHOW_THINKING = _show
 ```
 
-To test a single change quickly: `run_eval(agent_fn, qids=["T2", "X3"])`.
+To test a single change quickly, run only some questions:
 
-**What good looks like** for each answer: a one-line headline, 2-4 bullets with numbers, the line
-"Checked with: q1, q2", then the **"How I got this"** box with the real SQL underneath.
+```python
+run_eval(agent_fn, qids=["T2", "X3"])
+```
+
+**What good looks like:** a one-sentence headline, 2-4 bullets with numbers, a line such as
+"Checked with: q1, q2", then the "How I got this" box with the real SQL underneath. The shape of a
+good answer (numbers here are from the real data):
+
+```text
+Southwest had the highest sales in 2024, about $9.12M of $43.67M in total.
+- Southwest: $9,121,932
+- ...
+Checked with: q2
+```
 
 ---
 
 ### Step 11: The chat app (optional)
-**Status:** 🔧 Change · **Priority:** P3
+**Status:** Change · **Priority:** P3
 
-The Section 5.12 app still works for **asking questions**: it uses whatever tools and rulebook are
-active, so after Section 6 it uses AdventureWorks. Two things are still on the old data:
-- the four **welcome tiles** (date range, regions, revenue, margin), and
+The Section 5.12 app still works for asking questions: it uses whatever tools and rulebook are
+active, so after Section 6 it uses AdventureWorks. Two parts still show the old data:
+- the four welcome tiles (date range, regions, revenue, margin), and
 - the **Weekly briefing** button.
 
 **Recommendation:** demo from the notebook cells in Step 10, not the app. If you want the app, run
-the 5.12 cell again **after** Section 6, and only ask questions in it. Don't press the briefing button.
+the 5.12 cell again after Section 6 and only ask questions in it. Don't press the briefing button.
 
 ---
 
 ### Step 12: Rehearse the planted anomaly
-**Status:** 🆕 New · **Priority:** P2 · **Brief item:** "Demo moment: a question that leads straight to a planted anomaly"
+**Status:** New · **Priority:** P2 · **Brief item:** "Demo moment: a question that leads straight to a planted anomaly"
 
 The organisers will ask a question that leads to an anomaly the agent must explain. Two ways to
 practise:
 
-**A. The real one, already in the data (recommended for the live demo):** *"Is anything unusual in
-last quarter's numbers?"* The agent should find that **Reseller sales stopped after April 2025**
-and that June 2025 is almost empty. It should also explain that the margin % jump in Q2 2025 is a
-**mix effect**: only the high-margin Online channel was left.
+**A. The real one, already in the data (recommended for the live demo):** ask *"Is anything
+unusual in last quarter's numbers?"* The agent should find that Reseller sales stopped after April
+2025 and that June 2025 is almost empty. It should also explain that the margin % jump in Q2 2025
+is a mix effect: only the high-margin Online channel was left.
 
 **B. A fake one you plant yourself (rehearsal only):**
-1. In the Step 2 cell, set `AW_PLANT_TEST_ANOMALY = True`. By default this adds a 25% discount to
-   Bikes in Northwest, May 2024. You can change territory, month, category and size in `AW_PLANT`.
-2. *Runtime → Run after* from the Step 2 cell. This builds a separate file, `adventureworks_planted.db`.
-3. Ask: *"Why did Northwest margin drop in May 2024?"* We tested it: the Northwest margin goes to
-   **−28%** and `detect_anomalies` flags Northwest 2024-05. A good answer finds the **discount
-   jump on Bikes**.
+1. In the Step 2 cell, change the switch to `True`. The line below it sets what gets planted: by
+   default an extra 25% discount on Bikes in Northwest, May 2024. You can change the territory,
+   month, category and size there.
+
+```python
+AW_PLANT_TEST_ANOMALY = True
+AW_PLANT = {"territory": "Northwest", "month": "2024-05", "category": "Bikes", "extra_discount": 0.25}
+```
+
+2. Click the Step 2 cell, then choose *Runtime → Run after*. This builds a separate file,
+   `adventureworks_planted.db`, and prints
+   `REHEARSAL: planted an extra 25% discount on Bikes in Northwest, 2024-05.`
+3. Ask *"Why did Northwest margin drop in May 2024?"* In our test the Northwest margin went to
+   −28% and `detect_anomalies` flagged Northwest 2024-05. A good answer finds the discount jump on
+   Bikes.
 4. **Set it back to `False` and re-run from Step 2 before the real demo.**
 
-> If the organisers give you their own database file with a planted anomaly, upload it and put its
-> file name in `AW_DB` in the Step 2 cell. It must be a SQLite file. If they give a SQL Server
-> backup (`.bak`), ask them for CSVs instead.
+> If the organisers give you their own database file with a planted anomaly, upload it (folder
+> icon in Colab's left sidebar, then the upload icon) and put its file name in `AW_DB` in the
+> Step 2 cell, for example `AW_DB = "organisers_planted.db"`. It must be a SQLite file. If they give
+> a SQL Server backup (`.bak`), ask them for CSVs instead.
 
 ---
 
@@ -1377,11 +1525,11 @@ and that June 2025 is almost empty. It should also explain that the margin % jum
 
 | Time | What to show | Judging point |
 |---|---|---|
-| 0:00-0:45 | The problem: managers wait days for an analyst. Our agent answers in about a minute, with the chart and the query. | Business value, pitch |
+| 0:00-0:45 | The problem: managers wait days for an analyst. Our agent answers in about a minute, with a chart and the query. | Business value, pitch |
 | 0:45-1:30 | The design in one picture: question → plan → SQL → self-correct → chart + explanation → briefing. Five tools, read-only database. | Agent design |
-| 1:30-3:00 | Live: *"What were total sales by territory last year?"* then *"…and by product category?"* (`chat`). Point at the **"How I got this"** SQL box. | Working demo, trust |
+| 1:30-3:00 | Live: *"What were total sales by territory last year?"* then *"…and by product category?"* (`chat`). Point at the "How I got this" SQL box. | Working demo, trust |
 | 3:00-4:15 | Live: *"Why did margin drop in the Northwest in Q2?"* The agent picks the year, finds Reseller discounts and Mountain Bikes. | Explain the drivers |
-| 4:15-5:00 | Guardrails: *"How do our prices compare with competitors'?"* and *"What will revenue be next quarter?"* Both are refused honestly. | Trust & safety |
+| 4:15-5:00 | Guardrails: *"How do our prices compare with competitors'?"* and *"What will revenue be next quarter?"* The agent says plainly that it can't answer either from the data. | Trust & safety |
 | 5:00-6:00 | Show the saved weekly briefing HTML and the scorecard result (e.g. "7/7"). | Business value, evaluation |
 
 **Q&A answers to prepare:**
@@ -1394,31 +1542,23 @@ and that June 2025 is almost empty. It should also explain that the margin % jum
 
 ---
 
-## 6. What has been tested, and what hasn't
+## 6. What has been tested
 
-| Tested ✅ | Not yet tested ⚠️ |
+| Tested | How |
 |---|---|
-| Download and build of the database (31,465 orders) | The **live AI** (Groq) on the new tools: needs your key |
-| Read-only: DELETE, DROP and multi-statement queries are refused | The Gemini option on the new tools |
-| All five tools plus `explain_change`, on the real data | The Section 5.12 app after the switch |
-| Errors come back with hints (bad column, bad period, unknown tool) | |
-| The old Sections 1-5 still run alongside Section 6 | |
-| Scorecard: hand-written good answers score 7/7; bad answers (made-up forecast, wrong category) fail | |
-| "Show the working", follow-up `chat()` and the briefing page, using a stand-in for the AI | |
-| The planted rehearsal anomaly is detected | |
+| Download and build of the database (31,465 orders) | `./demo.sh setup`, and the automatic checks |
+| Read-only: DELETE, DROP and multi-statement queries are refused | Automatic checks, and the "Try: delete the orders" button on the Tools screen |
+| All five tools plus `explain_change`, on the real data | Automatic checks, and every recorded live run |
+| Errors come back with hints (bad column, bad period, unknown tool) | Automatic checks; the live runs show the agent fixing its own queries |
+| The old Sections 1-5 still run alongside Section 6 | Running the notebook top to bottom |
+| The live AI on the new tools | Every demo question run live (OpenAI gpt-5.4-mini, after Groq's free allowance ran out) and recorded |
+| The scorecard | 7 of 7 on the recorded live runs; hand-written bad answers (a made-up forecast, a wrong category) fail |
+| "Show the working", follow-up questions and the weekly briefing | The recorded live runs, in the demo app's Replay mode |
+| The planted rehearsal anomaly | Found by the live agent: the reseller discount jump and the margin loss in Northwest, May 2024 |
 
-**First thing to do with a real key:** run Step 10 question by question, then the scorecard.
-If a question fails, read the reasons. Usually the fix is a sentence in the rulebook (Step 6) or a
+**To check it again with your own key:** run the Step 10 questions one by one, then the scorecard. If a
+question fails, read the reasons it prints. Usually the fix is a sentence in the rulebook (Step 6) or a
 menu card (Step 5).
-
-**Token budget:** each AI round sends about 3,000 tokens of fixed text (rulebook 870, menu cards
-1,140, data dictionary 1,050), and a question takes 3-5 rounds. Expect 10-15k tokens per question,
-so short "waiting for the free-tier limit" pauses are normal. With 200k tokens a day, plan on
-about 10 questions plus one scorecard per key per day. If you run out, switch `GROQ_MODEL` to
-`"openai/gpt-oss-120b"`, which has its own daily allowance. The ideas in `PROMPT_OPTIMIZATION.md`
-were written for the **old** tools, but the same tricks (shorter menu cards and rulebook) apply here.
-
----
 
 ## 7. Troubleshooting
 
@@ -1426,11 +1566,11 @@ were written for the **old** tools, but the same tricks (shorter menu cards and 
 |---|---|
 | `NameError: name '_compact_for_llm' is not defined` (or `ask`, `run_eval`…) | The old sections didn't run. Use *Runtime → Run all*. |
 | Download error in Step 2 | Upload the zip yourself (see the note in Step 2). |
-| `GROQ_API_KEY: NOT found` | Add the key in Colab Secrets (🔑) and re-run Section 5.3. |
+| `GROQ_API_KEY: NOT found` | Add the key in Colab Secrets (key icon, see Step 0) and re-run Section 5.3. |
 | Lots of "waiting Xs for the free-tier limit" | Normal. For the scorecard, add `pause_seconds=5`. |
-| "daily limit" / `PerDay` errors | Use another key or switch model (Section 6 above). |
+| "daily limit" / `PerDay` errors | Use another key or switch model (see "Token budget" in Section 6 above). |
 | The agent answers with numbers but no "How I got this" box | It answered without tools. Rule 1 should prevent this; strengthen the wording in Step 6. |
-| Changed a setting but nothing changed | Re-run that cell **and every cell below it** (*Runtime → Run after*). |
+| Changed a setting but nothing changed | Re-run that cell and every cell below it: click the cell, then *Runtime → Run after*. |
 | Planted anomaly not showing | Check that `AW_PLANT_TEST_ANOMALY = True`, then re-run from Step 2. It builds `adventureworks_planted.db`. |
 
 ---

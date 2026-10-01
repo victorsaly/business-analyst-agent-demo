@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How we got here: project history · Business Performance Analyst Agent</title>
+<meta name="description" content="A course demonstration (Agentic AI Workshop 2026, Capstone 2): how we built an AI analyst agent, step by step.">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="../blog.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/diff.min.js" defer></script>
+<script>addEventListener("DOMContentLoaded", () => window.hljs && hljs.highlightAll());</script><script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+mermaid.initialize({ startOnLoad: false, theme: "base", securityLevel: "strict",
+  flowchart: { curve: "basis", padding: 14, nodeSpacing: 34, rankSpacing: 40 }, sequence: { mirrorActors: false },
+  themeVariables: { fontFamily: '"Patrick Hand SC", "Marker Felt", cursive', fontSize: "17px",
+    background: "#fcfbf7", primaryColor: "#ffffff", primaryTextColor: "#1e3a8a", primaryBorderColor: "#1e3a8a",
+    secondaryColor: "#eef2fb", tertiaryColor: "#eef2fb", lineColor: "#3f5a9e", textColor: "#1d2433",
+    clusterBkg: "#eef2fb", clusterBorder: "#a9b8dc", edgeLabelBackground: "#ffffff",
+    noteBkgColor: "#eef2fb", noteBorderColor: "#a9b8dc", noteTextColor: "#1e3a8a", actorLineColor: "#a9b8dc", signalColor: "#3f5a9e",
+    cScale0: "#eef2fb", cScale1: "#ffffff", cScale2: "#eef2fb", cScale3: "#ffffff", cScale4: "#eef2fb",
+    cScaleLabel0: "#1e3a8a", cScaleLabel1: "#1e3a8a", cScaleLabel2: "#1e3a8a", cScaleLabel3: "#1e3a8a", cScaleLabel4: "#1e3a8a",
+    cScalePeer0: "#a9b8dc", cScalePeer1: "#a9b8dc", cScalePeer2: "#a9b8dc", cScalePeer3: "#a9b8dc", cScalePeer4: "#a9b8dc" } });
+await document.fonts.ready;   // measure the labels in the hand-lettered font, not the fallback
+await mermaid.run({ querySelector: "pre.mermaid" });
+</script>
+<script src="../blog.js" defer></script></head>
+<body><header class="top"><div class="stripe"></div><div class="in">
+<a class="brand" href="index.html"><img src="../logo.svg" alt="" width="32" height="32"> Business Performance Analyst Agent</a>
+<div class="search" role="search"><label class="sr" for="q">Search the docs</label><input id="q" type="search" placeholder="Search the docs" autocomplete="off" spellcheck="false" aria-controls="hits" aria-expanded="false" aria-autocomplete="list"><kbd aria-hidden="true">/</kbd><div id="hits" role="listbox" aria-label="Search results" hidden></div></div><nav aria-label="Blog"><a href="index.html">How this was made</a><a href="history.html" aria-current="page">History</a><a href="requirements.html">Requirements</a><a href="build-guide.html">Build guide</a><a href="../demo/">Open the demo</a><a href="../api/">API</a><a href="../home/">Home</a></nav></div></header>
+<div class="wrap"><main><span class="course">Course demonstration · Capstone 2 · Agentic AI Workshop 2026</span>
+<h1 id="how-we-got-here-project-history">How we got here: project history</h1>
+<p>A course project, not a product: Capstone 2 of the Agentic AI Workshop 2026, which asks for a "Business
+Performance Analyst Agent" that answers managers' questions about sales data. The company, AdventureWorks,
+is Microsoft's public sample database of a made-up bicycle maker. No real business data is used.</p>
+<p>Everything happened on 1 October 2026. Times are UK time, taken from file timestamps and the git
+history, so they are approximate.</p>
+<figure class="diagram"><pre class="mermaid">timeline
+  title 1 October 2026, from afternoon to night
+  Start : Starter notebook on made-up data
+  Afternoon : Cut the AI cost by 32% : Brief turned into 13 steps : Section 6 built in the notebook
+  Early evening : Demo app around the agent : Cassette J-card design
+  Evening : Real AI runs recorded, 6 of 7 : Clear for every audience : Checked against the brief, 7 of 7
+  Night : Home screen, blog and API docs : Every track re-recorded live
+</pre></figure>
+<h2 id="the-starting-point-1515">The starting point (15:15)</h2>
+<p>The course gave us a starter notebook and a training guide. The notebook already had a working agent
+"engine": a loop that lets an AI model pick tools, retry logic for the free Groq AI plan, a scorecard
+and a weekly briefing. It ran on made-up data: a pretend retailer with North, South, East and West
+regions, prices in pounds, and four planted "stories" to find.</p>
+<p>The brief asked us to:</p>
+<ul>
+<li>use Microsoft AdventureWorks sample data instead of made-up data;</li>
+<li>build five tools: <code>get_schema</code>, <code>run_sql</code>, <code>run_python</code>, <code>make_chart</code>, <code>detect_anomalies</code>;</li>
+<li>enforce four guardrails: read-only access, always show the query, say when the data can't answer,
+    never present a forecast as a fact;</li>
+<li>produce a one-page weekly leadership briefing, and demo it all in six minutes.</li>
+</ul>
+<h2 id="step-1-cut-the-ai-cost-about-1600-to-1650">Step 1: Cut the AI cost (about 16:00 to 16:50)</h2>
+<p>The free Groq plan allows about 8,000 tokens a minute and 200,000 a day. We measured where the tokens
+went: every round of the agent loop re-sends the rulebook and the whole tool menu. Shortening both cut
+the fixed cost per round by 32% (about 2,650 to 1,810 tokens), and one anomaly scan of five metrics
+went from five rounds to one. Notes: <a href="prompt-optimization.html">prompt-optimization.md</a>.</p>
+<h2 id="step-2-turn-the-brief-into-a-plan-afternoon">Step 2: Turn the brief into a plan (afternoon)</h2>
+<p>We wrote the brief out requirement by requirement (18 items, P1 must-have to P3 stretch) and turned it
+into 13 steps a non-programmer can follow: where to click, what to paste, why, and how to check it
+worked. The main decision: keep the engine and swap what's underneath. Sections 1 to 5 of the notebook
+stay as they were, and a new Section 6 goes at the bottom. Guide: <a href="build-guide.html">build-guide.md</a>.</p>
+<h2 id="step-3-build-section-6-in-the-notebook-afternoon-finished-2049">Step 3: Build Section 6 in the notebook (afternoon, finished 20:49)</h2>
+<p>In a copy of the notebook, <a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/notebooks/capstone2_business_analyst_adventureworks.ipynb">notebooks/capstone2_business_analyst_adventureworks.ipynb</a>:</p>
+<ul>
+<li><strong>6A</strong> downloads AdventureWorks (31,465 orders, May 2022 to June 2025) into a SQLite file that is
+    opened read-only, with one simple view, <code>sales_lines</code>. Margin = LineTotal - OrderQty x StandardCost.</li>
+<li><strong>6B</strong> the five tools. <code>run_sql</code> refuses anything but a single SELECT. <code>detect_anomalies</code> flags months
+    or weeks far off their own recent trend (more than 2.5 "normal wobbles" from the average of the
+    previous 8 periods).</li>
+<li><strong>6C</strong> (stretch) <code>explain_change</code> splits a change into volume, price and mix.</li>
+<li><strong>6D</strong> the tool "menu cards" the AI reads; <strong>6E</strong> the new rulebook with the four guardrails.</li>
+<li><strong>6F</strong> switches the agent over, shows the exact queries from the tool log (never from the AI's own
+    words), and lets follow-up questions remember earlier answers.</li>
+<li><strong>6G</strong> a new scorecard: the brief's four questions plus three guardrail traps, with expected answers
+    worked out from the database every time.</li>
+<li><strong>6H</strong> the weekly briefing: the KPI table comes straight from SQL, so the AI can't mistype it.</li>
+<li>A planted anomaly for rehearsing: a fake 25% bike discount in Northwest, May 2024, in a separate copy of
+    the database (<a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/app/analyst/data.py">data.py</a>):</li>
+</ul>
+<pre><code class="language-python">AW_PLANT = {&quot;territory&quot;: &quot;Northwest&quot;, &quot;month&quot;: &quot;2024-05&quot;, &quot;category&quot;: &quot;Bikes&quot;, &quot;extra_discount&quot;: 0.25}
+</code></pre>
+<h2 id="step-4-a-demo-app-around-the-same-agent-from-1948">Step 4: A demo app around the same agent (from 19:48)</h2>
+<p>A notebook is hard to present. We moved the same code into a small Python package (<code>app/analyst</code>)
+behind a FastAPI server, with a hand-built web page and three modes: Live AI, Replay (plays
+back a recorded live run, step by step, as a backup if the wifi or AI fails) and Dry run (no AI,
+for testing the screens only). 27 automatic checks run without any AI key.</p>
+<h2 id="step-5-product-brief-and-design-2008-to-2033">Step 5: Product brief and design (20:08 to 20:33)</h2>
+<p>We wrote down who it's for (judges and a "leadership team" watching a projector) and what success
+looks like (<a href="product.html">product.md</a>). For the look we chose a hand-lettered cassette J-card instead of
+the usual dark AI dashboard: the six-minute demo as a mixtape, with side A for the brief's questions and side B
+for the guardrails (<a href="design.html">design.md</a>).</p>
+<h2 id="step-6-real-ai-runs-recorded-2036-to-2058">Step 6: Real AI runs, recorded (20:36 to 20:58)</h2>
+<p>The free Groq plan ran out of its daily allowance during testing, so the agent now falls back to
+OpenAI automatically (gpt-5.4-mini). We ran every demo question live once and recorded it for
+Replay. On those first recordings the scorecard passed 6 of 7. The miss: asked for a return rate, the
+AI treated orders with negative quantities as "returns" and stated "0.00%", instead of saying the data has
+no returns (fixed in Step 8). We also made a 60-second pitch video with music and a voiceover from ElevenLabs.</p>
+<h2 id="step-7-make-it-clear-for-every-audience-2100-onwards">Step 7: Make it clear for every audience (21:00 onwards)</h2>
+<ul>
+<li>Fixed a stall on the briefing screen: an earlier run left behind on another screen could hold the
+    server's one-run-at-a-time lock. A new run now stops the old one, the KPI table appears at once,
+    and a status line ticks every second, so a slow AI never looks frozen.</li>
+<li>Stakeholder and Developer views: stakeholders see only the answers, numbers and charts, with every
+    step in plain English. Developers see every tool call, its arguments, the SQL, timings and tokens.</li>
+<li>Explain this page: a spoken explanation of every screen for each audience (ElevenLabs), with
+    captions that light up word by word in time with the voice.</li>
+<li>An online copy on GitHub Pages that replays the recorded runs, plus this history and a Story chat.</li>
+<li>A clean public repo: code in <code>app/</code>, documentation in <code>docs/</code>, the online copy in <code>site/</code>.</li>
+<li>A blog, <a href="index.html">"How this was made"</a>, published with the site, and an Ask chat for course
+    students that answers from the course's training guide and starting notebook, our notebook and these notes.
+    Online, it runs through a small Cloudflare Worker with a daily limit.</li>
+</ul>
+<h2 id="step-8-check-every-line-of-the-brief-evening">Step 8: Check every line of the brief (evening)</h2>
+<p>We went through the printed brief line by line and recorded the evidence for each requirement in
+<a href="requirements.html">requirements.md</a>. That found three gaps, now fixed:</p>
+<ul>
+<li><strong>Say when the data can't answer</strong>: the rulebook now also forbids building a stand-in from other columns
+    ("negative quantities are not returns"). Re-recorded live, the agent says "The data does not include
+    returns". The scorecard on the recordings is now 7 of 7.</li>
+<li><strong>Cost</strong> is now a metric in the anomaly scan, next to revenue, margin and volume.</li>
+<li><strong>The demo moment</strong>: the planted anomaly is recorded. The agent found the planted bike discount in
+    Northwest, May 2024 (reseller discount up to about 22%, margin down to a loss of $96,403).</li>
+</ul>
+<h2 id="step-9-a-finished-product-night">Step 9: A finished product (night)</h2>
+<ul>
+<li><strong>A Home screen</strong> as the app's front door, with every screen, the blog, the API reference, the pitch and the
+    presentation.</li>
+<li><strong>The Ask chat</strong> became a floating button on every screen. Answers stream in as they're written, number their
+    sources, and link to the matching blog pages, the API reference and the code. It answers from the course's
+    training guide and starting notebook, our notebook and these notes. Online it runs through a small Cloudflare
+    Worker that holds the AI key and caps questions per day.</li>
+<li><strong>The blog</strong> ("How this was made", with before-and-after code) is served by the app at <code>/blog/</code> and published
+    with the website. <strong>The API reference</strong> documents every endpoint with Redoc, and a <strong>start page</strong> links every
+    service.</li>
+<li><strong>Every demo track was re-recorded live</strong> with the final rulebook, so Replay shows what the finished agent does.</li>
+</ul>
+<h2 id="what-we-learned">What we learned</h2>
+<ul>
+<li><strong>Keep the engine, change the inputs.</strong> Adding Section 6 instead of rewriting meant nothing that
+    worked before broke.</li>
+<li><strong>Never trust the model with numbers it can look up.</strong> KPI tables and "show the query" come from
+    code and the tool log, not from the AI's words.</li>
+<li><strong>Measure the tokens.</strong> On a free plan, the fixed text sent each round is the real cost.</li>
+<li><strong>Have a fallback for live demos.</strong> Labelled replays of real runs kept the demo going when the AI
+    allowance ran out.</li>
+<li><strong>Mark honestly.</strong> The scorecard checks numbers against the database. When one answer failed, we fixed
+    the rule, not the marking.</li>
+<li><strong>Check against the brief itself.</strong> Reading the printed brief line by line found gaps the tests didn't.</li>
+</ul>
+<h2 id="scope">Scope</h2>
+<ul>
+<li><strong>Online, the demo replays recorded live runs.</strong> Asking the agent your own questions runs on your machine,
+    because it needs an AI key on a server. The Ask chat is the exception: it answers live online, within a daily limit.</li>
+<li><strong>The brief's backup dataset</strong> (UCI Online Retail II) is optional, and wasn't needed: AdventureWorks has the
+    cost data that margin needs.</li>
+</ul>
+<nav class="pager" aria-label="Previous and next page"><a class="prev" href="index.html"><span>Previous</span>How this was made</a><a class="next" href="requirements.html"><span>Next</span>Every requirement, with evidence</a></nav>
+<p class="foot">A learning project, not a product. AdventureWorks is Microsoft's public sample data about a made-up bicycle
+company. Source of this page: <a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/docs/history.md">docs/history.md</a>.</p></main>
+<aside class="areas" aria-label="All documents"><details open><summary>All pages</summary><h2>Start here</h2><ul><li><a href="getting-started.html">Run it on your laptop (Mac and Windows)</a></li></ul><h2>The story</h2><ul><li><a href="index.html">How this was made</a></li><li><a href="history.html" aria-current="page">Timeline, step by step</a></li></ul><h2>The brief</h2><ul><li><a href="requirements.html">Every requirement, with evidence</a></li><li><a href="build-guide.html">The 13 build steps</a></li></ul><h2>The app</h2><ul><li><a href="running-the-app.html">Running the demo</a></li><li><a href="product.html">Who it's for</a></li><li><a href="design.html">How it looks</a></li></ul><h2>Behind the scenes</h2><ul><li><a href="prompt-optimization.html">Cutting the AI cost</a></li><li><a href="audio-sources.html">Audio sources</a></li></ul><h2>Try it</h2><ul><li><a href="../home/">Home: every area</a></li><li><a href="../demo/">Open the demo</a></li><li><a href="../demo/?page=story">Ask the course chat</a></li><li><a href="../api/">API reference</a></li><li><a href="../pitch/">60-second pitch video</a></li><li><a href="../deck/">The presentation</a></li><li><a href="getting-started.html">Run it on your laptop</a></li><li><a href="https://github.com/victorsaly/business-analyst-agent-demo">The code on GitHub</a></li></ul></details></aside>
+<nav class="toc" aria-label="On this page"><h2>On this page</h2><ul><li><a href="#the-starting-point-1515">The starting point (15:15)</a></li><li><a href="#step-1-cut-the-ai-cost-about-1600-to-1650">Step 1: Cut the AI cost (about 16:00 to 16:50)</a></li><li><a href="#step-2-turn-the-brief-into-a-plan-afternoon">Step 2: Turn the brief into a plan (afternoon)</a></li><li><a href="#step-3-build-section-6-in-the-notebook-afternoon-finished-2049">Step 3: Build Section 6 in the notebook (afternoon, finished 20:49)</a></li><li><a href="#step-4-a-demo-app-around-the-same-agent-from-1948">Step 4: A demo app around the same agent (from 19:48)</a></li><li><a href="#step-5-product-brief-and-design-2008-to-2033">Step 5: Product brief and design (20:08 to 20:33)</a></li><li><a href="#step-6-real-ai-runs-recorded-2036-to-2058">Step 6: Real AI runs, recorded (20:36 to 20:58)</a></li><li><a href="#step-7-make-it-clear-for-every-audience-2100-onwards">Step 7: Make it clear for every audience (21:00 onwards)</a></li><li><a href="#step-8-check-every-line-of-the-brief-evening">Step 8: Check every line of the brief (evening)</a></li><li><a href="#step-9-a-finished-product-night">Step 9: A finished product (night)</a></li><li><a href="#what-we-learned">What we learned</a></li><li><a href="#scope">Scope</a></li></ul></nav></div></body></html>

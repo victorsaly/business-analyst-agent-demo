@@ -1,20 +1,74 @@
 # The demo app: Business Performance Analyst Agent
 
-> Course demonstration (Capstone 2, Agentic AI Workshop 2026). See the [main README](../README.md) for the
+> Course demonstration (Capstone 2, Agentic AI Workshop 2026). See the [main readme](../readme.md) for the
 > project overview and [history.md](history.md) for how we got here. Commands below run from the `app/` folder.
+> If you have never used a terminal, follow [Getting started](getting-started.md) instead: it uses double-click files.
 
 A local app that runs the AdventureWorks agent from [build-guide.md](build-guide.md) on your own machine.
-It has a screen per demo case, records live AI runs so you can replay them safely, and records a
+It has a screen per demo case, saves every live AI run so you can replay it later, and can record a
 narrated demo video.
 
 ## Quick start (macOS)
 
-```bash
-cd app
-./demo.sh setup        # one-off: local Python environment, browser for the video, database (downloads 17 MB)
-# put your key in app/.env:    GROQ_API_KEY=gsk_...  and/or  OPENAI_API_KEY=sk-...
-./demo.sh app          # starts the app and opens http://localhost:8501
+1. Open **Terminal** and go to the `app` folder of the project (change the path to where your copy is):
+
+   ```bash
+   cd ~/Desktop/business-analyst-agent-demo-main/app
+   ```
+
+2. Set up once. This creates a local Python environment, installs the browser used for the video, and
+   downloads the database (17 MB):
+
+   ```bash
+   ./demo.sh setup
+   ```
+
+   You should see, at the end:
+
+   ```text
+   Database ready: /…/app/data/adventureworks.db
+   Setup done. Put your key in app/.env, then: ./demo.sh app
+   ```
+
+3. Open `app/.env` in a text editor and add your key(s), one per line:
+
+   ```bash
+   open -e .env
+   ```
+
+   ```text
+   GROQ_API_KEY=gsk_...
+   OPENAI_API_KEY=sk-...
+   ```
+
+   Either key is enough. With no key, Replay and Dry run still work.
+
+4. Start the app. It opens <http://localhost:8501> in your browser: the cover page with the pitch video.
+   Click **Try the live demo** to open the app (or go straight to <http://localhost:8501/demo/>):
+
+   ```bash
+   ./demo.sh app
+   ```
+
+   ```text
+   Open http://localhost:8501
+   ```
+
+   Leave Terminal open while you use the app. Press **Ctrl C** in Terminal to stop it.
+
+**Windows (PowerShell).** `demo.sh` is a Mac and Linux script. On Windows, use the double-click files in
+[Getting started](getting-started.md), or run these from the `app` folder:
+
+```powershell
+py -3 -m venv .venv
+.venv\Scripts\python -m pip install -r requirements.txt
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+notepad .env
+.venv\Scripts\python server.py
 ```
+
+Then open <http://localhost:8501> and click **Try the live demo**. The video commands below (`prepare`, `video`, `pitch`) also need
+`.venv\Scripts\python -m playwright install chromium` and are only tested on a Mac.
 
 ## The three modes (top right)
 
@@ -24,110 +78,213 @@ cd app
 | **Replay** | No (plays back a real AI run, step by step) | Backup for the live demo if the wifi or the free plan fails. Labelled "Replay". |
 | **Dry run** | No | Only to test the screens and the video. The steps and numbers are real tool results, but the plan and wording are scripted. Labelled in red. |
 
+```mermaid
+flowchart LR
+  accTitle: Which mode to use
+  Q{"Showing it<br/>to people?"} -- "no, testing<br/>the screens" --> D["Dry run"]
+  Q -- yes --> K{"AI key and<br/>wifi working?"}
+  K -- yes --> L["Live AI"]
+  K -- "no, or too slow" --> R["Replay"]
+  L -. "every run is saved<br/>for Replay" .-> R
+  classDef red stroke:#c62828,stroke-width:2px,color:#b71c1c
+  class D red
+```
+
 ## The screens
 
-The app is designed as a hand-lettered cassette J-card: the demo is a six-minute mixtape.
+The app looks like a hand-lettered cassette J-card, and the demo is laid out as a six-minute mixtape.
 
 | Screen | What it shows | Judging point |
 |---|---|---|
+| Home | The first screen: every area of the app, the blog, the API reference, the pitch and the presentation, with suggested questions for the chat | Pitch |
 | Cover | The problem, how it works, the house rules (guardrails) | Pitch, business value |
 | What changed | Before / after, every brief requirement, old vs new rulebook, the tool descriptions | Agent design |
 | Tracks | The demo as a tracklist. Side A has the brief's questions, side B the guardrails, briefing and scorecard, plus a hidden rehearsal track. Each track shows its time budget; both sides add up to 6:00. Your own questions go in the box below. | Working demo, trust |
 | Tools | Anomaly scan and read-only SQL by hand. "Try: delete the orders" is refused | Trust & safety |
 | Briefing | The one-page leadership briefing, downloadable as a standalone HTML page | Business value |
 | Scorecard | The brief's 4 questions plus 3 guardrail traps, marked Pass / Fail | Evaluation |
-| Story | The project timeline, and a chat that answers questions about how we built it (from `docs/history.md`) | Pitch |
+| Story | The project timeline, step by step, with suggested questions for the chat | Pitch |
 
-**View for: Stakeholder / Developer** (under the header) switches between just the answers, numbers and charts,
-and everything underneath: each tool call, its arguments, SQL, timings, AI rounds and tokens.
-**Explain this page** plays a spoken explanation for the chosen audience with word-by-word captions
-(`web/explain/`: edit `scripts.json`, regenerate the mp3, then `./demo.sh timings`).
+**The Ask chat** is the button at the bottom right of every screen. It opens a panel that keeps the conversation
+while you move between screens. Answers stream in as they're written, number their sources, and end with
+**Resources**: the blog pages, the API reference, the presentation or the code that go with the answer. More on
+how it works under [The Ask chat](#the-ask-chat-local-and-online).
 
-A run left behind on another screen no longer blocks the next one: starting a run stops the previous one.
-On the briefing screen the KPI table appears at once, and a status line ticks every second while the AI works.
-If a live run goes past its time slot, a button offers the recorded run instead.
+**The blog** is served by the app too, at `http://localhost:8501/blog/`: every document in `docs/`, in the app's
+style, rendered fresh on each visit. The API reference is at `http://localhost:8501/redoc`.
 
-While a track plays, the counter top right shows time used against the track's budget. The red bar
-under the header fills as you go, and the counter turns red if you run over.
+**View for: Stakeholder / Developer** (under the header) switches between two views. Stakeholder shows only
+the answers, numbers and charts. Developer adds everything underneath: each tool call, its arguments, the
+SQL, timings, AI rounds and tokens.
+
+**Explain this page** plays a spoken explanation for the chosen audience, with word-by-word captions. The
+clips and their text are in `web/explain/`. To change a line:
+
+1. Edit the text in `web/explain/scripts.json`.
+2. Regenerate that screen's mp3 in the same folder (see [audio-sources.md](audio-sources.md)).
+3. Re-measure the caption timings:
+
+   ```bash
+   ./demo.sh timings
+   ```
+
+Other behaviour worth knowing when presenting:
+
+- Starting a run stops any run still going on another screen, so a forgotten run never blocks the next one.
+- On the Briefing screen the KPI table appears at once, and a status line updates every second while the AI works.
+- If a live run goes past its time slot, a button offers the recorded run instead.
+- While a track plays, the counter top right shows time used against the track's budget. The red bar under
+  the header fills as you go, and the counter turns red if you run over.
+
+## Competitor prices (optional, for demos)
+
+AdventureWorks has no competitor data, so by default the agent says so (side B, track 1). To demo a
+price comparison, go to **Tools → Competitor prices** and choose one of these:
+
+- **Use the mock price list**: three fictional shops (Summit Cycles, Velo Direct, TrailCraft) with prices
+  generated from our list prices. Velo Direct undercuts our Road Bikes by about 20%, which is the finding the
+  agent should surface. Answers say the prices are mock.
+- **Download the template (CSV)**: the mock list as a file. Edit it, or fill in your own, then upload it with
+  **Attach your CSV…**.
+- **Detach**: go back to the default (no competitor data).
+
+The CSV needs these columns (prices in $, `observed_date` optional). The first lines of the template:
+
+```text
+product,competitor,competitor_price,observed_date
+AWC Logo Cap,Summit Cycles,9.55,2025-06-29
+AWC Logo Cap,TrailCraft,9.66,2025-06-29
+All-Purpose Bike Stand,Velo Direct,157.12,2025-06-29
+```
+
+Product names must match AdventureWorks names (case and spacing don't matter). Rows that don't match are
+listed back to you.
+
+The list is kept in its own SQLite file in `data/` and attached read-only. The agent sees it as the
+`competitor_prices` table and the `price_comparison` view (our list price and online price next to each
+competitor's, plus the % gap). Your own questions use the list you picked. The guardrail track and the
+scorecard always run without one, so the guardrail still scores. The hidden track "Competitor prices (mock
+list attached)" always uses the mock list.
 
 ## The 60-second pitch video
 
-`video/pitch.mp4` is a launch-style trailer:
-- a hand-lettered hook and problem card;
-- the app revealed on the music's drop;
-- real AI runs, replayed, with zooms into the chart, the answer and the SQL;
-- a three-shot trust montage;
-- an end card on the final hit.
+`video/pitch.mp4` is a launch-style trailer. In order:
 
-It runs on a 120 BPM music bed, with a professional voiceover and the music dipping under the voice. Audio is
-from ElevenLabs; see [audio-sources.md](audio-sources.md).
+1. A hand-lettered hook and problem card.
+2. The app, revealed on the music's drop.
+3. Real AI runs, replayed, with zooms into the chart, the answer and the SQL.
+4. A three-shot trust montage.
+5. An end card on the final hit.
+
+It runs on a 120 BPM music bed with a professional voiceover; the music dips under the voice. The audio was
+made with ElevenLabs; see [audio-sources.md](audio-sources.md).
+
+To re-render it from the current recordings (about 1 minute):
 
 ```bash
-./demo.sh pitch        # re-render from the current recordings (about 1 minute)
+./demo.sh pitch
 ```
 
-Live runs re-record their tracks. So before rendering, `make_promo.py` checks that each recording still
-supports what the voiceover says (for example, that the anomaly answer still mentions the Reseller channel).
-If one doesn't, it stops and tells you which track to re-record. The scenes, captions and timings are in
+Live runs overwrite their track's recording. So before rendering, `make_promo.py` checks that each recording
+still supports what the voiceover says (for example, that the anomaly answer still mentions the Reseller
+channel). If one doesn't, it stops and names the track to re-record. The scenes, captions and timings are in
 `SCENES` at the top of `make_promo.py`.
 
 ## Making the video
 
-```bash
-./demo.sh prepare      # runs every case LIVE once and records it (~120-160k tokens: most of a day's free allowance)
-./demo.sh video        # replays those recordings in a browser and saves video/demo.mp4 with narration
-```
+1. Run every case live once and record it. This uses about 120,000 to 160,000 tokens, most of a day's free
+   Groq allowance:
 
-- `./demo.sh video --no-voice` records without narration. `--voice Daniel` picks another macOS voice
-  (`say -v '?'` lists them). `--rehearsal` adds the planted-anomaly scene.
-- `./demo.sh video-dry` makes a test video with no AI at all. It is clearly labelled DRY RUN, so don't
-  present it as the agent.
-- To re-record just a few cases: `./demo.sh prepare northwest_margin guard_forecast`.
+   ```bash
+   ./demo.sh prepare
+   ```
+
+2. Replay those recordings in a browser and save `video/demo.mp4` with narration:
+
+   ```bash
+   ./demo.sh video
+   ```
+
+Options:
+
+| Command | What it does |
+|---|---|
+| `./demo.sh video --no-voice` | Records without narration |
+| `./demo.sh video --voice Daniel` | Uses another macOS voice (`say -v '?'` lists them) |
+| `./demo.sh video --rehearsal` | Adds the planted-anomaly scene |
+| `./demo.sh video-dry` | Test video with no AI at all, labelled DRY RUN. Don't present it as the agent. |
+| `./demo.sh prepare northwest_margin guard_forecast` | Re-records only the cases you name |
 
 ## Presenting live
 
-1. Start `./demo.sh app` before the session and choose **Live AI** (top right).
-2. Play side A, then side B, track by track. The counters keep you inside the 6-minute slot.
-3. If the AI is slow or rate-limited, switch to **Replay**. The same track shows the recorded
+1. Before the session, start the app (`./demo.sh app`, or the Start file from [Getting started](getting-started.md)).
+2. Choose **Live AI** (top right).
+3. Play side A, then side B, track by track. The counters keep you inside the 6-minute slot.
+4. If the AI is slow or rate-limited, switch to **Replay**. The same track then shows the recorded
    live run, labelled as a replay.
-4. For the organisers' planted-anomaly question, type it into "Write your own question" in Live AI mode.
+5. For the organisers' planted-anomaly question, type it into "Write your own question" in Live AI mode.
 
-`?presenter=1` in the URL adds a red margin note with the talking point for each screen (used by the video).
+Adding `?presenter=1` to the URL (<http://localhost:8501/demo/?presenter=1>) shows a red margin note with the
+talking point for each screen. The video uses this.
 
 ## Presenter zoom
 
-While presenting, point at anything (a chart, the answer, a query, a panel) and press **Z** to zoom into it.
-Press **Z** or **Esc** to zoom out. Screens change with a short transition.
+1. While presenting, point the mouse at anything: a chart, the answer, a query or a panel.
+2. Press **Z** to zoom into it.
+3. Press **Z** or **Esc** to zoom out.
+
+Screens change with a short transition.
 
 ## AI services: Groq, then OpenAI
 
-The agent tries the services in `.env` in order: Groq (`GROQ_API_KEY`) first, then OpenAI (`OPENAI_API_KEY`,
-model `gpt-5.4-mini`, change it with `OPENAI_MODEL`). If Groq runs out of its daily allowance or credit, the
-agent switches to OpenAI automatically and keeps going, and the footer of each answer shows which model
-answered. To make OpenAI the first choice, set `LLM_PROVIDER=openai`; the current recordings were made this
-way, because it follows the rules more reliably than the free model.
+The agent tries the services set in `app/.env` in this order:
 
-## Running without Groq
+1. Groq (`GROQ_API_KEY`), model `openai/gpt-oss-20b` unless you set `LLM_MODEL`.
+2. OpenAI (`OPENAI_API_KEY`), model `gpt-5.4-mini` unless you set `OPENAI_MODEL`.
 
-Any OpenAI-compatible API works. For a fully local AI, install [Ollama](https://ollama.com), run
-`ollama pull qwen2.5:14b`, and set in `.env`:
+If Groq runs out of its daily allowance or credit, the agent switches to OpenAI and carries on. The footer of
+each answer shows which model answered.
 
+To make OpenAI the first choice, add this line to `.env`. The current recordings were made this way, because
+OpenAI follows the rules more reliably than the free model:
+
+```text
+LLM_PROVIDER=openai
 ```
-LLM_BASE_URL=http://localhost:11434/v1
-LLM_MODEL=qwen2.5:14b
-```
 
-This setup is untested; small local models make more mistakes, so check the scorecard.
+If no key is set, Live AI stops with this message; Replay and Dry run still work:
+
+```text
+No AI key set. Put GROQ_API_KEY=... or OPENAI_API_KEY=... in app/.env (or use Replay / Dry run).
+```
 
 ## Checks
 
-`./demo.sh test` runs 27 checks without any AI key:
-- the guardrails;
+```bash
+./demo.sh test
+```
+
+On Windows:
+
+```powershell
+.venv\Scripts\python test_demo.py
+```
+
+This runs 36 checks without any AI key. They cover:
+
+- the guardrails (read-only SQL, refused writes, the sandbox);
 - every case in dry run;
 - the briefing;
+- the competitor price list;
 - the examiner;
 - the live AI loop against a fake AI server (tool calls, a rate-limit retry, recording and replay);
 - adapting to OpenAI's settings, and falling back to the next service when one runs out.
+
+Each check prints one line. The last line should be:
+
+```text
+ALL CHECKS PASSED
+```
 
 ## Files
 
@@ -149,3 +306,104 @@ This setup is untested; small local models make more mistakes, so check the scor
 | `analyst/story.py`, `make_story_answers.py` | The Story chat, and its prepared answers for the online copy |
 | `make_explain_timings.py` | Word timings for the Explain captions, measured from each clip's pauses |
 | `build_site.py` | Builds the online copy (GitHub Pages) into `../site` |
+
+## The Ask chat (local and online)
+
+The chat on the **Story** screen answers course students' questions about the task, each step, the
+course material, and how we built it. Every answer uses only:
+
+- our notes: the brief line by line ([requirements.md](requirements.md)), the step-by-step guide
+  ([build-guide.md](build-guide.md)) and the history ([history.md](history.md));
+- course material: the passages that best match the question from the course's training guide and
+  starting notebook, and from our finished notebook. These are numbered, and the answer cites them, like [2].
+
+The suggested questions have answers prepared in advance, so they are instant and cost nothing. To regenerate
+them (this uses the AI):
+
+```bash
+./demo.sh story
+```
+
+**The knowledge base.** The course files aren't in this repo, so you build it from your own copy of the course repo:
+
+```bash
+./demo.sh knowledge --course /path/to/capstone-project-2-business_analyst_agent
+```
+
+This writes `data/knowledge.json` (for the local app) and `../worker/knowledge.json` (for the online chat).
+Both are git-ignored, because they hold course material. Without `--course`, the chat still works from our
+own notebook and docs.
+
+**Online.** The website can't hold an API key, so the online chat goes through a small Cloudflare Worker
+(`worker/`). The Worker holds the OpenAI key as a secret, searches the knowledge base the same way the local
+app does, and caps costs with these limits:
+
+```mermaid
+sequenceDiagram
+  accTitle: One question to the online Ask chat
+  participant V as Visitor
+  participant W as Cloudflare Worker
+  participant K as Knowledge base
+  participant O as OpenAI
+  V->>W: A question
+  Note over W: Checks the site and the daily limits
+  W->>K: Find the best passages
+  K-->>W: Numbered passages
+  W->>O: Question + passages, sent with the secret key
+  O-->>W: Answer
+  W-->>V: Answer, citing passages like [2]
+```
+
+| Limit | Where to change it |
+|---|---|
+| Answers only the demo site (and localhost) | `ALLOWED` in `worker/src/index.js` |
+| 300 questions a day in total | `DAILY_LIMIT` in `worker/wrangler.toml` |
+| 25 questions a day per visitor (counted by a hash of their IP address) | `PER_VISITOR_LIMIT` |
+| Model | `MODEL` (`gpt-5.4-mini`) |
+
+To update it after changing the docs, the notebook or `analyst/story.py`:
+
+1. Rebuild the knowledge base (from `app/`):
+
+   ```bash
+   ./demo.sh knowledge --course /path/to/course/repo
+   ```
+
+2. Deploy the Worker:
+
+   ```bash
+   cd ../worker && npx wrangler@3 deploy
+   ```
+
+First-time setup on a new Cloudflare account (from `worker/`; Wrangler 3 runs on Node 20, newer versions need Node 22):
+
+1. Create a KV namespace:
+
+   ```bash
+   npx wrangler@3 kv namespace create LIMITS
+   ```
+
+2. Put the id it prints into `wrangler.toml`.
+3. Store the OpenAI key as a secret (it asks you to paste it):
+
+   ```bash
+   npx wrangler@3 secret put OPENAI_API_KEY
+   ```
+
+## API reference
+
+Every endpoint the screens use is documented, with examples, in one OpenAPI spec:
+
+- **Online:** [the API reference](https://victorsaly.github.io/business-analyst-agent-demo/api/), shown with Redoc. It also covers the
+  online Ask chat's endpoints, and you can download the spec there (`openapi.json`).
+- **Locally**, while the app runs: <http://localhost:8501/redoc> (to read) or <http://localhost:8501/docs> (to try
+  the endpoints in the browser).
+
+The descriptions live in `app/api_docs.py`, next to the server. After changing them, rebuild the online copy:
+
+```bash
+./demo.sh site
+```
+
+The streaming endpoints (`/api/run`, `/api/briefing`, `/api/scorecard`) send Server-Sent Events; the reference lists
+every event type and its fields.

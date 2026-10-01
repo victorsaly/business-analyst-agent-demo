@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Product · Business Performance Analyst Agent</title>
+<meta name="description" content="A course demonstration (Agentic AI Workshop 2026, Capstone 2): how we built an AI analyst agent, step by step.">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="../blog.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/diff.min.js" defer></script>
+<script>addEventListener("DOMContentLoaded", () => window.hljs && hljs.highlightAll());</script>
+<script src="../blog.js" defer></script></head>
+<body><header class="top"><div class="stripe"></div><div class="in">
+<a class="brand" href="index.html"><img src="../logo.svg" alt="" width="32" height="32"> Business Performance Analyst Agent</a>
+<div class="search" role="search"><label class="sr" for="q">Search the docs</label><input id="q" type="search" placeholder="Search the docs" autocomplete="off" spellcheck="false" aria-controls="hits" aria-expanded="false" aria-autocomplete="list"><kbd aria-hidden="true">/</kbd><div id="hits" role="listbox" aria-label="Search results" hidden></div></div><nav aria-label="Blog"><a href="index.html">How this was made</a><a href="history.html">History</a><a href="requirements.html">Requirements</a><a href="build-guide.html">Build guide</a><a href="../demo/">Open the demo</a><a href="../api/">API</a><a href="../home/">Home</a></nav></div></header>
+<div class="wrap"><main><span class="course">Course demonstration · Capstone 2 · Agentic AI Workshop 2026</span>
+<h1 id="product">Product</h1>
+<!-- impeccable:product-schema 1 -->
+
+<h2 id="platform">Platform</h2>
+<p>web</p>
+<h2 id="stack">Stack</h2>
+<p>Python back end (the existing <code>app/analyst</code> package: tools, agent loop, replay, scorecard, briefing) served
+locally by FastAPI; a hand-built HTML/CSS/JS front end with no framework. Runs entirely on the presenter's
+machine. Chosen by the user over restyling Streamlit, for full design control.</p>
+<h2 id="users">Users</h2>
+<ul>
+<li><strong>Judges and the "leadership team"</strong> at the Agentic AI Workshop 2026 capstone presentations: they watch a
+    6-minute live demo projected in a lit workshop room, read from a few metres away, then ask questions live
+    (including one that leads to a planted anomaly). They also see a recorded video.</li>
+<li><strong>The presenting team</strong> (mixed, many not Python users) drive the demo: click prepared cases, type live
+    questions, fall back to replays if the AI or wifi fails.</li>
+<li>In the story the product tells: managers who ask simple questions about the numbers and today wait days
+    for an analyst.</li>
+</ul>
+<h2 id="product-purpose">Product Purpose</h2>
+<p>A Business Performance Analyst Agent: a manager asks a plain-English question about sales, and the agent
+plans the analysis, writes and runs read-only SQL or pandas, corrects its own errors, draws a chart, explains
+what drove the result, flags anomalies, and writes a one-page weekly leadership briefing. Success at the
+presentation means judges see a working demo they can trust, and score it on business value, agent design,
+working demo, trust &amp; safety, and pitch.</p>
+<h2 id="positioning">Positioning</h2>
+<p>Every number is traceable: the exact queries that produced an answer are shown from the tool log, not from
+the AI's own words, against a read-only database. The agent says when the data cannot answer and never
+presents a forecast or guess as a fact.</p>
+<h2 id="operating-context">Operating Context</h2>
+<ul>
+<li>Live presentation: 13:45-15:30 sprint, 15:45-16:30 presentations; each a 6-minute demo plus 2-minute Q&amp;A.</li>
+<li>Projector in a lit room; also a recorded, narrated video produced by <code>app/record_video.py</code>.</li>
+<li>Modes: Live AI (Groq free tier, rate-limited, with automatic fallback to OpenAI gpt-5.4-mini when the
+    daily allowance runs out), Replay of a recorded live run, Dry run (no AI, scripted, for testing only).
+    Replay and dry run are always labelled as such on screen.</li>
+</ul>
+<h2 id="capabilities-and-constraints">Capabilities and Constraints</h2>
+<ul>
+<li>Data: Microsoft AdventureWorks (MIT), 30 May 2022 to 29 Jun 2025, 31,465 orders, US dollars, 10 sales
+    territories, Online and Reseller channels, 4 categories. Local read-only SQLite.</li>
+<li>Tools: get_schema, run_sql, run_python, make_chart, detect_anomalies, explain_change.</li>
+<li>Margin = LineTotal - (OrderQty x StandardCost).</li>
+<li>Screens: overview, what changed (before/after vs the starting notebook), demo cases, tools without AI,
+    weekly briefing, scorecard.</li>
+<li>The video recorder drives the UI by URL parameters and waits for a scene-complete signal
+    (<a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/app/record_video.py">record_video.py</a>):</li>
+</ul>
+<pre><code class="language-python">page.goto(f&quot;http://localhost:{PORT}/?{params}&amp;mode={args.mode}&amp;presenter=1&amp;autorun=1&amp;delay={args.delay}&quot;)
+page.wait_for_selector(&quot;body[data-scene=done]&quot;, timeout=600_000)
+</code></pre>
+<h2 id="brand-commitments">Brand Commitments</h2>
+<p>Name: "Business Performance Analyst Agent" for AdventureWorks. No team branding. No workshop or organiser
+(sensiwise.ai) branding, and nothing that impersonates Microsoft.</p>
+<h2 id="evidence-on-hand">Evidence on Hand</h2>
+<p>Real query results from AdventureWorks; recorded live runs in <code>app/recordings/</code>; the
+scorecard. No customer testimonials, benchmarks or business results exist; none may be invented.</p>
+<h2 id="product-principles">Product Principles</h2>
+<ol>
+<li>Show the working: the exact queries sit under every answer ("How I got this", in Developer view).</li>
+<li>Honest about limits: "the data does not include…" is a feature, shown with the same weight as an answer.</li>
+<li>Never blur modes: live, replay and dry run are always distinguishable.</li>
+<li>Readable from the back of the room.</li>
+</ol>
+<h2 id="accessibility--inclusion">Accessibility &amp; Inclusion</h2>
+<p>Projected display: large type, high contrast that survives a washed-out projector, no meaning carried by
+colour alone.</p>
+<nav class="pager" aria-label="Previous and next page"><a class="prev" href="running-the-app.html"><span>Previous</span>Running the demo</a><a class="next" href="design.html"><span>Next</span>How it looks</a></nav>
+<p class="foot">A learning project, not a product. AdventureWorks is Microsoft's public sample data about a made-up bicycle
+company. Source of this page: <a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/docs/product.md">docs/product.md</a>.</p></main>
+<aside class="areas" aria-label="All documents"><details open><summary>All pages</summary><h2>Start here</h2><ul><li><a href="getting-started.html">Run it on your laptop (Mac and Windows)</a></li></ul><h2>The story</h2><ul><li><a href="index.html">How this was made</a></li><li><a href="history.html">Timeline, step by step</a></li></ul><h2>The brief</h2><ul><li><a href="requirements.html">Every requirement, with evidence</a></li><li><a href="build-guide.html">The 13 build steps</a></li></ul><h2>The app</h2><ul><li><a href="running-the-app.html">Running the demo</a></li><li><a href="product.html" aria-current="page">Who it's for</a></li><li><a href="design.html">How it looks</a></li></ul><h2>Behind the scenes</h2><ul><li><a href="prompt-optimization.html">Cutting the AI cost</a></li><li><a href="audio-sources.html">Audio sources</a></li></ul><h2>Try it</h2><ul><li><a href="../home/">Home: every area</a></li><li><a href="../demo/">Open the demo</a></li><li><a href="../demo/?page=story">Ask the course chat</a></li><li><a href="../api/">API reference</a></li><li><a href="../pitch/">60-second pitch video</a></li><li><a href="../deck/">The presentation</a></li><li><a href="getting-started.html">Run it on your laptop</a></li><li><a href="https://github.com/victorsaly/business-analyst-agent-demo">The code on GitHub</a></li></ul></details></aside>
+<nav class="toc" aria-label="On this page"><h2>On this page</h2><ul><li><a href="#platform">Platform</a></li><li><a href="#stack">Stack</a></li><li><a href="#users">Users</a></li><li><a href="#product-purpose">Product Purpose</a></li><li><a href="#positioning">Positioning</a></li><li><a href="#operating-context">Operating Context</a></li><li><a href="#capabilities-and-constraints">Capabilities and Constraints</a></li><li><a href="#brand-commitments">Brand Commitments</a></li><li><a href="#evidence-on-hand">Evidence on Hand</a></li><li><a href="#product-principles">Product Principles</a></li><li><a href="#accessibility--inclusion">Accessibility &amp; Inclusion</a></li></ul></nav></div></body></html>

@@ -14,7 +14,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 os.environ["LLM_BASE_URL"] = "http://127.0.0.1:8765/v1"     # must be set before importing the agent
 os.environ["LLM_API_KEY"] = "test"
 
-from analyst import agent, briefing, cases, evals, tools as T  # noqa: E402
+from analyst import agent, briefing, cases, competitors, data, evals, tools as T  # noqa: E402
 
 failures = []
 
@@ -45,6 +45,22 @@ for c in cases.CASES:
     check(f"dry case {c['id']}", bool(r["answer"]) and bool(r["trace"]))
 b = briefing.build(mode="dry")
 check("dry briefing builds", "<table" in b["html"] and len(b["queries"]) >= 2)
+
+# 2b. competitor prices: off by default, attachable for demos, never seen by the guardrail track
+check("no competitor view by default", "error" in T.run_sql("SELECT * FROM price_comparison"))
+competitors.build_mock()
+data.select_competitors("mock")
+try:
+    check("mock list is queryable", T.run_sql("SELECT COUNT(*) AS n FROM price_comparison")["rows"][0]["n"] > 100)
+    check("prompt drops the competitor guardrail", "competitors or their prices" not in agent.system_prompt())
+    check("competitor list refuses writes", "error" in T.run_sql("DELETE FROM competitor_prices"))
+    g = cases.answer(cases.CASE_BY_ID["guard_competitors"]["question"], "dry", case=cases.CASE_BY_ID["guard_competitors"])
+    check("guardrail track ignores an attached list", "does not include competitors" in g["answer"])
+    check("selection restored after a track", data.competitors() == "mock")
+    check("bad CSV refused", "error" in competitors.import_csv(b"name,cost\nFoo,1\n"))
+    check("CSV with unknown products refused", "error" in competitors.import_csv(b"product,competitor,competitor_price\nNope,A,1\n"))
+finally:
+    data.select_competitors(None)
 
 # 3. examiner
 key = evals.build_aw_eval_set().set_index("qid")

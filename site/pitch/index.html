@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sales Pitch · Analyst Agent</title>
+<meta name="description" content="The 60-second pitch for the Business Performance Analyst Agent, Capstone Project 2 of the Agentic AI Workshop 2026.">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../landing.css">
+</head>
+<body>
+<aside class="spine" aria-label="Tape spine">
+  <div class="stripe" aria-hidden="true"><span></span><span></span><span></span></div>
+  <div class="cat" title="Capstone Project 2 of 5 · Agentic AI Workshop, 1–2 Oct 2026"><b>A2</b>CP&#8209;02<small>1&ndash;2 Oct 26</small></div>
+  <div class="title"><a href="../home/">Business Performance Analyst Agent</a></div>
+</aside>
+
+<main>
+  <header class="top">
+    <p class="eyebrow">Side A · Track 2 · Sales pitch · 1:00</p>
+    <nav aria-label="Sections">
+      <a href="../home/">The tape</a>
+      <a href="../demo/">Live demo</a>
+      <a href="../pitch/" aria-current="page">Sales pitch</a>
+      <a href="../deck/">Presentation</a>
+      <a href="../blog/">Blog</a>
+    </nav>
+  </header>
+
+  <div class="player" id="player">
+    <video id="video" src="../media/pitch.mp4" poster="poster.jpg" controls preload="metadata" playsinline></video>
+    <button class="big" id="big" type="button" aria-label="Play the 60-second pitch">
+      <span><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5l12 7-12 7z"/></svg> Play the pitch · 1:00</span>
+    </button>
+  </div>
+
+  <section class="pitch-grid">
+    <div>
+      <h2>Chapters</h2>
+      <ol class="chapters" id="chapters">
+        <li><button type="button" data-t="0"><span class="ts">0:00</span><span>Your numbers know the answers.</span></button></li>
+        <li><button type="button" data-t="4"><span class="ts">0:04</span><span>So why does one question take days?</span></button></li>
+        <li><button type="button" data-t="8"><span class="ts">0:08</span><span>Ask in plain English.</span></button></li>
+        <li><button type="button" data-t="14"><span class="ts">0:14</span><span>Writes the SQL. Runs it. Draws the chart.</span></button></li>
+        <li><button type="button" data-t="22"><span class="ts">0:22</span><span>Now ask why: it finds what drove it.</span></button></li>
+        <li><button type="button" data-t="32"><span class="ts">0:32</span><span>Spots what's off.</span></button></li>
+        <li><button type="button" data-t="42"><span class="ts">0:42</span><span>Shows its working. Read-only. Says when the data can't answer.</span></button></li>
+        <li><button type="button" data-t="48"><span class="ts">0:48</span><span>Ask the numbers.</span></button></li>
+      </ol>
+    </div>
+    <div class="say">
+      <h2>The pitch</h2>
+      <p>Managers wait days for an analyst to answer simple questions about the numbers.</p>
+      <p>This agent answers in plain English with the chart, the reason why, and the exact query behind every figure, so anyone can check it.</p>
+      <p>It works read-only, says when the data can't answer, and never presents a forecast as fact.</p>
+      <a class="btn primary" href="../demo/">Try the live demo <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      <a class="btn" href="../deck/">See the presentation</a>
+    </div>
+  </section>
+
+  <footer class="credits">
+    <div class="logos">
+      <a href="https://sensiwise.ai" target="_blank" rel="noopener"><img src="../home/sensiwise.svg" alt="sensiwise.ai"></a>
+      <a href="https://www.essex.ac.uk" target="_blank" rel="noopener"><img src="../home/essex.svg" alt="University of Essex"></a>
+    </div>
+    <div>
+      <p class="course">Agentic AI Workshop 2026 · Capstone Project 2 of 5 · 1–2 October 2026</p>
+      <p>A course demonstration. Music and voiceover sources are listed in the <a href="../blog/audio-sources.html">audio sources</a>.</p>
+    </div>
+  </footer>
+</main>
+
+<script>
+  const v = document.getElementById("video"), player = document.getElementById("player");
+  const chapters = [...document.querySelectorAll("#chapters button")];
+  document.getElementById("big").addEventListener("click", () => v.play());
+  v.addEventListener("play", () => player.classList.add("playing"));
+  v.addEventListener("ended", () => player.classList.remove("playing"));
+  chapters.forEach(b => b.addEventListener("click", () => { v.currentTime = +b.dataset.t; v.play(); }));
+  v.addEventListener("timeupdate", () => {
+    let cur = chapters[0];
+    for (const b of chapters) if (v.currentTime >= +b.dataset.t) cur = b;
+    chapters.forEach(b => b.setAttribute("aria-current", b === cur && v.currentTime > 0 ? "true" : "false"));
+  });
+</script>
+</body>
+</html>

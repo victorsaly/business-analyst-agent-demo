@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>API reference · Business Performance Analyst Agent</title>
+<meta name="description" content="API reference for the Business Performance Analyst Agent demo (a course demonstration): every endpoint, with examples.">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<style>
+@font-face { font-family: "Patrick Hand SC"; src: url("../fonts/PatrickHandSC-Regular.ttf") format("truetype"); font-display: swap; }
+@font-face { font-family: "Courier Prime"; src: url("../fonts/CourierPrime-Regular.ttf") format("truetype"); font-display: swap; }
+body { margin: 0; background: #fcfbf7; }
+.top { border-bottom: 2px solid #1e3a8a; background: #fcfbf7; font-family: "Patrick Hand SC", cursive; }
+.top .stripe { height: 4px; background: repeating-linear-gradient(to bottom, #c62828 0 1px, transparent 1px 2px); }
+.top .in { padding: 0.5rem 16px; display: flex; align-items: center; gap: 0.5rem 1rem; flex-wrap: wrap; }
+.top a { color: #1e3a8a; text-decoration: none; }
+.top .brand { display: flex; align-items: center; gap: 0.55rem; font-size: 1.25rem; }
+.top nav { display: flex; gap: 0.3rem 1.1rem; flex-wrap: wrap; margin-left: auto; font-size: 1.05rem; }
+.top nav a[aria-current="page"] { border-bottom: 2px solid #c62828; }
+.top a:focus-visible { outline: 2px solid #c62828; outline-offset: 2px; }
+@media (max-width: 700px) { .top nav { margin-left: 0; } }
+</style></head>
+<body><header class="top"><div class="stripe"></div><div class="in">
+<a class="brand" href="../"><img src="../logo.svg" alt="" width="32" height="32"> Business Performance Analyst Agent</a>
+<nav aria-label="Site"><a href="./" aria-current="page">API reference</a><a href="openapi.json">openapi.json</a><a href="../blog/">Blog</a><a href="../demo/">Open the demo</a><a href="../">Home</a></nav></div></header>
+<div id="redoc"></div>
+<script src="https://cdn.jsdelivr.net/npm/redoc@2.1.5/bundles/redoc.standalone.js"></script>
+<script>Redoc.init("openapi.json", { theme: {"colors": {"primary": {"main": "#1e3a8a"}, "success": {"main": "#2e7d32"}, "error": {"main": "#b71c1c"}, "text": {"primary": "#1d2433", "secondary": "#3f5a9e"}}, "typography": {"fontSize": "15px", "lineHeight": "1.6", "fontFamily": "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif", "headings": {"fontFamily": "'Patrick Hand SC', 'Marker Felt', cursive", "fontWeight": "400"}, "code": {"fontFamily": "'Courier Prime', 'Courier New', monospace"}}, "sidebar": {"backgroundColor": "#fcfbf7", "textColor": "#1e3a8a", "activeTextColor": "#b71c1c"}, "rightPanel": {"backgroundColor": "#1e2a4f"}}, hideDownloadButton: false, expandResponses: "200",
+  pathInMiddlePanel: true, nativeScrollbars: true, sortTagsAlphabetically: false }, document.getElementById("redoc"));</script>
+</body></html>

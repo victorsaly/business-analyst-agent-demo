@@ -67,16 +67,27 @@ def llm_ready():
     return bool(p["key"]) or "localhost" in p["base"] or "127.0.0.1" in p["base"]
 
 
-SYSTEM_PROMPT = f"""You are a business performance analyst for AdventureWorks, a bicycle company. You answer
+def system_prompt():
+    """The rulebook. Rebuilt per run: attaching a competitor price list changes guardrail 3 and adds rule 14."""
+    comp = T.competitor_dictionary()
+    return _PROMPT.format(missing=", ".join(T.not_in_data()[:-1]), competitors=(
+        "" if not comp else
+        "14. Competitor prices are attached (" + comp["source"] + "). For price comparisons use the "
+        "price_comparison view (one row per product per competitor; list_gap_pct > 0 means we are dearer). "
+        + " ".join(comp["rules"]) + "\n"))
+
+
+_PROMPT = f"""You are a business performance analyst for AdventureWorks, a bicycle company. You answer
 managers' questions about its sales data ({AW_START} to {AW_END}) using ONLY the tools provided.
 
 GUARDRAILS (non-negotiable)
 1. Every number you state must come from a tool result in this conversation. Never invent, estimate
    or guess a number. If you need a number, call a tool.
 2. The database is read-only. Only ever write SELECT queries.
-3. If the data cannot answer the question (it has no {', '.join(T.AW_DICTIONARY['not_in_data'][:-1])}),
+3. If the data cannot answer the question (it has no {{missing}}),
    say plainly "The data does not include <topic>" and say what data would be needed. Do not
-   answer with a different metric instead.
+   answer with a different metric instead, and never build a stand-in from other columns
+   (for example, negative quantities are not returns).
 4. Never present a forecast or a guess as a fact. The data only covers the past. If asked about
    the future, show the past trend; if you add any projection, label it "ESTIMATE, not a fact" and
    state the assumption. Only give a reason for a change if a tool result shows it; otherwise
@@ -96,7 +107,7 @@ HOW TO WORK
    (Online vs Reseller margins are very different), category / subcategory and discount
    (avg_discount_pct) to find what drove it. Use explain_change for volume / price / mix if available.
    When the question names a territory, category or channel, pass it in filters (e.g.
-   {{"territory": "Northwest"}}) and check the result's scope before you answer.
+   {{{{"territory": "Northwest"}}}}) and check the result's scope before you answer.
 10. "Anything unusual?": call detect_anomalies with by="total" and by="channel" first, then by
     territory or category for the period asked, then run_sql to find out why.
 11. "Growing fastest?": compare the same complete periods year on year (e.g. 2024 vs 2023) and give
@@ -104,11 +115,12 @@ HOW TO WORK
 12. For every answer with numbers by group or over time, make exactly one chart with make_chart
     (pass the run_sql result_id as data) and mention its chart_id.
 13. Money is in US dollars ($). Changes in a % metric are in percentage points (pts).
-
+{{competitors}}
 ANSWER FORMAT: a one-sentence headline answer, then 2-4 short bullets with the key numbers, then
 one line "Checked with: <the result ids you used>". The exact queries are shown to the reader
 automatically under your answer, so do not repeat the SQL.
 """
+SYSTEM_PROMPT = system_prompt()   # as built at start-up (no competitor list), for the "What changed" screen
 
 
 # ---------------------------------------------------------------- tool switchboard
@@ -283,7 +295,8 @@ def run_agent(question, on_step=None, on_wait=None, max_iterations=MAX_ITERATION
     """
     t0 = time.time()
     first_chart = len(T.CHARTS)
-    messages = [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": question}]
+    prompt = system_prompt()
+    messages = [{"role": "system", "content": prompt}, {"role": "user", "content": question}]
     trace, usage = [], {"tokens": 0}
     answer = ""
     for rnd in range(1, max_iterations + 1):
@@ -320,7 +333,7 @@ def run_agent(question, on_step=None, on_wait=None, max_iterations=MAX_ITERATION
     if not answer:   # out of rounds: answer from what was gathered, no more tools
         digest = "\n".join(f"- {t['tool']}({json.dumps(t['args'])}) -> {json.dumps(compact(t['tool'], t['result']), default=str)[:700]}"
                            for t in trace)
-        final = [{"role": "system", "content": SYSTEM_PROMPT},
+        final = [{"role": "system", "content": prompt},
                  {"role": "user", "content": question + "\n\nTOOL RESULTS YOU ALREADY GATHERED:\n" + digest +
                   "\n\nNo more tools are available. Write your final answer now, using only these results."}]
         if on_think:

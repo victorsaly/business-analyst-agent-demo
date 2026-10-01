@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How this was made: from a course notebook to an analyst agent you can check · Business Performance Analyst Agent</title>
+<meta name="description" content="A course demonstration (Agentic AI Workshop 2026, Capstone 2): how we built an AI analyst agent, step by step.">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="../blog.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/diff.min.js" defer></script>
+<script>addEventListener("DOMContentLoaded", () => window.hljs && hljs.highlightAll());</script><script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+mermaid.initialize({ startOnLoad: false, theme: "base", securityLevel: "strict",
+  flowchart: { curve: "basis", padding: 14, nodeSpacing: 34, rankSpacing: 40 }, sequence: { mirrorActors: false },
+  themeVariables: { fontFamily: '"Patrick Hand SC", "Marker Felt", cursive', fontSize: "17px",
+    background: "#fcfbf7", primaryColor: "#ffffff", primaryTextColor: "#1e3a8a", primaryBorderColor: "#1e3a8a",
+    secondaryColor: "#eef2fb", tertiaryColor: "#eef2fb", lineColor: "#3f5a9e", textColor: "#1d2433",
+    clusterBkg: "#eef2fb", clusterBorder: "#a9b8dc", edgeLabelBackground: "#ffffff",
+    noteBkgColor: "#eef2fb", noteBorderColor: "#a9b8dc", noteTextColor: "#1e3a8a", actorLineColor: "#a9b8dc", signalColor: "#3f5a9e",
+    cScale0: "#eef2fb", cScale1: "#ffffff", cScale2: "#eef2fb", cScale3: "#ffffff", cScale4: "#eef2fb",
+    cScaleLabel0: "#1e3a8a", cScaleLabel1: "#1e3a8a", cScaleLabel2: "#1e3a8a", cScaleLabel3: "#1e3a8a", cScaleLabel4: "#1e3a8a",
+    cScalePeer0: "#a9b8dc", cScalePeer1: "#a9b8dc", cScalePeer2: "#a9b8dc", cScalePeer3: "#a9b8dc", cScalePeer4: "#a9b8dc" } });
+await document.fonts.ready;   // measure the labels in the hand-lettered font, not the fallback
+await mermaid.run({ querySelector: "pre.mermaid" });
+</script>
+<script src="../blog.js" defer></script></head>
+<body><header class="top"><div class="stripe"></div><div class="in">
+<a class="brand" href="index.html"><img src="../logo.svg" alt="" width="32" height="32"> Business Performance Analyst Agent</a>
+<div class="search" role="search"><label class="sr" for="q">Search the docs</label><input id="q" type="search" placeholder="Search the docs" autocomplete="off" spellcheck="false" aria-controls="hits" aria-expanded="false" aria-autocomplete="list"><kbd aria-hidden="true">/</kbd><div id="hits" role="listbox" aria-label="Search results" hidden></div></div><nav aria-label="Blog"><a href="index.html" aria-current="page">How this was made</a><a href="history.html">History</a><a href="requirements.html">Requirements</a><a href="build-guide.html">Build guide</a><a href="../demo/">Open the demo</a><a href="../api/">API</a><a href="../home/">Home</a></nav></div></header>
+<div class="wrap"><main><span class="course">Course demonstration · Capstone 2 · Agentic AI Workshop 2026</span>
+<h1 id="how-this-was-made-from-a-course-notebook-to-an-analyst-agent-you-can-check">How this was made: from a course notebook to an analyst agent you can check</h1>
+<p><em>A course demonstration: Capstone 2 of the Agentic AI Workshop 2026, built on 1 October 2026.</em></p>
+<p><strong><a href="https://victorsaly.github.io/business-analyst-agent-demo/">Start page</a></strong> · <strong><a href="https://victorsaly.github.io/business-analyst-agent-demo/demo/">Open the demo</a></strong> ·
+<strong><a href="https://github.com/victorsaly/business-analyst-agent-demo">The code</a></strong> ·
+<strong><a href="requirements.html">Every requirement, with evidence</a></strong></p>
+<blockquote>
+<p>This is a learning project, not a product. AdventureWorks is Microsoft's public sample database about a
+made-up bicycle company. No real business or personal data is used.</p>
+</blockquote>
+<h2 id="the-question-we-were-given">The question we were given</h2>
+<p>The brief starts with a problem every analyst knows. Managers ask simple questions, such as <em>"How did we do
+last month?"</em> or <em>"Which products are losing margin?"</em>. Then they wait in a queue, and the answer arrives days
+later as a spreadsheet that needs its own explanation.</p>
+<p>The mission: build an agent that answers plain-English business questions by writing and running analysis
+over the data. It draws a chart, explains what drove the result, flags anything unusual, and at the end of the
+week writes a one-page briefing for the leadership team. It must use five named tools, follow four
+non-negotiable guardrails, handle four "try these first" questions, and be demoed in six minutes.</p>
+<h2 id="where-we-started">Where we started</h2>
+<p>The course gave us a notebook with a working agent engine: a loop that lets an AI model choose tools,
+retry logic for the free Groq AI plan, a scorecard and a briefing page. Everything ran on made-up
+data: a pretend retailer with North, South, East and West regions, prices in pounds, different tools
+(<code>get_data_overview</code>, <code>query_metric</code>, <code>compare_periods</code>, …) and four planted "stories" to find.</p>
+<p>The first decision was to <strong>keep the engine and swap what's underneath</strong>. We left Sections 1 to 5 of the
+notebook untouched and added a new Section 6 at the bottom. Nothing that already worked could break, and team
+members who don't write Python could follow along cell by cell
+(<a href="build-guide.html">the step-by-step guide</a>).</p>
+<h2 id="how-it-works-in-one-picture">How it works, in one picture</h2>
+<p>The AI never sees the database directly. It asks one of five tools, each tool reads the data, and the tool
+log, not the AI, supplies the queries shown under every answer.</p>
+<figure class="diagram"><pre class="mermaid">flowchart LR
+  accTitle: How the agent answers a question
+  Q([&quot;A manager's question&quot;]) --&gt; AI[&quot;The AI plans&lt;br/&gt;and picks a tool&quot;]
+  AI -- &quot;calls&quot; --&gt; T[&quot;Five tools&lt;br/&gt;get_schema · run_sql · run_python&lt;br/&gt;make_chart · detect_anomalies&quot;]
+  T -- &quot;reads only&quot; --&gt; DB[(&quot;AdventureWorks&lt;br/&gt;read-only&quot;)]
+  T -- &quot;result, or error + hint&quot; --&gt; AI
+  AI --&gt; A[&quot;Answer + chart&quot;]
+  T -- &quot;tool log&quot; --&gt; S[&quot;The exact queries,&lt;br/&gt;under the answer&quot;]
+  classDef red stroke:#c62828,stroke-width:2px,color:#b71c1c
+  class DB,S red
+</pre></figure>
+<h2 id="the-brief-requirement-by-requirement">The brief, requirement by requirement</h2>
+<p>Each line of the brief, what the original notebook had, what we built, and where to see it.
+The "Steps" link to the <a href="build-guide.html">build guide</a>; the notebook is
+<a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/notebooks/capstone2_business_analyst_adventureworks.ipynb">capstone2_business_analyst_adventureworks.ipynb</a>.</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>The brief asks</th>
+<th>Before (original notebook)</th>
+<th>After (what we built)</th>
+<th>Where</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Use Microsoft AdventureWorks</td>
+<td>Made-up retailer, in pounds</td>
+<td>The official sample (31,465 orders, May 2022 to June 2025, ten territories) in a SQLite file the agent can only read</td>
+<td><a href="build-guide.html#step-2-load-adventureworks-read-only">Step 2</a>, <a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/app/analyst/data.py">data.py</a></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>get_schema()</code>: tables, columns, data dictionary</td>
+<td><code>get_data_overview</code> on the old data</td>
+<td>Tables, columns, date range and a plain-English data dictionary, including what is <em>not</em> in the data</td>
+<td><a href="build-guide.html#step-3-the-five-tools">Step 3</a>, <a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/app/analyst/tools.py">tools.py</a></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>run_sql(query)</code>: read-only</td>
+<td>No SQL at all</td>
+<td>One SELECT at a time; anything that changes data is refused; the file is opened read-only</td>
+<td><a href="build-guide.html#step-3-the-five-tools">Step 3</a></td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>run_python(code)</code>: pandas sandbox</td>
+<td>None</td>
+<td>pandas and numpy on earlier results; no imports, files or system access; 10-second limit</td>
+<td><a href="build-guide.html#step-3-the-five-tools">Step 3</a></td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>make_chart(data, type)</code>: bar, line or breakdown</td>
+<td>Line and bar on the old data only</td>
+<td>Bar, line and breakdown charts drawn from any query result</td>
+<td><a href="build-guide.html#step-3-the-five-tools">Step 3</a></td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>detect_anomalies(metric)</code>: values off trend</td>
+<td>Worked on the old data only</td>
+<td>Each month or week compared with its own recent trend, for revenue, margin, cost, volume, orders, margin % and discount %, by territory, category, channel and more</td>
+<td><a href="build-guide.html#step-3-the-five-tools">Step 3</a></td>
+</tr>
+<tr>
+<td>7</td>
+<td>Margin = LineTotal − (OrderQty × StandardCost)</td>
+<td>A different formula</td>
+<td>Exactly that formula, in the <code>sales_lines</code> view</td>
+<td><a href="build-guide.html#step-2-load-adventureworks-read-only">Step 2</a></td>
+</tr>
+<tr>
+<td>8</td>
+<td>Guardrail: read-only database</td>
+<td>No database</td>
+<td>Read-only connection, plus the SELECT-only check as a second layer</td>
+<td><a href="build-guide.html#step-2-load-adventureworks-read-only">Step 2</a>, <a href="build-guide.html#step-3-the-five-tools">Step 3</a></td>
+</tr>
+<tr>
+<td>9</td>
+<td>Guardrail: always show the query</td>
+<td>Showed tool steps, not queries</td>
+<td>The exact queries under every answer, taken from the tool log, never from the AI's own words</td>
+<td><a href="build-guide.html#step-7-switch-the-agent-over-and-show-its-working">Step 7</a></td>
+</tr>
+<tr>
+<td>10</td>
+<td>Guardrail: say when the data can't answer</td>
+<td>In the rulebook, for the old topics</td>
+<td>New list of what AdventureWorks doesn't have (returns, competitors, satisfaction, …), and no stand-ins built from other columns</td>
+<td><a href="build-guide.html#step-6-the-agents-rulebook-system-prompt">Step 6</a></td>
+</tr>
+<tr>
+<td>11</td>
+<td>Guardrail: never present a forecast as fact</td>
+<td>Not covered</td>
+<td>Show the past trend; any projection labelled "ESTIMATE, not a fact"</td>
+<td><a href="build-guide.html#step-6-the-agents-rulebook-system-prompt">Step 6</a></td>
+</tr>
+<tr>
+<td>12</td>
+<td>Map questions to the right tables and metrics</td>
+<td>Old data</td>
+<td>A rulebook that says how to compute each metric and compare periods, for the new data</td>
+<td><a href="build-guide.html#step-6-the-agents-rulebook-system-prompt">Step 6</a></td>
+</tr>
+<tr>
+<td>13</td>
+<td>Fix its own errors</td>
+<td>Retry logic existed</td>
+<td>Every tool error now comes back with a hint about how to fix it</td>
+<td><a href="build-guide.html#step-3-the-five-tools">Step 3</a></td>
+</tr>
+<tr>
+<td>14</td>
+<td>Explain what drove a result</td>
+<td>Old data</td>
+<td>Break a change down by channel, category and discount before giving a reason</td>
+<td><a href="build-guide.html#step-6-the-agents-rulebook-system-prompt">Step 6</a></td>
+</tr>
+<tr>
+<td>15</td>
+<td>The four "try these first" questions</td>
+<td>Old questions only</td>
+<td>All four answered and marked by a new scorecard</td>
+<td><a href="build-guide.html#step-8-the-new-scorecard">Step 8</a>, <a href="build-guide.html#step-10-try-it-the-briefs-questions">Step 10</a></td>
+</tr>
+<tr>
+<td>16</td>
+<td>One-page weekly leadership briefing</td>
+<td>Old data</td>
+<td>The KPI table straight from SQL, so the AI can't mistype it; the AI writes the commentary</td>
+<td><a href="build-guide.html#step-9-the-weekly-leadership-briefing">Step 9</a></td>
+</tr>
+<tr>
+<td>17</td>
+<td>Demo moment: explain a planted anomaly</td>
+<td>Old planted stories</td>
+<td>A separate copy of the database with a planted 25% bike discount in Northwest, May 2024</td>
+<td><a href="build-guide.html#step-12-rehearse-the-planted-anomaly">Step 12</a></td>
+</tr>
+<tr>
+<td>18</td>
+<td>Stretch: follow-up drill-downs</td>
+<td>None</td>
+<td>"…and by product category?" remembers the last answers</td>
+<td><a href="build-guide.html#step-7-switch-the-agent-over-and-show-its-working">Step 7</a></td>
+</tr>
+<tr>
+<td>19</td>
+<td>Stretch: volume, price and mix</td>
+<td>A margin bridge on the old data</td>
+<td><code>explain_change</code>: three parts that always add up to the total change</td>
+<td><a href="build-guide.html#step-4-stretch-volume--price--mix-breakdown">Step 4</a></td>
+</tr>
+<tr>
+<td>20</td>
+<td>Backup dataset (UCI Online Retail II)</td>
+<td>None</td>
+<td>Optional; not needed, because AdventureWorks has the cost data margin needs</td>
+<td><a href="requirements.html">requirements</a></td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="before-and-after-in-code">Before and after, in code</h2>
+<p>The five biggest changes, with the code. <strong>Before</strong> is the course's starting notebook (Sections 1 to 5,
+kept unchanged in <a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/notebooks/capstone2_business_analyst_adventureworks.ipynb">our notebook</a>); <strong>after</strong> is our
+Section 6 and the <a href="https://github.com/victorsaly/business-analyst-agent-demo/tree/main/app/analyst">demo app</a>.</p>
+<h3 id="1-the-data-made-up-numbers--adventureworks-read-only">1. The data: made-up numbers → AdventureWorks, read-only</h3>
+<p><strong>Before</strong>: the notebook generated a pretend retailer, so margin was whatever the generator produced:</p>
+<pre><code class="language-python"># Section 1: building the pretend data
+gross_margin = np.round(revenue - cogs - freight_cost, 2)
+</code></pre>
+<p><strong>After</strong>: real sample data, with the brief's own formula, in one view the agent can only read
+(<a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/app/analyst/data.py">data.py</a>):</p>
+<pre><code class="language-sql">CREATE VIEW sales_lines AS
+SELECT ...
+       d.LineTotal                                      AS revenue,
+       d.OrderQty * p.StandardCost                      AS cost,
+       d.LineTotal - d.OrderQty * p.StandardCost        AS margin   -- Margin = LineTotal − (OrderQty × StandardCost)
+</code></pre>
+<pre><code class="language-python"># opened read-only: even a bug can't change the file
+sqlite3.connect(f&quot;file:{db}?mode=ro&quot;, uri=True)
+</code></pre>
+<h3 id="2-the-tools-fixed-functions--read-only-sql">2. The tools: fixed functions → read-only SQL</h3>
+<p><strong>Before</strong>: the AI could only call fixed helpers on the pretend data:</p>
+<pre><code class="language-python">def query_metric(metric, group_by=None, filters=None, period=&quot;all&quot;):
+    &quot;&quot;&quot;Add up one metric, optionally split by up to 2 dimensions, filtered and for a period.&quot;&quot;&quot;
+</code></pre>
+<p><strong>After</strong>: the brief's <code>run_sql</code>. The AI writes its own query, and the tool only runs it if it reads
+(<a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/app/analyst/tools.py">tools.py</a>):</p>
+<pre><code class="language-python">def run_sql(query, max_rows=AW_MAX_ROWS):
+    &quot;&quot;&quot;Run ONE read-only SELECT query. Returns the query itself, the rows, and a result id.&quot;&quot;&quot;
+    if not re.match(r&quot;^(select|with)\b&quot;, sql, re.I):
+        return {&quot;error&quot;: &quot;Only SELECT (or WITH ... SELECT) queries are allowed. The database is read-only.&quot;, &quot;query&quot;: sql}
+    if &quot;;&quot; in sql:
+        return {&quot;error&quot;: &quot;Send one query at a time (no ';').&quot;, &quot;query&quot;: sql}
+    if _AW_BLOCKED_SQL.search(sql):
+        return {&quot;error&quot;: &quot;That query contains a word that changes data. Only reading is allowed.&quot;, &quot;query&quot;: sql}
+</code></pre>
+<h3 id="3-the-rulebook-no-forecast-rule--four-non-negotiable-guardrails">3. The rulebook: no forecast rule → four non-negotiable guardrails</h3>
+<p><strong>Before</strong>: sound rules, but nothing about forecasts or about writing to the data:</p>
+<pre><code class="language-text">RULES
+1. Every number you state must come from a tool result in this conversation. ...
+7. If the question is about something this data does not contain (e.g. competitors or their
+   prices, ...), do NOT answer with other metrics. Say plainly: &quot;The data does not include &lt;topic&gt;&quot;
+</code></pre>
+<p><strong>After</strong>: the brief's four guardrails, first in the rulebook (<a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/app/analyst/agent.py">agent.py</a>):</p>
+<pre><code class="language-text">GUARDRAILS (non-negotiable)
+1. Every number you state must come from a tool result in this conversation. ...
+2. The database is read-only. Only ever write SELECT queries.
+3. If the data cannot answer the question ..., say plainly &quot;The data does not include &lt;topic&gt;&quot; ...
+4. Never present a forecast or a guess as a fact. ... if you add any projection, label it
+   &quot;ESTIMATE, not a fact&quot; and state the assumption.
+</code></pre>
+<h3 id="4-show-the-working-tool-steps--the-exact-queries-from-the-tool-log">4. Show the working: tool steps → the exact queries, from the tool log</h3>
+<p><strong>Before</strong>: answers listed which tools ran, not the queries behind the numbers.</p>
+<p><strong>After</strong>: every answer ends with the exact SQL or code the tools ran, read from the tool log
+(<a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/app/analyst/agent.py">agent.py</a>, <code>queries_used</code>):</p>
+<pre><code class="language-python">def queries_used(trace):
+    &quot;&quot;&quot;'Always show the query': taken from the tool log, never from the AI's own words.&quot;&quot;&quot;
+    for t in trace or []:
+        if t[&quot;tool&quot;] == &quot;run_sql&quot;:
+            out.append({&quot;label&quot;: f&quot;run_sql {r.get('result_id', '')}{failed}&quot;, &quot;lang&quot;: &quot;sql&quot;, &quot;text&quot;: a.get(&quot;query&quot;, &quot;&quot;)})
+</code></pre>
+<h3 id="5-a-rule-tightened-after-checking-the-brief">5. A rule tightened after checking the brief</h3>
+<p>Asked for a return rate, the AI once treated orders with negative quantities as "returns" and reported 0.00%.</p>
+<p><strong>Before</strong>:</p>
+<pre><code class="language-text">   say plainly &quot;The data does not include &lt;topic&gt;&quot; and say what data would be needed. Do not
+   answer with a different metric instead.
+</code></pre>
+<p><strong>After</strong>: one more sentence, and the answer became <em>"The data does not include returns"</em>:</p>
+<pre><code class="language-diff">   say plainly &quot;The data does not include &lt;topic&gt;&quot; and say what data would be needed. Do not
+-  answer with a different metric instead.
++  answer with a different metric instead, and never build a stand-in from other columns
++  (for example, negative quantities are not returns).
+</code></pre>
+<h2 id="making-it-cheaper-to-run">Making it cheaper to run</h2>
+<p>On the free Groq plan (about 8,000 tokens a minute, 200,000 a day) the agent kept waiting on rate limits. We
+measured why: every round of the agent loop re-sends the rulebook and the whole tool menu. Shorter versions cut
+the fixed cost per round by 32% (about 2,650 to 1,810 tokens), and one anomaly scan of five metrics went from
+five rounds to one.
+(<a href="prompt-optimization.html">prompt-optimization</a>)</p>
+<h2 id="the-playground-every-improvement-to-the-demo-app">The playground: every improvement to the demo app</h2>
+<p>A notebook is hard to present to a room, so we built a small app around the same agent code. The changes,
+in order:</p>
+<p><strong>1. From notebook to app</strong></p>
+<ul>
+<li>The Section 6 code moved into a Python package, <a href="https://github.com/victorsaly/business-analyst-agent-demo/tree/main/app/analyst"><code>app/analyst</code></a>, behind a small FastAPI
+    server that streams each tool call to the page as it happens.</li>
+<li>Three labelled modes: Live AI; Replay of a recorded live run, as a backup if the AI or wifi
+    fails; and Dry run (no AI, for testing the screens only).</li>
+<li>Every live run is recorded automatically, so Replay always shows a real AI run.</li>
+<li>36 automatic checks that need no AI key: guardrails, every demo case, the briefing, the examiner, the
+    competitor price list, and the live loop against a fake AI server (<a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/app/test_demo.py">test_demo.py</a>). For example:</li>
+</ul>
+<pre><code class="language-python">check(&quot;DELETE refused&quot;, &quot;error&quot; in T.run_sql(&quot;DELETE FROM SalesOrderHeader&quot;))
+check(&quot;two statements refused&quot;, &quot;error&quot; in T.run_sql(&quot;SELECT 1; DROP TABLE Product&quot;))
+check(&quot;sandbox blocks imports&quot;, &quot;error&quot; in T.run_python(&quot;import os&quot;))
+</code></pre>
+<p><strong>2. Designed for a room</strong></p>
+<ul>
+<li>A clear audience and goal, written down first (<a href="product.html">product</a>).</li>
+<li>The look of a hand-lettered cassette J-card: the six-minute demo as a mixtape. Side A holds the brief's
+    questions and side B the guardrails, briefing and scorecard, plus a hidden rehearsal track
+    (<a href="design.html">design</a>).</li>
+<li>Every track has a time budget, and both sides add up to exactly 6:00. A tape counter and a red bar show time
+    used, and turn red on overrun.</li>
+<li>Presenter tools: press <strong>Z</strong> to zoom into anything, and adding <code>?presenter=1</code> to the page address shows a
+    talking-point note on each screen.</li>
+</ul>
+<p><strong>3. Reliable when it matters</strong></p>
+<ul>
+<li>When Groq's daily allowance runs out, the agent switches to OpenAI (gpt-5.4-mini by default) and keeps
+    going. The footer shows which model answered.</li>
+<li>It waits out short rate limits, adapts to each provider's settings, and trims old tool results to stay
+    within the free plan's request size.</li>
+</ul>
+<p><strong>4. Videos</strong></p>
+<ul>
+<li>A narrated walkthrough recorded from the replays, and a 60-second pitch video with music and a
+    voiceover from ElevenLabs (<a href="audio-sources.html">audio sources</a>).</li>
+</ul>
+<p><strong>5. Clear for every audience</strong></p>
+<ul>
+<li>Fixed a stall: a run left behind on another screen could block the next one with no sign. Now a new run
+    stops the old one, the briefing's KPI table appears at once, and a status line ticks every second. If a live
+    run goes over its time slot, a button offers the recorded run instead.</li>
+<li>Stakeholder / Developer views: stakeholders see the answers, numbers and charts, with each step in
+    plain English. Developers see every tool call, its arguments, the SQL, timings, AI rounds and tokens.</li>
+<li>Explain this page: a spoken explanation of every screen for each audience (ElevenLabs). Captions light
+    up word by word, timed from pauses measured in each clip.</li>
+</ul>
+<p><strong>6. Open to the public</strong></p>
+<ul>
+<li>An online copy on GitHub Pages that replays every recorded run. The live AI stays local, because it
+    needs a paid API key that visitors could use up.</li>
+<li>A Story screen with the project timeline, and an Ask chat for course students. It answers questions
+    about the task, each step and how we built it, and cites its sources: our notes, the course's training guide
+    and starting notebook, and our notebook. Online it runs through a small
+    Cloudflare Worker that holds the AI key and caps questions per day (<a href="running-the-app.html#the-ask-chat-local-and-online">how it works</a>).</li>
+<li>A logo, clear "course demonstration" labels, and a tidy repo: code in <code>app/</code>, documents in <code>docs/</code>, the
+    online copy in <code>site/</code>.</li>
+</ul>
+<p><strong>7. Checked against the brief itself</strong></p>
+<ul>
+<li>We went through the printed brief line by line (<a href="requirements.html">requirements</a>) and found three gaps the
+    tests hadn't:<ul>
+<li>Asked for a return rate, the AI had treated negative quantities as "returns". The rulebook now forbids
+stand-ins, and the re-recorded answer says "The data does not include returns".</li>
+<li>Cost became a metric in the anomaly scan.</li>
+<li>The planted-anomaly demo moment was recorded. The agent found the planted discount and the $96,403 loss.</li>
+</ul>
+</li>
+</ul>
+<p><strong>8. A finished product</strong>
+- A <strong>Home</strong> screen as the app's front door: every screen, the blog, the API reference, the pitch and the
+    presentation in one place.
+- The <strong>Ask chat</strong> became a floating button on every screen. Its panel keeps the conversation while you move
+    around, streams each answer as it's written, numbers its sources, and ends with links to the blog pages, the API
+    reference and the code that go with the answer. It answers from the course's training guide and starting
+    notebook, our notebook and these notes, locally through the app and online through a small Cloudflare Worker
+    with a daily limit.
+- The <strong>blog</strong> (this page) is served by the app at <code>/blog/</code> and published with the website, with this
+    before-and-after code; the <strong>API reference</strong> documents every endpoint with Redoc; a <strong>start page</strong> links every
+    service.
+- Every demo track was <strong>re-recorded live</strong> with the final rulebook, so Replay shows what the finished agent does.</p>
+<h2 id="where-it-ended-up">Where it ended up</h2>
+<ul>
+<li>Every requirement in the brief is met, with evidence for each in <a href="requirements.html">requirements</a>.</li>
+<li>Scorecard 7 of 7 on the recorded runs: the four "try these first" questions and three guardrail traps,
+    marked against answers worked out from the database. It was 6 of 7 until we fixed the returns answer.</li>
+</ul>
+<h2 id="what-we-learned">What we learned</h2>
+<ul>
+<li><strong>Keep the engine, change the inputs.</strong> Adding Section 6 instead of rewriting meant nothing that worked broke.</li>
+<li><strong>Never trust a model with numbers it can look up.</strong> KPI tables and the "show the query" lists come from code
+    and the tool log, not from the AI's words.</li>
+<li><strong>Measure the tokens.</strong> On a free plan, the fixed text sent every round is the real cost.</li>
+<li><strong>Plan for a live demo to fail.</strong> Labelled replays of real runs kept the demo going when the AI allowance ran out.</li>
+<li><strong>Check against the brief, not just the tests.</strong> Reading it line by line found gaps the tests didn't.</li>
+</ul>
+<h2 id="read-more">Read more</h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Document</th>
+<th>What's in it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="history.html">history</a></td>
+<td>The timeline, step by step, with times</td>
+</tr>
+<tr>
+<td><a href="requirements.html">requirements</a></td>
+<td>Every line of the brief, and the evidence it's met</td>
+</tr>
+<tr>
+<td><a href="build-guide.html">build-guide</a></td>
+<td>The brief as 13 steps for non-programmers: every notebook cell we added, and why</td>
+</tr>
+<tr>
+<td><a href="running-the-app.html">running-the-app</a></td>
+<td>Run the demo yourself: setup, modes, screens, presenting, recording</td>
+</tr>
+<tr>
+<td><a href="prompt-optimization.html">prompt-optimization</a></td>
+<td>How we measured and cut the AI's token cost</td>
+</tr>
+<tr>
+<td><a href="product.html">product</a> · <a href="design.html">design</a></td>
+<td>Who it's for, and how it looks</td>
+</tr>
+<tr>
+<td><a href="audio-sources.html">audio-sources</a></td>
+<td>Where every audio file came from</td>
+</tr>
+</tbody>
+</table></div>
+<nav class="pager" aria-label="Previous and next page"><a class="prev" href="getting-started.html"><span>Previous</span>Run it on your laptop (Mac and Windows)</a><a class="next" href="history.html"><span>Next</span>Timeline, step by step</a></nav>
+<p class="foot">A learning project, not a product. AdventureWorks is Microsoft's public sample data about a made-up bicycle
+company. Source of this page: <a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/docs/index.md">docs/index.md</a>.</p></main>
+<aside class="areas" aria-label="All documents"><details open><summary>All pages</summary><h2>Start here</h2><ul><li><a href="getting-started.html">Run it on your laptop (Mac and Windows)</a></li></ul><h2>The story</h2><ul><li><a href="index.html" aria-current="page">How this was made</a></li><li><a href="history.html">Timeline, step by step</a></li></ul><h2>The brief</h2><ul><li><a href="requirements.html">Every requirement, with evidence</a></li><li><a href="build-guide.html">The 13 build steps</a></li></ul><h2>The app</h2><ul><li><a href="running-the-app.html">Running the demo</a></li><li><a href="product.html">Who it's for</a></li><li><a href="design.html">How it looks</a></li></ul><h2>Behind the scenes</h2><ul><li><a href="prompt-optimization.html">Cutting the AI cost</a></li><li><a href="audio-sources.html">Audio sources</a></li></ul><h2>Try it</h2><ul><li><a href="../home/">Home: every area</a></li><li><a href="../demo/">Open the demo</a></li><li><a href="../demo/?page=story">Ask the course chat</a></li><li><a href="../api/">API reference</a></li><li><a href="../pitch/">60-second pitch video</a></li><li><a href="../deck/">The presentation</a></li><li><a href="getting-started.html">Run it on your laptop</a></li><li><a href="https://github.com/victorsaly/business-analyst-agent-demo">The code on GitHub</a></li></ul></details></aside>
+<nav class="toc" aria-label="On this page"><h2>On this page</h2><ul><li><a href="#the-question-we-were-given">The question we were given</a></li><li><a href="#where-we-started">Where we started</a></li><li><a href="#how-it-works-in-one-picture">How it works, in one picture</a></li><li><a href="#the-brief-requirement-by-requirement">The brief, requirement by requirement</a></li><li><a href="#before-and-after-in-code">Before and after, in code</a></li><li><a href="#making-it-cheaper-to-run">Making it cheaper to run</a></li><li><a href="#the-playground-every-improvement-to-the-demo-app">The playground: every improvement to the demo app</a></li><li><a href="#where-it-ended-up">Where it ended up</a></li><li><a href="#what-we-learned">What we learned</a></li><li><a href="#read-more">Read more</a></li></ul></nav></div></body></html>
