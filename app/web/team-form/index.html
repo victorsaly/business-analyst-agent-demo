@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Team details</title>
+<meta name="description" content="For the team behind the Business Performance Analyst Agent: send your details for the team page.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../landing.css">
+<style>
+  /* The team form: one column on the plain white cover background. Answers go to the Ask chat's Worker (POST /team). */
+  .form main { height: auto; max-width: 40rem; text-align: left; align-items: stretch; padding-bottom: 2.5rem; }
+  .form header { text-align: center; }
+  .form h1 { font-size: clamp(2rem, 4vw, 3rem); }
+  .form .lede { font-size: 1.2rem; }
+  form { display: grid; gap: 1.3rem; }
+  .field { display: grid; gap: 0.3rem; }
+  .field > label, legend { font-family: var(--hand-sc); font-size: 1.3rem; -webkit-text-stroke: 0.02em currentColor; padding: 0; }
+  .hint { font-family: var(--typed); font-size: 0.85rem; color: var(--ink-2); }
+  .req { color: var(--red-ink); }
+  input[type=text], input[type=url], textarea {
+    font: inherit; font-family: var(--typed); font-size: 1rem; color: var(--ink); background: var(--label);
+    border: 2px solid var(--ink); padding: 0.55rem 0.7rem; width: 100%; border-radius: 0;
+  }
+  input:focus-visible, textarea:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+  textarea { min-height: 6.5rem; resize: vertical; }
+  fieldset { border: 2px solid var(--ink); padding: 0.8rem 1rem 1rem; margin: 0; }
+  .skills { display: grid; grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); gap: 0.4rem 1rem; margin-top: 0.4rem; }
+  .skills label { display: flex; gap: 0.55rem; align-items: center; font-size: 1.15rem; cursor: pointer; }
+  .skills input { width: 1.15rem; height: 1.15rem; accent-color: var(--ink); flex: none; }
+  .skills + .field { margin-top: 0.8rem; }
+  .trap { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  button.btn { cursor: pointer; justify-self: start; margin: 0; background: var(--ink); color: var(--paper); }
+  button.btn:hover { background: var(--ink-2); color: var(--paper); }
+  button.btn[disabled] { opacity: 0.6; cursor: wait; }
+  .status { font-family: var(--typed); font-size: 0.95rem; min-height: 1.4em; }
+  .status.error { color: var(--red-ink); }
+  .done { border: 2px solid var(--ink); box-shadow: 6px 6px 0 var(--red); padding: 1.4rem 1.5rem; text-align: center; }
+  .done h2 { font-size: 1.8rem; margin-bottom: 0.4rem; }
+  .done[hidden], form[hidden] { display: none; }
+</style>
+</head>
+<body class="cover form">
+<main>
+  <header class="rise">
+    <a class="brand" href="../"><img src="../logo.svg" alt="" width="30" height="30"><span>Analyst Agent</span></a>
+    <h1>Team details</h1>
+    <p class="lede">A few details about you, for the team page and to see which skills we have and which we're missing. About 3 minutes.</p>
+  </header>
+
+  <form id="form" class="rise d1" novalidate>
+    <div class="field">
+      <label for="name">Full name <span class="req" aria-hidden="true">*</span></label>
+      <input id="name" name="name" type="text" autocomplete="name" maxlength="100" required>
+    </div>
+    <div class="field">
+      <label for="linkedin">LinkedIn profile link <span class="req" aria-hidden="true">*</span></label>
+      <span class="hint" id="linkedin-hint">For example https://www.linkedin.com/in/your-name/</span>
+      <input id="linkedin" name="linkedin" type="url" inputmode="url" maxlength="300" required aria-describedby="linkedin-hint" placeholder="https://www.linkedin.com/in/">
+    </div>
+    <div class="field">
+      <label for="role">Your role on the project <span class="req" aria-hidden="true">*</span></label>
+      <span class="hint" id="role-hint">For example: data analysis, prompts, website, slides, testing.</span>
+      <input id="role" name="role" type="text" maxlength="150" required aria-describedby="role-hint">
+    </div>
+    <fieldset>
+      <legend>Your main skills <span class="req" aria-hidden="true">*</span></legend>
+      <span class="hint">Tick everything you're comfortable doing.</span>
+      <div class="skills" id="skills"></div>
+      <div class="field">
+        <label for="other_skills" style="font-size:1.15rem">Other skills</label>
+        <input id="other_skills" name="other_skills" type="text" maxlength="200">
+      </div>
+    </fieldset>
+    <div class="field">
+      <label for="tools">Tools you know</label>
+      <span class="hint" id="tools-hint">For example: Excel, Power BI, Figma, VS Code, Jira.</span>
+      <textarea id="tools" name="tools" maxlength="500" aria-describedby="tools-hint"></textarea>
+    </div>
+    <div class="field">
+      <label for="bio">Short bio <span class="req" aria-hidden="true">*</span></label>
+      <span class="hint" id="bio-hint">2 or 3 sentences about you, as you'd like them shown on the team page.</span>
+      <textarea id="bio" name="bio" maxlength="800" required aria-describedby="bio-hint"></textarea>
+    </div>
+    <div class="field">
+      <label for="photo">Photo link (optional)</label>
+      <span class="hint" id="photo-hint">A link to a photo of you that anyone can open.</span>
+      <input id="photo" name="photo" type="url" inputmode="url" maxlength="300" aria-describedby="photo-hint" placeholder="https://">
+    </div>
+    <div class="trap" aria-hidden="true"><label for="website">Leave this empty</label><input id="website" name="website" type="text" tabindex="-1" autocomplete="off"></div>
+    <button class="btn" id="send" type="submit">Send my details</button>
+    <p class="status" id="status" role="status" aria-live="polite"></p>
+  </form>
+
+  <div class="done" id="done" hidden tabindex="-1">
+    <h2>Thank you!</h2>
+    <p>Your details are in. Made a mistake? <a href="" id="again">Send the form again</a>: the newest answer replaces the old one.</p>
+  </div>
+</main>
+
+<script>
+  const WORKER = "https://analyst-agent-ask.still-union-ef8a.workers.dev";   // the Ask chat's Worker (worker/src/index.js)
+  const SKILLS = ["Python", "SQL / data analysis", "AI and prompting", "Web", "Design / UX", "Writing and documentation",
+    "Presenting", "Project management", "Testing"];
+  const form = document.getElementById("form"), status = document.getElementById("status"), send = document.getElementById("send");
+  document.getElementById("skills").innerHTML = SKILLS.map((s, i) =>
+    `<label><input type="checkbox" name="skills" value="${s}" id="skill-${i}"> ${s}</label>`).join("");
+
+  const say = (msg, error) => { status.textContent = msg; status.classList.toggle("error", !!error); };
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(form));
+    data.skills = [...form.querySelectorAll("input[name=skills]:checked")].map((c) => c.value);
+    const first = [...form.querySelectorAll("[required]")].find((el) => !el.value.trim());
+    if (first) { say("Please fill in every field marked *.", true); first.focus(); return; }
+    if (!/^https:\/\/([a-z]+\.)?linkedin\.com\//i.test(data.linkedin.trim())) {
+      say("Please paste your full LinkedIn profile link, starting with https://www.linkedin.com/", true);
+      document.getElementById("linkedin").focus(); return;
+    }
+    if (!data.skills.length && !data.other_skills.trim()) { say("Please tick at least one skill.", true); document.getElementById("skill-0").focus(); return; }
+    send.disabled = true; say("Sending…");
+    try {
+      const r = await fetch(`${WORKER}/team`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
+      const out = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(out.error || `The form didn't go through (${r.status}).`);
+      form.hidden = true;
+      const done = document.getElementById("done"); done.hidden = false; done.focus();
+    } catch (err) {
+      say(err.message === "Failed to fetch" ? "Couldn't reach the server. Check your connection and try again." : err.message, true);
+    } finally {
+      send.disabled = false;
+    }
+  });
+  document.getElementById("again").addEventListener("click", (e) => {
+    e.preventDefault(); form.hidden = false; document.getElementById("done").hidden = true; say(""); form.querySelector("input").focus();
+  });
+</script>
+</body>
+</html>

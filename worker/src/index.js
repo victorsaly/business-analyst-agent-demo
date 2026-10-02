@@ -72,6 +72,41 @@ async function hash(text) {   // visitors are counted by a hash of their IP addr
   return [...new Uint8Array(buf)].slice(0, 8).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+// ---- the team form (site/team-form/): each member's details, kept in KV under team:<hash of their LinkedIn link>,
+// so sending the form again replaces their earlier answer. Nothing reads them back over the web:
+// app/scripts/pull_team.py fetches them with wrangler and fills app/web/team.json.
+const SKILLS = ["Python", "SQL / data analysis", "AI and prompting", "Web", "Design / UX", "Writing and documentation",
+  "Presenting", "Project management", "Testing"];
+const TEAM_PER_VISITOR = 10;   // form sends per day, per visitor
+
+async function team(request, env, origin, cors) {
+  if (!ALLOWED.includes(origin)) return json({ error: "This form only works from the demo site." }, 403, cors);
+  let b;
+  try { b = await request.json(); } catch { return json({ error: "Send the form as JSON." }, 400, cors); }
+  if (String(b.website || "")) return json({ ok: true }, 200, cors);   // the hidden field only bots fill in
+  const text = (v, max) => String(v || "").trim().slice(0, max);
+  const isUrl = (v) => { try { return new URL(v).protocol === "https:"; } catch { return false; } };
+  const entry = {
+    name: text(b.name, 100), linkedin: text(b.linkedin, 300), role: text(b.role, 150),
+    skills: (Array.isArray(b.skills) ? b.skills : []).filter((s) => SKILLS.includes(s)),
+    other_skills: text(b.other_skills, 200), tools: text(b.tools, 500), bio: text(b.bio, 800), photo: text(b.photo, 300),
+  };
+  if (!entry.name || !entry.role || !entry.bio) return json({ error: "Please fill in your name, role and bio." }, 400, cors);
+  if (!isUrl(entry.linkedin) || !/(^|\.)linkedin\.com$/.test(new URL(entry.linkedin).hostname))
+    return json({ error: "Please paste your full LinkedIn profile link, starting with https://www.linkedin.com/" }, 400, cors);
+  if (entry.photo && !isUrl(entry.photo)) return json({ error: "The photo link should start with https://" }, 400, cors);
+  if (!entry.skills.length && !entry.other_skills) return json({ error: "Please tick at least one skill." }, 400, cors);
+
+  const day = new Date().toISOString().slice(0, 10);
+  const who = await hash(request.headers.get("CF-Connecting-IP") || "unknown");
+  const sent = +(await env.LIMITS.get(`tv:${day}:${who}`) || 0);
+  if (sent >= TEAM_PER_VISITOR) return json({ error: "Too many sends today. Please try again tomorrow." }, 429, cors);
+  const profile = entry.linkedin.toLowerCase().replace(/[?#].*$/, "").replace(/\/+$/, "").replace(/^https:\/\/[a-z]+\./, "https://");
+  await Promise.all([env.LIMITS.put(`team:${await hash(profile)}`, JSON.stringify({ ...entry, at: new Date().toISOString() })),
+                     env.LIMITS.put(`tv:${day}:${who}`, String(sent + 1), { expirationTtl: 172800 })]);
+  return json({ ok: true }, 200, cors);
+}
+
 export default {
   async fetch(request, env) {
     const origin = request.headers.get("Origin") || "";
@@ -80,6 +115,7 @@ export default {
     const url = new URL(request.url);
     if (request.method === "OPTIONS") return new Response(null, { headers: cors });
     if (request.method === "GET" && url.pathname === "/health") return json({ ok: true, passages: KB.passages.length, model: env.MODEL }, 200, cors);
+    if (request.method === "POST" && url.pathname === "/team") return team(request, env, origin, cors);
     if (request.method !== "POST" || url.pathname !== "/ask") return json({ error: "Not found." }, 404, cors);
     if (!ALLOWED.includes(origin)) return json({ error: "This chat only answers questions from the demo site." }, 403, cors);
 
