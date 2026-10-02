@@ -20,6 +20,11 @@ mermaid.initialize({ startOnLoad: false, theme: "base", securityLevel: "strict",
     cScalePeer0: "#a9b8dc", cScalePeer1: "#a9b8dc", cScalePeer2: "#a9b8dc", cScalePeer3: "#a9b8dc", cScalePeer4: "#a9b8dc" } });
 await document.fonts.ready;   // measure the labels in the hand-lettered font, not the fallback
 await mermaid.run({ querySelector: "pre.mermaid" });
+// On a phone, shrinking a wide diagram to fit makes its words tiny: keep it at a readable size and let it scroll sideways.
+if (matchMedia("(max-width: 700px)").matches) document.querySelectorAll("pre.mermaid svg").forEach((svg) => {
+  const w = svg.viewBox.baseVal.width * 0.8;
+  if (w > svg.parentElement.clientWidth) { svg.style.setProperty("max-width", "none", "important"); svg.style.width = w + "px"; }
+});
 </script>
 <script src="../blog.js" defer></script></head>
 <body><header class="top"><div class="stripe"></div><div class="in">
