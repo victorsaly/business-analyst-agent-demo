@@ -90,6 +90,52 @@ def build_readme_team():
     print(f"readme: team of {len(people)}" if people else "readme: no team names yet (app/web/team.json)")
 
 
+def build_deck_team():
+    """The presentation's team slide (web/deck/, between team:start / team:end) and its speaker note, from
+    app/web/team.json: each person's photo (or initials), name and role, up to 4 a row (more people, smaller cards).
+    Runs before web/ is copied, so site/deck/ gets the filled slide."""
+    import html
+    path = os.path.join(HERE, "web", "deck", "index.html")
+    text = open(path, encoding="utf-8").read()
+    people = blog.team()
+    n = len(people)
+    cols = 4 if n <= 8 else 5 if n <= 10 else 6
+    size = 170 if n <= 8 else 140 if n <= 10 else 120
+    e = lambda v: html.escape(str(v or "").strip())
+    hand, typed = "'Patrick Hand SC', 'Trebuchet MS', sans-serif", "'Courier Prime', 'Courier New', monospace"
+    cards = []
+    for i, m in enumerate(people):
+        box = f"width:{size}px;height:{size}px;border:3px solid #1E3A8A;box-shadow:8px 8px 0 #C62828;flex:none"
+        if m.get("photo"):
+            face = f'<img src="../{e(m["photo"])}" alt="" style="{box};object-fit:cover">'
+        else:
+            initials = "".join(w[0] for w in m["name"].split()[:2]).upper()
+            face = (f'<div style="{box};background:#EEF2FB;display:flex;align-items:center;justify-content:center;'
+                    f'font-family:{hand};font-size:{size * 0.4:.0f}px;color:#1E3A8A">{e(initials)}</div>')
+        role = (m.get("role") or "").strip()
+        role = f'<p style="font-family:{typed};font-size:24px;line-height:1.25;color:#3F5A9E">{e(role[:1].upper() + role[1:])}</p>' if role else ""
+        cards.append(f'<div style="--o:{i + 1};display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center" data-build="rise">'
+                     f'{face}<p style="font-family:{hand};font-size:36px;line-height:1.1;color:#1E3A8A;margin-top:8px">{e(m["name"])}</p>{role}</div>')
+    grid = (f'<div style="position:absolute;left:128px;top:276px;width:1664px;display:grid;grid-template-columns:repeat({cols}, 1fr);'
+            f'gap:40px 40px;justify-items:center">{"".join(cards)}</div>\n') if people else ""
+    new = re.sub(r"(<!-- team:start[^>]*-->\n).*?(<!-- team:end -->)", lambda m: m.group(1) + grid + m.group(2), text, flags=re.S)
+    # the speaker note for the slide before the last one
+    names = [m["name"].strip() for m in people]
+    note = ("This is the team: " + (names[0] if n == 1 else ", ".join(names[:-1]) + " and " + names[-1]) + ". "
+            "We split the work across the agent, the data, the testing and the presentation.") if people else ""
+    match = re.search(r"const NOTES = (\[.*?\]);\n", new)
+    notes = json.loads(match.group(1))
+    slides = new.count('class="slide"')
+    if len(notes) == slides - 1:
+        notes.insert(slides - 2, note)
+    else:
+        notes[slides - 2] = note
+    new = new[:match.start(1)] + json.dumps(notes, ensure_ascii=False) + new[match.end(1):]
+    if new != text:
+        open(path, "w", encoding="utf-8").write(new)
+    print(f"deck: team slide with {n} people")
+
+
 def build_api():
     """site/api/: the OpenAPI spec (the local server's, plus the online chat's endpoints) shown with Redoc."""
     spec = server.app.openapi()
@@ -147,6 +193,7 @@ def main():
             path = os.path.join(OUT, item)
             shutil.rmtree(path) if os.path.isdir(path) else os.remove(path)
     web = os.path.join(HERE, "web")
+    build_deck_team()   # fills web/deck/ before it is copied
     # the root: everything shared (fonts, logos, team, blog and landing styles, pitch, deck)
     for item in os.listdir(web):
         if item not in NOT_AT_ROOT:

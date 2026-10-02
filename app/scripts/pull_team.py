@@ -70,7 +70,13 @@ def same(a, b):
 
 
 def main():
-    answers = fetch()
+    answers = []
+    for a in fetch():   # oldest first
+        handle = a.get("linkedin", "").lower().rstrip("/").rsplit("/", 1)[-1]
+        if handle in PLACEHOLDERS:   # someone without LinkedIn typed a stand-in to get past the form
+            a["linkedin"] = ""
+        # the same person sending again with a new LinkedIn link is kept under a new key: keep their newest answer
+        answers = [b for b in answers if not same(b, a)] + [a]
     os.makedirs(os.path.dirname(ANSWERS), exist_ok=True)
     with open(ANSWERS, "w", encoding="utf-8") as f:
         json.dump(answers, f, indent=2, ensure_ascii=False)
@@ -79,11 +85,8 @@ def main():
         team = json.load(f)
     members, added = team.get("members", []), []
     for a in answers:
-        handle = a.get("linkedin", "").lower().rstrip("/").rsplit("/", 1)[-1]
-        if handle in PLACEHOLDERS:   # someone without LinkedIn typed a stand-in to get past the form
-            print(f"  {a['name']}: LinkedIn {a['linkedin']} looks like a stand-in, left out")
-            a["linkedin"] = ""
-        person = {"name": a["name"], "linkedin": a["linkedin"], "role": a.get("role", ""), "bio": a.get("bio", "")}
+        blank = lambda v: "" if v.strip().lower().strip(".") in {"none", "n/a", "na", "-", "no", "nothing"} else v.strip()   # "None" typed into a required box
+        person = {"name": a["name"], "linkedin": a["linkedin"], "role": blank(a.get("role", "")), "bio": blank(a.get("bio", ""))}
         old = next((m for m in members if same(m, person)), None)
         if a.get("photo"):
             photo = save_photo(a["name"], a["photo"])

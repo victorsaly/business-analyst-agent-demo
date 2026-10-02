@@ -11,7 +11,7 @@
     },
     {
       "name": "Akashdeep Nijjar",
-      "linkedin": "",
+      "linkedin": "https://www.linkedin.com/in/akashdeep-n-85903727b/",
       "role": "modified agent",
       "bio": "Changes to Capstone Project2:\n-added verification function that takes the user query and checks whether all info necessary for charts are there (i.e. prompt give me the overview of cogs for the entire year - this can be a bar plot grouped by region (but user hasn’t specified region) or line graph showing trend per week ) in an ambiguous query like this the agent should not assume and goes back to ask the user what kind of plot is preferred\n\n- added matching rule in rulebook for this\n\n- accessible charts for vision impaired"
     },
@@ -32,6 +32,26 @@
       "linkedin": "https://www.linkedin.com/in/buddhika-sameera/",
       "role": "Data Analysis, Testing",
       "bio": "Product Owner / Data Scientist"
+    },
+    {
+      "name": "Nathan Fryatt",
+      "linkedin": "https://www.linkedin.com/in/nathanfryatt/",
+      "role": "IT Manager",
+      "bio": "",
+      "photo": "team/nathan-fryatt.jpg"
+    },
+    {
+      "name": "Michael Kampouridis",
+      "linkedin": "https://www.linkedin.com/in/michael-kampouridis-b6b841294/",
+      "role": "Academic",
+      "bio": "",
+      "photo": "team/michael-kampouridis.jpg"
+    },
+    {
+      "name": "Malak Sheat",
+      "linkedin": "https://www.linkedin.com/in/malak-shaat-91b18a280/",
+      "role": "Coding",
+      "bio": "AI engineer hoping to advance in this field."
     }
   ]
 }

@@ -119,7 +119,7 @@ worker/         the online Ask chat (Cloudflare Worker)
 ## Credits
 
 <!-- team:start (written by app/scripts/build_site.py from app/web/team.json) -->
-- **The team:** [Victor Saly](https://www.linkedin.com/in/victorsaly), Akashdeep Nijjar, [Manuel Verduzco Valenzuela](https://www.linkedin.com/in/manuel-verduzco/), [Mazen Ahmed](https://www.linkedin.com/in/mazenahmed-ai/) and [Buddhika Gamage](https://www.linkedin.com/in/buddhika-sameera/)
+- **The team:** [Victor Saly](https://www.linkedin.com/in/victorsaly), [Akashdeep Nijjar](https://www.linkedin.com/in/akashdeep-n-85903727b/), [Manuel Verduzco Valenzuela](https://www.linkedin.com/in/manuel-verduzco/), [Mazen Ahmed](https://www.linkedin.com/in/mazenahmed-ai/), [Buddhika Gamage](https://www.linkedin.com/in/buddhika-sameera/), [Nathan Fryatt](https://www.linkedin.com/in/nathanfryatt/), [Michael Kampouridis](https://www.linkedin.com/in/michael-kampouridis-b6b841294/) and [Malak Sheat](https://www.linkedin.com/in/malak-shaat-91b18a280/)
 <!-- team:end -->
 
 - Course: Agentic AI Workshop 2026, Capstone 2. The starting notebook and training guide belong to the course and are not included here.
