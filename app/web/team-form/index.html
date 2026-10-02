@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="../landing.css">
 <style>
   /* The team form: one column on the plain white cover background. Answers go to the Ask chat's Worker (POST /team). */
+  body.cover.form { height: auto; overflow: visible; }   /* the cover is one fixed screen; the form needs to scroll */
   .form main { height: auto; max-width: 40rem; text-align: left; align-items: stretch; padding-bottom: 2.5rem; }
   .form header { text-align: center; }
   .form h1 { font-size: clamp(2rem, 4vw, 3rem); }
