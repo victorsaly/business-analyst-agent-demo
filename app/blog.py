@@ -2,7 +2,7 @@
 
 Used in two places, with different links:
 - server.py serves it live at http://localhost:8501/blog/ (LOCAL links), so an edited doc shows on reload;
-- build_site.py writes it into site/blog/ for the public website (SITE links).
+- scripts/build_site.py writes it into site/blog/ for the public website (SITE links).
 docs/index.md ("How this was made") is the front page.
 search_index() is the text of every section, for the search box (web/blog.js loads it as blog/search.json).
 """
@@ -25,7 +25,7 @@ AREAS = [   # the sidebar on every page: every document, grouped by area
     ("The story", [("index", "How this was made"), ("history", "Timeline, step by step")]),
     ("The brief", [("requirements", "Every requirement, with evidence"), ("build-guide", "The 13 build steps")]),
     ("The app", [("running-the-app", "Running the demo"), ("product", "Who it's for"), ("design", "How it looks")]),
-    ("Behind the scenes", [("prompt-optimization", "Cutting the AI cost"), ("audio-sources", "Audio sources")]),
+    ("Behind the scenes", [("scripts", "Making things locally"), ("prompt-optimization", "Cutting the AI cost"), ("audio-sources", "Audio sources")]),
 ]
 
 TEAM = os.path.join(HERE, "web", "team.json")   # the team: also shown on the front page (the cover) and in the readme

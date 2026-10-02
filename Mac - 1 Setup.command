@@ -36,7 +36,7 @@ echo "TextEdit opens a file called .env. Paste the key after GROQ_API_KEY= and s
 echo "(No key? Skip this: Replay mode works without one.)"
 open -e .env
 read -r -p "When you have saved it (or to skip), press Enter here to check the key." _
-.venv/bin/python check_key.py
+.venv/bin/python -m scripts.check_key
 echo
 echo "Next: double-click 'Mac - 2 Start.command'."
 read -r -p "Press Enter to close this window." _

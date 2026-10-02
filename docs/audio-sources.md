@@ -21,7 +21,7 @@ a short filtered breakdown around 35 seconds, then a final lift into one big end
 About 60 seconds long, no vocals.
 ```
 
-Each `vo_*.mp3` is one voiceover line for one scene. In `app/make_promo.py`, the `"vo"` key of each entry in
+Each `vo_*.mp3` is one voiceover line for one scene. In `app/scripts/make_promo.py`, the `"vo"` key of each entry in
 `SCENES` names the clip that plays on that scene (for example `"vo": "hook"` plays `vo_hook.mp3`), and
 `CLAIMS` lists what each line says about the recording it plays over. The video itself is described in
 [running-the-app](running-the-app.md).
@@ -32,7 +32,7 @@ Each `vo_*.mp3` is one voiceover line for one scene. In `app/make_promo.py`, the
 |---|---|
 | `<screen>-<audience>.mp3` | One clip per screen and audience. Model `eleven_v3`, voice "Emma - Professional Commercial Voice" (`9HBoEQ8LqyvVZFYDodnr`), 1 October 2026. |
 | `scripts.json` | The exact text of every clip. |
-| `timings.json` | Word timings measured from each clip's pauses by `app/make_explain_timings.py`, so the captions keep pace with the voice. |
+| `timings.json` | Word timings measured from each clip's pauses by `app/scripts/make_explain_timings.py`, so the captions keep pace with the voice. |
 
 The screens are cover, changes, tracks, tools, briefing, scorecard, story and home; the audiences are
 stakeholder and developer. That makes 16 clips, for example `cover-stakeholder.mp3` and
@@ -53,5 +53,5 @@ To replace a clip:
    **Windows**
 
    ```powershell
-   .venv\Scripts\python make_explain_timings.py
+   .venv\Scripts\python -m scripts.make_explain_timings
    ```

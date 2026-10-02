@@ -1,7 +1,7 @@
 """The API reference: descriptions, tags and examples for server.py's endpoints, kept here so the server stays short.
 
 FastAPI turns these into an OpenAPI spec: browse it at http://localhost:8501/redoc (or /docs) while the app runs.
-build_site.py also publishes it, with the online Ask chat's endpoints added (WORKER_PATHS), as site/api/.
+scripts/build_site.py also publishes it, with the online Ask chat's endpoints added (WORKER_PATHS), as site/api/.
 """
 
 VERSION = "1.0"
@@ -85,7 +85,7 @@ ASK_ANSWER = {200: {"description": "The answer, and the passages it cited.", "co
     "sources": [{"n": 1, "source": "Course training guide", "title": "Free-tier limits", "url": ""}],
     "model": "openai · gpt-5.4-mini"}}}}}
 
-# The online chat's endpoints, added to the published spec by build_site.py (the Worker isn't a FastAPI app).
+# The online chat's endpoints, added to the published spec by scripts/build_site.py (the Worker isn't a FastAPI app).
 WORKER_PATHS = {
     "/ask": {"post": {
         "tags": ["Ask chat (online)"], "summary": "Ask the course chat (online)", "operationId": "worker_ask",

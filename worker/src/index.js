@@ -2,7 +2,7 @@
 // It holds the API key (a Worker secret, never in the site), finds the knowledge-base passages that best
 // match each question (BM25, the same way app/analyst/knowledge.py does), and asks the AI to answer from
 // them only. It answers only the demo site, keeps answers short, and caps questions per day and per visitor.
-// knowledge.json is built by app/make_knowledge.py (git-ignored: it holds course material).
+// knowledge.json is built by app/scripts/make_knowledge.py (git-ignored: it holds course material).
 import KB from "../knowledge.json";
 
 const ALLOWED = ["https://victorsaly.github.io", "http://localhost:8501", "http://127.0.0.1:8501"];

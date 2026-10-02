@@ -41,7 +41,7 @@ if [ -n "$DISPLAY$WAYLAND_DISPLAY" ] && command -v xdg-open >/dev/null; then
 else
   "${EDITOR:-nano}" .env
 fi
-.venv/bin/python check_key.py
+.venv/bin/python -m scripts.check_key
 echo
 echo "Next: bash \"Linux - 2 Start.sh\""
 read -r -p "Press Enter to close this window." _

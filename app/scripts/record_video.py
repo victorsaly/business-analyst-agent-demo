@@ -1,8 +1,8 @@
 """Record a demo video of the app: drives a real browser through every scene and saves an MP4.
 
-  .venv/bin/python record_video.py --mode replay      # recommended: replays your recorded LIVE runs
-  .venv/bin/python record_video.py --mode dry         # test video without any AI (clearly labelled DRY RUN)
-  .venv/bin/python record_video.py --mode live        # runs the AI live while recording (slow on free tier)
+  .venv/bin/python -m scripts.record_video --mode replay      # recommended: replays your recorded LIVE runs
+  .venv/bin/python -m scripts.record_video --mode dry         # test video without any AI (clearly labelled DRY RUN)
+  .venv/bin/python -m scripts.record_video --mode live        # runs the AI live while recording (slow on free tier)
 
 Options: --no-voice (no narration), --rehearsal (add the planted-anomaly scene), --out video/demo.mp4
 """
@@ -17,7 +17,7 @@ import urllib.request
 
 from playwright.sync_api import sync_playwright
 
-HERE = os.path.dirname(os.path.abspath(__file__))
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # app/ (this script lives in app/scripts/)
 PORT = 8611
 
 # (url parameters, narration). Narration is read by the Mac's built-in voice if --voice is on.

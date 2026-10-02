@@ -252,10 +252,10 @@ made with ElevenLabs; see <a href="audio-sources.html">audio-sources.md</a>.</p>
 <p>To re-render it from the current recordings (about 1 minute):</p>
 <pre><code class="language-bash">./demo.sh pitch
 </code></pre>
-<p>Live runs overwrite their track's recording. So before rendering, <code>make_promo.py</code> checks that each recording
+<p>Live runs overwrite their track's recording. So before rendering, <code>scripts/make_promo.py</code> checks that each recording
 still supports what the voiceover says (for example, that the anomaly answer still mentions the Reseller
 channel). If one doesn't, it stops and names the track to re-record. The scenes, captions and timings are in
-<code>SCENES</code> at the top of <code>make_promo.py</code>.</p>
+<code>SCENES</code> at the top of <code>scripts/make_promo.py</code>.</p>
 <h2 id="making-the-video">Making the video</h2>
 <ol>
 <li>
@@ -366,6 +366,8 @@ OpenAI follows the rules more reliably than the free model:</p>
 <pre><code class="language-text">ALL CHECKS PASSED
 </code></pre>
 <h2 id="files">Files</h2>
+<p>The scripts that make things (recordings, videos, the chat's answers, the website) are in <code>scripts/</code>.
+<a href="scripts.html">Making things locally</a> explains each one.</p>
 <div class="table"><table>
 <thead>
 <tr>
@@ -407,15 +409,15 @@ OpenAI follows the rules more reliably than the free model:</p>
 <td>Scorecard (examiner copied from the notebook)</td>
 </tr>
 <tr>
-<td><code>prepare_recordings.py</code></td>
+<td><code>scripts/prepare_recordings.py</code></td>
 <td>Records every case live</td>
 </tr>
 <tr>
-<td><code>record_video.py</code></td>
+<td><code>scripts/record_video.py</code></td>
 <td>Records the narrated walkthrough video</td>
 </tr>
 <tr>
-<td><code>make_promo.py</code>, <code>web/promo.html</code></td>
+<td><code>scripts/make_promo.py</code>, <code>web/promo.html</code></td>
 <td>Renders the 60-second pitch video</td>
 </tr>
 <tr>
@@ -427,15 +429,15 @@ OpenAI follows the rules more reliably than the free model:</p>
 <td>Automated checks</td>
 </tr>
 <tr>
-<td><code>analyst/story.py</code>, <code>make_story_answers.py</code></td>
+<td><code>analyst/story.py</code>, <code>scripts/make_story_answers.py</code></td>
 <td>The Story chat, and its prepared answers for the online copy</td>
 </tr>
 <tr>
-<td><code>make_explain_timings.py</code></td>
+<td><code>scripts/make_explain_timings.py</code></td>
 <td>Word timings for the Explain captions, measured from each clip's pauses</td>
 </tr>
 <tr>
-<td><code>build_site.py</code></td>
+<td><code>scripts/build_site.py</code></td>
 <td>Builds the online copy (GitHub Pages) into <code>../site</code></td>
 </tr>
 </tbody>
@@ -547,5 +549,5 @@ every event type and its fields.</p>
 <nav class="pager" aria-label="Previous and next page"><a class="prev" href="build-guide.html"><span>Previous</span>The 13 build steps</a><a class="next" href="product.html"><span>Next</span>Who it's for</a></nav>
 <p class="foot">A learning project, not a product. AdventureWorks is Microsoft's public sample data about a made-up bicycle
 company. Source of this page: <a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/docs/running-the-app.md">docs/running-the-app.md</a>.</p></main>
-<aside class="areas" aria-label="All documents"><details open><summary>All pages</summary><h2>Start here</h2><ul><li><a href="getting-started.html">Run it on your laptop (Mac and Windows)</a></li></ul><h2>The story</h2><ul><li><a href="index.html">How this was made</a></li><li><a href="history.html">Timeline, step by step</a></li></ul><h2>The brief</h2><ul><li><a href="requirements.html">Every requirement, with evidence</a></li><li><a href="build-guide.html">The 13 build steps</a></li></ul><h2>The app</h2><ul><li><a href="running-the-app.html" aria-current="page">Running the demo</a></li><li><a href="product.html">Who it's for</a></li><li><a href="design.html">How it looks</a></li></ul><h2>Behind the scenes</h2><ul><li><a href="prompt-optimization.html">Cutting the AI cost</a></li><li><a href="audio-sources.html">Audio sources</a></li></ul><h2>Try it</h2><ul><li><a href="../">Home: the 60-second pitch</a></li><li><a href="../demo/">Open the demo</a></li><li><a href="../demo/?page=story">Ask the course chat</a></li><li><a href="../api/">API reference</a></li><li><a href="../pitch/">60-second pitch video</a></li><li><a href="../deck/">The presentation</a></li><li><a href="getting-started.html">Run it on your laptop</a></li><li><a href="https://github.com/victorsaly/business-analyst-agent-demo">The code on GitHub</a></li></ul></details></aside>
+<aside class="areas" aria-label="All documents"><details open><summary>All pages</summary><h2>Start here</h2><ul><li><a href="getting-started.html">Run it on your laptop (Mac and Windows)</a></li></ul><h2>The story</h2><ul><li><a href="index.html">How this was made</a></li><li><a href="history.html">Timeline, step by step</a></li></ul><h2>The brief</h2><ul><li><a href="requirements.html">Every requirement, with evidence</a></li><li><a href="build-guide.html">The 13 build steps</a></li></ul><h2>The app</h2><ul><li><a href="running-the-app.html" aria-current="page">Running the demo</a></li><li><a href="product.html">Who it's for</a></li><li><a href="design.html">How it looks</a></li></ul><h2>Behind the scenes</h2><ul><li><a href="scripts.html">Making things locally</a></li><li><a href="prompt-optimization.html">Cutting the AI cost</a></li><li><a href="audio-sources.html">Audio sources</a></li></ul><h2>Try it</h2><ul><li><a href="../">Home: the 60-second pitch</a></li><li><a href="../demo/">Open the demo</a></li><li><a href="../demo/?page=story">Ask the course chat</a></li><li><a href="../api/">API reference</a></li><li><a href="../pitch/">60-second pitch video</a></li><li><a href="../deck/">The presentation</a></li><li><a href="getting-started.html">Run it on your laptop</a></li><li><a href="https://github.com/victorsaly/business-analyst-agent-demo">The code on GitHub</a></li></ul></details></aside>
 <nav class="toc" aria-label="On this page"><h2>On this page</h2><ul><li><a href="#quick-start-macos">Quick start (macOS)</a></li><li><a href="#the-three-modes-top-right">The three modes (top right)</a></li><li><a href="#the-screens">The screens</a></li><li><a href="#competitor-prices-optional-for-demos">Competitor prices (optional, for demos)</a></li><li><a href="#the-60-second-pitch-video">The 60-second pitch video</a></li><li><a href="#making-the-video">Making the video</a></li><li><a href="#presenting-live">Presenting live</a></li><li><a href="#presenter-zoom">Presenter zoom</a></li><li><a href="#ai-services-groq-then-openai">AI services: Groq, then OpenAI</a></li><li><a href="#checks">Checks</a></li><li><a href="#files">Files</a></li><li><a href="#the-ask-chat-local-and-online">The Ask chat (local and online)</a></li><li><a href="#api-reference">API reference</a></li></ul></nav></div></body></html>

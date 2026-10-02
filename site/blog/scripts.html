@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Making things locally: the scripts · Business Performance Analyst Agent</title>
+<meta name="description" content="A course demonstration (Agentic AI Workshop 2026, Capstone 2): how we built an AI analyst agent, step by step.">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="../blog.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/diff.min.js" defer></script>
+<script>addEventListener("DOMContentLoaded", () => window.hljs && hljs.highlightAll());</script><script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+mermaid.initialize({ startOnLoad: false, theme: "base", securityLevel: "strict",
+  flowchart: { curve: "basis", padding: 14, nodeSpacing: 34, rankSpacing: 40 }, sequence: { mirrorActors: false },
+  themeVariables: { fontFamily: '"Patrick Hand SC", "Marker Felt", cursive', fontSize: "17px",
+    background: "#fcfbf7", primaryColor: "#ffffff", primaryTextColor: "#1e3a8a", primaryBorderColor: "#1e3a8a",
+    secondaryColor: "#eef2fb", tertiaryColor: "#eef2fb", lineColor: "#3f5a9e", textColor: "#1d2433",
+    clusterBkg: "#eef2fb", clusterBorder: "#a9b8dc", edgeLabelBackground: "#ffffff",
+    noteBkgColor: "#eef2fb", noteBorderColor: "#a9b8dc", noteTextColor: "#1e3a8a", actorLineColor: "#a9b8dc", signalColor: "#3f5a9e",
+    cScale0: "#eef2fb", cScale1: "#ffffff", cScale2: "#eef2fb", cScale3: "#ffffff", cScale4: "#eef2fb",
+    cScaleLabel0: "#1e3a8a", cScaleLabel1: "#1e3a8a", cScaleLabel2: "#1e3a8a", cScaleLabel3: "#1e3a8a", cScaleLabel4: "#1e3a8a",
+    cScalePeer0: "#a9b8dc", cScalePeer1: "#a9b8dc", cScalePeer2: "#a9b8dc", cScalePeer3: "#a9b8dc", cScalePeer4: "#a9b8dc" } });
+await document.fonts.ready;   // measure the labels in the hand-lettered font, not the fallback
+await mermaid.run({ querySelector: "pre.mermaid" });
+// On a phone, shrinking a wide diagram to fit makes its words tiny: keep it at a readable size and let it scroll sideways.
+if (matchMedia("(max-width: 700px)").matches) document.querySelectorAll("pre.mermaid svg").forEach((svg) => {
+  const w = svg.viewBox.baseVal.width * 0.8;
+  if (w > svg.parentElement.clientWidth) { svg.style.setProperty("max-width", "none", "important"); svg.style.width = w + "px"; }
+});
+</script>
+<script src="../blog.js" defer></script></head>
+<body><header class="top"><div class="stripe"></div><div class="in">
+<a class="brand" href="index.html"><img src="../logo.svg" alt="" width="32" height="32"> Business Performance Analyst Agent</a>
+<div class="search" role="search"><label class="sr" for="q">Search the docs</label><input id="q" type="search" placeholder="Search the docs" autocomplete="off" spellcheck="false" aria-controls="hits" aria-expanded="false" aria-autocomplete="list"><kbd aria-hidden="true">/</kbd><div id="hits" role="listbox" aria-label="Search results" hidden></div></div><nav aria-label="Blog"><a href="index.html">How this was made</a><a href="history.html">History</a><a href="requirements.html">Requirements</a><a href="build-guide.html">Build guide</a><a href="../demo/">Open the demo</a><a href="../api/">API</a><a href="../">Home</a></nav></div></header>
+<div class="wrap"><main><span class="course">Course demonstration · Capstone 2 · Agentic AI Workshop 2026</span>
+<h1 id="making-things-locally-the-scripts">Making things locally: the scripts</h1>
+<p>The app itself is <code>server.py</code> and the <code>analyst</code> package. Everything else it shows (the recorded runs, the
+videos, the chat's prepared answers, the website) is made by a script in <code>app/scripts/</code>. This page says what
+each one makes, what it needs, and when to run it again.</p>
+<p>Run them from the <code>app</code> folder. On a Mac or Linux, <code>./demo.sh</code> has a short name for each. On Windows, use the
+long form:</p>
+<pre><code class="language-bash">./demo.sh site                                  # Mac or Linux
+.venv\Scripts\python -m scripts.build_site      # Windows
+</code></pre>
+<h2 id="how-they-fit-together">How they fit together</h2>
+<p>Most scripts feed the website. Only two use the AI, and they're the ones that cost tokens.</p>
+<figure class="diagram"><pre class="mermaid">flowchart LR
+  accTitle: Which script makes what
+  P[&quot;prepare_recordings&lt;br/&gt;(uses the AI)&quot;] --&gt; R[(&quot;recordings/&quot;)]
+  R --&gt; V[&quot;record_video&quot;] --&gt; V2[&quot;video/demo.mp4&quot;]
+  R --&gt; PR[&quot;make_promo&quot;] --&gt; P2[&quot;video/pitch.mp4&quot;]
+  K[&quot;make_knowledge&quot;] --&gt; KB[(&quot;knowledge.json&quot;)]
+  KB --&gt; S[&quot;make_story_answers&lt;br/&gt;(uses the AI)&quot;] --&gt; SA[&quot;prepared answers&quot;]
+  T[&quot;make_explain_timings&quot;] --&gt; TJ[&quot;caption timings&quot;]
+  R --&gt; B[&quot;build_site&quot;]
+  SA --&gt; B
+  TJ --&gt; B
+  B --&gt; W[&quot;site/ (the website)&quot;]
+  classDef red stroke:#c62828,stroke-width:2px,color:#b71c1c
+  class P,S red
+</pre></figure>
+<h2 id="at-a-glance">At a glance</h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Script</th>
+<th><code>./demo.sh</code></th>
+<th>Makes</th>
+<th>Uses the AI?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>check_key</code></td>
+<td>(run by the double-click setup and start files)</td>
+<td>A plain message: is the AI key in <code>.env</code> working?</td>
+<td>Checks the key only</td>
+</tr>
+<tr>
+<td><code>prepare_recordings</code></td>
+<td><code>prepare</code></td>
+<td>One live run of every demo case, saved for Replay</td>
+<td>Yes, about 120,000 to 160,000 tokens</td>
+</tr>
+<tr>
+<td><code>record_video</code></td>
+<td><code>video</code>, <code>video-dry</code></td>
+<td>The narrated walkthrough video, <code>video/demo.mp4</code></td>
+<td>No (replays the recordings)</td>
+</tr>
+<tr>
+<td><code>make_promo</code></td>
+<td><code>pitch</code></td>
+<td>The 60-second pitch video, <code>video/pitch.mp4</code></td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>make_explain_timings</code></td>
+<td><code>timings</code></td>
+<td>Word timings for the Explain captions</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>make_knowledge</code></td>
+<td><code>knowledge</code></td>
+<td>The Ask chat's knowledge base</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>make_story_answers</code></td>
+<td><code>story</code></td>
+<td>Prepared answers for the chat's suggested questions</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>build_site</code></td>
+<td><code>site</code></td>
+<td>The website, in <code>../site</code></td>
+<td>No</td>
+</tr>
+</tbody>
+</table></div>
+<p>The checks (<code>./demo.sh test</code>) stay in <code>app/test_demo.py</code>: they test the app rather than make anything.</p>
+<h2 id="check_key">check_key</h2>
+<p>Reads <code>app/.env</code> and asks each AI service whether the key works. It prints one of three things: the key is
+fine, the key is missing, or the service rejected it, with what to do next. It never stops anything, because
+Replay mode works without a key. The double-click Setup and Start files run it for you.</p>
+<pre><code class="language-bash">.venv/bin/python -m scripts.check_key
+</code></pre>
+<h2 id="prepare_recordings">prepare_recordings</h2>
+<p>Runs every demo case live, once, and saves each run to <code>recordings/</code>. It also records the scorecard's extra
+questions and the weekly briefing. Replay mode, both videos and the website all play these recordings back,
+so this is the one run that has to happen with a working AI.</p>
+<p>It uses about 120,000 to 160,000 tokens, most of a day's free Groq allowance. To re-record only some cases,
+name them:</p>
+<pre><code class="language-bash">./demo.sh prepare
+./demo.sh prepare northwest_margin guard_forecast
+</code></pre>
+<p><strong>Run it again</strong> after changing the rulebook, a tool, or a demo case. A live run overwrites that case's recording.</p>
+<h2 id="record_video">record_video</h2>
+<p>Opens the app in a real browser, plays every scene from the recordings, and saves <code>video/demo.mp4</code>. On a Mac it
+adds a spoken narration with the built-in <code>say</code> voices. It needs <code>ffmpeg</code>.</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Command</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>./demo.sh video</code></td>
+<td>Replays your recorded live runs (the one to show people)</td>
+</tr>
+<tr>
+<td><code>./demo.sh video --no-voice</code></td>
+<td>The same, without narration</td>
+</tr>
+<tr>
+<td><code>./demo.sh video --voice Daniel</code></td>
+<td>Another macOS voice</td>
+</tr>
+<tr>
+<td><code>./demo.sh video --rehearsal</code></td>
+<td>Adds the planted-anomaly scene</td>
+</tr>
+<tr>
+<td><code>./demo.sh video-dry</code></td>
+<td>A test video with no AI at all, labelled DRY RUN. Don't present it as the agent.</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="make_promo">make_promo</h2>
+<p>Renders the 60-second pitch video, <code>video/pitch.mp4</code>. It plays scenes from the app in a browser, cuts them to
+the music, and lays the voiceover lines on top. Before rendering, it checks that each recording it shows
+still says what the voiceover claims. A new live run can change an answer, and it stops if one no longer
+matches (add <code>--force</code> to render anyway). It needs <code>ffmpeg</code>, the music and voice files in <code>promo/audio/</code> (<a href="audio-sources.html">Audio sources</a>),
+and the recordings.</p>
+<pre><code class="language-bash">./demo.sh pitch
+</code></pre>
+<h2 id="make_explain_timings">make_explain_timings</h2>
+<p>The "Explain this page" button plays a voice clip and highlights each word as it's spoken. This script measures
+the pauses in each clip with <code>ffmpeg</code> and works out when each word starts. It writes
+<code>web/explain/timings.json</code>.</p>
+<p><strong>Run it again</strong> after changing an Explain line or replacing its mp3.</p>
+<pre><code class="language-bash">./demo.sh timings
+</code></pre>
+<h2 id="make_knowledge">make_knowledge</h2>
+<p>Builds the Ask chat's knowledge base: the course's training guide and starting notebook, our finished
+notebook, and every page of this blog, cut into passages the chat can search. It writes <code>data/knowledge.json</code>
+for the local app and <code>../worker/knowledge.json</code> for the online chat.</p>
+<p>The course files aren't in this repo, so you point it at your own copy of the course repo. Both outputs are
+git-ignored, because they hold course material. Without <code>--course</code>, it uses only our notebook and docs.</p>
+<pre><code class="language-bash">./demo.sh knowledge --course /path/to/capstone-project-2-business_analyst_agent
+</code></pre>
+<h2 id="make_story_answers">make_story_answers</h2>
+<p>Asks the AI each suggested question in the chat, with the same notes and rules as the live chat, and saves the
+answers to <code>web/story/answers.json</code>. Those answers appear instantly and cost nothing, online and locally.</p>
+<pre><code class="language-bash">./demo.sh story              # every question
+./demo.sh story --missing    # only questions without an answer yet
+</code></pre>
+<p><strong>Run it again</strong> after editing the history, the requirements or the build guide, then rebuild the site.</p>
+<h2 id="build_site">build_site</h2>
+<p>Builds the public website into <code>../site</code>, which GitHub publishes as Pages:</p>
+<ul>
+<li><strong>The front page:</strong> the pitch video and links.</li>
+<li><strong>The demo:</strong> the same screens as the local app. The website has no server, so every answer is saved as
+    a file, made by the same code the local app uses in Replay mode.</li>
+<li><strong>This blog:</strong> every page in <code>docs/</code>.</li>
+<li><strong>The API reference.</strong></li>
+<li><strong>The deck and the pitch page.</strong></li>
+</ul>
+<p>It also writes the team names into the readme.</p>
+<pre><code class="language-bash">./demo.sh site
+</code></pre>
+<p><strong>Run it again</strong> after any change to <code>docs/</code>, the screens, or the recordings, then commit and push <code>site/</code>.</p>
+<nav class="pager" aria-label="Previous and next page"><a class="prev" href="design.html"><span>Previous</span>How it looks</a><a class="next" href="prompt-optimization.html"><span>Next</span>Cutting the AI cost</a></nav>
+<p class="foot">A learning project, not a product. AdventureWorks is Microsoft's public sample data about a made-up bicycle
+company. Source of this page: <a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/docs/scripts.md">docs/scripts.md</a>.</p></main>
+<aside class="areas" aria-label="All documents"><details open><summary>All pages</summary><h2>Start here</h2><ul><li><a href="getting-started.html">Run it on your laptop (Mac and Windows)</a></li></ul><h2>The story</h2><ul><li><a href="index.html">How this was made</a></li><li><a href="history.html">Timeline, step by step</a></li></ul><h2>The brief</h2><ul><li><a href="requirements.html">Every requirement, with evidence</a></li><li><a href="build-guide.html">The 13 build steps</a></li></ul><h2>The app</h2><ul><li><a href="running-the-app.html">Running the demo</a></li><li><a href="product.html">Who it's for</a></li><li><a href="design.html">How it looks</a></li></ul><h2>Behind the scenes</h2><ul><li><a href="scripts.html" aria-current="page">Making things locally</a></li><li><a href="prompt-optimization.html">Cutting the AI cost</a></li><li><a href="audio-sources.html">Audio sources</a></li></ul><h2>Try it</h2><ul><li><a href="../">Home: the 60-second pitch</a></li><li><a href="../demo/">Open the demo</a></li><li><a href="../demo/?page=story">Ask the course chat</a></li><li><a href="../api/">API reference</a></li><li><a href="../pitch/">60-second pitch video</a></li><li><a href="../deck/">The presentation</a></li><li><a href="getting-started.html">Run it on your laptop</a></li><li><a href="https://github.com/victorsaly/business-analyst-agent-demo">The code on GitHub</a></li></ul></details></aside>
+<nav class="toc" aria-label="On this page"><h2>On this page</h2><ul><li><a href="#how-they-fit-together">How they fit together</a></li><li><a href="#at-a-glance">At a glance</a></li><li><a href="#check_key">check_key</a></li><li><a href="#prepare_recordings">prepare_recordings</a></li><li><a href="#record_video">record_video</a></li><li><a href="#make_promo">make_promo</a></li><li><a href="#make_explain_timings">make_explain_timings</a></li><li><a href="#make_knowledge">make_knowledge</a></li><li><a href="#make_story_answers">make_story_answers</a></li><li><a href="#build_site">build_site</a></li></ul></nav></div></body></html>

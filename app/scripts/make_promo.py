@@ -1,6 +1,6 @@
 """Render the 60-second pitch video.
 
-  .venv/bin/python make_promo.py            -> video/pitch.mp4
+  .venv/bin/python -m scripts.make_promo            -> video/pitch.mp4
 
 Needs: promo/audio/music.mp3 (the music bed) and promo/audio/vo_<key>.mp3 (one voiceover line per scene;
 missing lines are simply left out), plus recorded live runs in recordings/ (./demo.sh prepare).
@@ -17,7 +17,7 @@ import urllib.request
 
 from playwright.sync_api import sync_playwright
 
-HERE = os.path.dirname(os.path.abspath(__file__))
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # app/ (this script lives in app/scripts/)
 AUDIO = os.path.join(HERE, "promo", "audio")
 PORT = 8633
 REPLAY = "&mode=replay&delay=0.2"

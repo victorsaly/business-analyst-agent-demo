@@ -44,7 +44,7 @@ optimistic with crisp modern production. A punchy four-second intro, energy buil
 a short filtered breakdown around 35 seconds, then a final lift into one big ending hit at 58 seconds.
 About 60 seconds long, no vocals.
 </code></pre>
-<p>Each <code>vo_*.mp3</code> is one voiceover line for one scene. In <code>app/make_promo.py</code>, the <code>"vo"</code> key of each entry in
+<p>Each <code>vo_*.mp3</code> is one voiceover line for one scene. In <code>app/scripts/make_promo.py</code>, the <code>"vo"</code> key of each entry in
 <code>SCENES</code> names the clip that plays on that scene (for example <code>"vo": "hook"</code> plays <code>vo_hook.mp3</code>), and
 <code>CLAIMS</code> lists what each line says about the recording it plays over. The video itself is described in
 <a href="running-the-app.html">running-the-app</a>.</p>
@@ -67,7 +67,7 @@ About 60 seconds long, no vocals.
 </tr>
 <tr>
 <td><code>timings.json</code></td>
-<td>Word timings measured from each clip's pauses by <code>app/make_explain_timings.py</code>, so the captions keep pace with the voice.</td>
+<td>Word timings measured from each clip's pauses by <code>app/scripts/make_explain_timings.py</code>, so the captions keep pace with the voice.</td>
 </tr>
 </tbody>
 </table></div>
@@ -84,12 +84,12 @@ stakeholder and developer. That makes 16 clips, for example <code>cover-stakehol
 <pre><code class="language-bash">./demo.sh timings
 </code></pre>
 <p><strong>Windows</strong></p>
-<pre><code class="language-powershell">.venv\Scripts\python make_explain_timings.py
+<pre><code class="language-powershell">.venv\Scripts\python -m scripts.make_explain_timings
 </code></pre>
 </li>
 </ol>
 <nav class="pager" aria-label="Previous and next page"><a class="prev" href="prompt-optimization.html"><span>Previous</span>Cutting the AI cost</a></nav>
 <p class="foot">A learning project, not a product. AdventureWorks is Microsoft's public sample data about a made-up bicycle
 company. Source of this page: <a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/docs/audio-sources.md">docs/audio-sources.md</a>.</p></main>
-<aside class="areas" aria-label="All documents"><details open><summary>All pages</summary><h2>Start here</h2><ul><li><a href="getting-started.html">Run it on your laptop (Mac and Windows)</a></li></ul><h2>The story</h2><ul><li><a href="index.html">How this was made</a></li><li><a href="history.html">Timeline, step by step</a></li></ul><h2>The brief</h2><ul><li><a href="requirements.html">Every requirement, with evidence</a></li><li><a href="build-guide.html">The 13 build steps</a></li></ul><h2>The app</h2><ul><li><a href="running-the-app.html">Running the demo</a></li><li><a href="product.html">Who it's for</a></li><li><a href="design.html">How it looks</a></li></ul><h2>Behind the scenes</h2><ul><li><a href="prompt-optimization.html">Cutting the AI cost</a></li><li><a href="audio-sources.html" aria-current="page">Audio sources</a></li></ul><h2>Try it</h2><ul><li><a href="../">Home: the 60-second pitch</a></li><li><a href="../demo/">Open the demo</a></li><li><a href="../demo/?page=story">Ask the course chat</a></li><li><a href="../api/">API reference</a></li><li><a href="../pitch/">60-second pitch video</a></li><li><a href="../deck/">The presentation</a></li><li><a href="getting-started.html">Run it on your laptop</a></li><li><a href="https://github.com/victorsaly/business-analyst-agent-demo">The code on GitHub</a></li></ul></details></aside>
+<aside class="areas" aria-label="All documents"><details open><summary>All pages</summary><h2>Start here</h2><ul><li><a href="getting-started.html">Run it on your laptop (Mac and Windows)</a></li></ul><h2>The story</h2><ul><li><a href="index.html">How this was made</a></li><li><a href="history.html">Timeline, step by step</a></li></ul><h2>The brief</h2><ul><li><a href="requirements.html">Every requirement, with evidence</a></li><li><a href="build-guide.html">The 13 build steps</a></li></ul><h2>The app</h2><ul><li><a href="running-the-app.html">Running the demo</a></li><li><a href="product.html">Who it's for</a></li><li><a href="design.html">How it looks</a></li></ul><h2>Behind the scenes</h2><ul><li><a href="scripts.html">Making things locally</a></li><li><a href="prompt-optimization.html">Cutting the AI cost</a></li><li><a href="audio-sources.html" aria-current="page">Audio sources</a></li></ul><h2>Try it</h2><ul><li><a href="../">Home: the 60-second pitch</a></li><li><a href="../demo/">Open the demo</a></li><li><a href="../demo/?page=story">Ask the course chat</a></li><li><a href="../api/">API reference</a></li><li><a href="../pitch/">60-second pitch video</a></li><li><a href="../deck/">The presentation</a></li><li><a href="getting-started.html">Run it on your laptop</a></li><li><a href="https://github.com/victorsaly/business-analyst-agent-demo">The code on GitHub</a></li></ul></details></aside>
 <nav class="toc" aria-label="On this page"><h2>On this page</h2><ul><li><a href="#pitch-video-apppromoaudio">Pitch video (app/promo/audio/)</a></li><li><a href="#explain-this-page-appwebexplain">Explain this page (app/web/explain/)</a></li></ul></nav></div></body></html>

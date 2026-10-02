@@ -12,7 +12,7 @@ let AUD = "stakeholder";     // stakeholder: just the data · developer: every c
 let SIDE = "A";
 let CURRENT = null;          // id of the track playing / last played
 let STREAM = null;
-/* The online copy (GitHub Pages, built by build_site.py) has no server: it reads the recorded runs from
+/* The online copy (GitHub Pages, built by scripts/build_site.py) has no server: it reads the recorded runs from
    data/*.json and plays them back. Live AI, dry runs and your own questions need the local app. */
 const STATIC = !!window.STATIC_SITE;
 const DEFAULT_SQL = `SELECT channel, year, ROUND(SUM(revenue)) AS revenue,
@@ -656,7 +656,7 @@ function sheet(b) {
 /* ---------- story: how we got here (timeline + chat about the project) ----------
    Locally the chat asks the AI, which answers only from our notes in docs/ (the brief, the step-by-step guide
    and the history). The online copy has no AI, so it
-   matches the question to answers the AI wrote ahead of time (make_story_answers.py). */
+   matches the question to answers the AI wrote ahead of time (scripts/make_story_answers.py). */
 const STOP = new Set("a an and are as at be but by can did do does for from how i in is it its of on or our so that the this to was we what when where which who why with you your".split(" "));
 const SAME = { cheap: "cost", cheaper: "cost", expensive: "cost", price: "cost", token: "cost", money: "cost", save: "cost",
   begin: "start", began: "start", first: "start", history: "timeline", progress: "timeline", journey: "timeline", steps: "step", brief: "task", job: "task", assignment: "task",
@@ -1036,7 +1036,7 @@ addEventListener("keydown", (e) => {
 
 /* ---------------- Explain this page: ElevenLabs narration with live captions ----------------
    Text: web/explain/scripts.json, one line per screen and audience. Audio: web/explain/<page>-<audience>.mp3.
-   Word timings: web/explain/timings.json (make_explain_timings.py measures each clip's pauses), so the
+   Word timings: web/explain/timings.json (scripts/make_explain_timings.py measures each clip's pauses), so the
    highlighted word keeps pace with the voice. With no mp3, the browser's own voice reads the text. */
 let SCRIPTS = null;
 let TIMINGS = null;

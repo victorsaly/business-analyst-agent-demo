@@ -4,14 +4,14 @@ For each web/explain/<page>-<audience>.mp3: ffmpeg finds the pauses, each clear 
 nearest end of a phrase (a word ending in , . : ; ? !), and the words in between share the speaking
 time by length. Writes web/explain/timings.json. Re-run after changing a line or its mp3:
 
-    .venv/bin/python make_explain_timings.py
+    .venv/bin/python -m scripts.make_explain_timings
 """
 import json
 import os
 import re
 import subprocess
 
-HERE = os.path.dirname(os.path.abspath(__file__))
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # app/ (this script lives in app/scripts/)
 DIR = os.path.join(HERE, "web", "explain")
 MIN_PAUSE = 0.16          # seconds of quiet that count as a pause between phrases
 

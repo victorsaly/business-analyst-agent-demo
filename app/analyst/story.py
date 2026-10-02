@@ -6,7 +6,7 @@ timeline) and docs/build-guide.md (the task as numbered steps: its outline plus 
 question best, code left out). It also gets COURSE MATERIAL: the passages that best match the question from
 the course's training guide and starting notebook and our finished notebook (analyst/knowledge.py), cited as
 [1], [2]. Locally the AI is the service in .env. Online, worker/ asks the same way, using fixed_prompt() and
-the knowledge base exported by make_knowledge.py; make_story_answers.py prepares fallback answers.
+the knowledge base exported by scripts/make_knowledge.py; scripts/make_story_answers.py prepares fallback answers.
 """
 import json
 import os

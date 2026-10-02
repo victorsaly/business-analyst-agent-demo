@@ -198,10 +198,10 @@ To re-render it from the current recordings (about 1 minute):
 ./demo.sh pitch
 ```
 
-Live runs overwrite their track's recording. So before rendering, `make_promo.py` checks that each recording
+Live runs overwrite their track's recording. So before rendering, `scripts/make_promo.py` checks that each recording
 still supports what the voiceover says (for example, that the anomaly answer still mentions the Reseller
 channel). If one doesn't, it stops and names the track to re-record. The scenes, captions and timings are in
-`SCENES` at the top of `make_promo.py`.
+`SCENES` at the top of `scripts/make_promo.py`.
 
 ## Making the video
 
@@ -315,6 +315,9 @@ ALL CHECKS PASSED
 
 ## Files
 
+The scripts that make things (recordings, videos, the chat's answers, the website) are in `scripts/`.
+[Making things locally](scripts.md) explains each one.
+
 | File | Purpose |
 |---|---|
 | `server.py` | Local web server: the analyst package behind a small streaming API |
@@ -325,14 +328,14 @@ ALL CHECKS PASSED
 | `analyst/cases.py` | Demo cases, dry-run scripts, recordings / replay |
 | `analyst/briefing.py` | Weekly leadership briefing |
 | `analyst/evals.py` | Scorecard (examiner copied from the notebook) |
-| `prepare_recordings.py` | Records every case live |
-| `record_video.py` | Records the narrated walkthrough video |
-| `make_promo.py`, `web/promo.html` | Renders the 60-second pitch video |
+| `scripts/prepare_recordings.py` | Records every case live |
+| `scripts/record_video.py` | Records the narrated walkthrough video |
+| `scripts/make_promo.py`, `web/promo.html` | Renders the 60-second pitch video |
 | `promo/audio/` | Pitch-video music and voiceover lines (sources: [audio-sources.md](audio-sources.md)) |
 | `test_demo.py` | Automated checks |
-| `analyst/story.py`, `make_story_answers.py` | The Story chat, and its prepared answers for the online copy |
-| `make_explain_timings.py` | Word timings for the Explain captions, measured from each clip's pauses |
-| `build_site.py` | Builds the online copy (GitHub Pages) into `../site` |
+| `analyst/story.py`, `scripts/make_story_answers.py` | The Story chat, and its prepared answers for the online copy |
+| `scripts/make_explain_timings.py` | Word timings for the Explain captions, measured from each clip's pauses |
+| `scripts/build_site.py` | Builds the online copy (GitHub Pages) into `../site` |
 
 ## The Ask chat (local and online)
 

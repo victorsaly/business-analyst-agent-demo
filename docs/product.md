@@ -39,7 +39,7 @@ presents a forecast or guess as a fact.
 ## Operating Context
 
 - Live presentation: 13:45-15:30 sprint, 15:45-16:30 presentations; each a 6-minute demo plus 2-minute Q&A.
-- Projector in a lit room; also a recorded, narrated video produced by `app/record_video.py`.
+- Projector in a lit room; also a recorded, narrated video produced by `app/scripts/record_video.py`.
 - Modes: Live AI (Groq free tier, rate-limited, with automatic fallback to OpenAI gpt-5.4-mini when the
   daily allowance runs out), Replay of a recorded live run, Dry run (no AI, scripted, for testing only).
   Replay and dry run are always labelled as such on screen.
@@ -69,7 +69,7 @@ flowchart LR
 - Screens: overview, what changed (before/after vs the starting notebook), demo cases, tools without AI,
   weekly briefing, scorecard.
 - The video recorder drives the UI by URL parameters and waits for a scene-complete signal
-  ([record_video.py](../app/record_video.py)):
+  ([scripts/record_video.py](../app/scripts/record_video.py)):
 
 ```python
 page.goto(f"http://localhost:{PORT}/?{params}&mode={args.mode}&presenter=1&autorun=1&delay={args.delay}")

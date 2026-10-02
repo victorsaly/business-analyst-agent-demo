@@ -66,7 +66,7 @@ flowchart TB
   PK --> DB[("AdventureWorks<br/>read-only")]
   PK --> LLM["Groq or OpenAI<br/>(Live AI only)"]
   PK --> REC[("recordings")]
-  REC --> WEB["Website on GitHub Pages<br/>(build_site.py)"]
+  REC --> WEB["Website on GitHub Pages<br/>(scripts/build_site.py)"]
   WEB -- "Ask chat only" --> CW["Cloudflare Worker"]
   classDef red stroke:#c62828,stroke-width:2px,color:#b71c1c
   class DB,REC red

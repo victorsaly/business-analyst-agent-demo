@@ -1,6 +1,6 @@
 """Build the Ask chat's knowledge base from the course files, our notebook and docs/.
 
-    .venv/bin/python make_knowledge.py --course /path/to/your/copy/of/the/course/repo
+    .venv/bin/python -m scripts.make_knowledge --course /path/to/your/copy/of/the/course/repo
     (or: ./demo.sh knowledge /path/to/course/repo)
 
 The course folder must hold Training_guide.docx and capstone2_business_analyst.ipynb. Writes data/knowledge.json
@@ -14,7 +14,7 @@ from collections import Counter
 
 from analyst import knowledge, story
 
-HERE = os.path.dirname(os.path.abspath(__file__))
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # app/ (this script lives in app/scripts/)
 
 
 def main():

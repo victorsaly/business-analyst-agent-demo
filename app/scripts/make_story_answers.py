@@ -39,7 +39,7 @@ QUESTIONS = [
     "What can the online version do, and what needs the local app?",
 ]
 
-OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "web", "story", "answers.json")
+OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "web", "story", "answers.json")
 
 
 def main(missing_only=False):

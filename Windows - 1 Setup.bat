@@ -27,7 +27,7 @@ echo Last step: your free AI key for Live AI (get one at https://console.groq.co
 echo Notepad opens a file called .env. Paste the key after GROQ_API_KEY=, save, and close Notepad.
 echo (No key? Just close Notepad: Replay mode works without one.)
 start "" /wait notepad .env
-.venv\Scripts\python check_key.py
+.venv\Scripts\python -m scripts.check_key
 echo.
 echo Next: double-click "Windows - 2 Start.bat".
 pause

@@ -1,7 +1,7 @@
 """Run every demo case LIVE once and save it, so Replay mode and the video use real AI answers.
 
-  .venv/bin/python prepare_recordings.py              # all cases + scorecard extras + briefing
-  .venv/bin/python prepare_recordings.py northwest_margin guard_forecast   # just these cases
+  .venv/bin/python -m scripts.prepare_recordings              # all cases + scorecard extras + briefing
+  .venv/bin/python -m scripts.prepare_recordings northwest_margin guard_forecast   # just these cases
 
 Uses about 120-160k tokens on the free Groq plan (the daily allowance is about 200k per model).
 """

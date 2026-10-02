@@ -11,7 +11,7 @@ No server online, so every answer the demo needs is exported as a JSON file, pro
 code the local app uses (in Replay mode). Live AI, dry runs and your own questions stay local; the Ask chat
 works online through its Cloudflare Worker.
 
-    .venv/bin/python build_site.py        (or ./demo.sh site)
+    .venv/bin/python -m scripts.build_site        (or ./demo.sh site)
 
 Re-run after recording new live runs, then commit and push site/. site/media/ (the pitch video) is kept.
 """
@@ -25,7 +25,7 @@ import blog
 import server
 from analyst import briefing, cases, tools as T
 
-HERE = os.path.dirname(os.path.abspath(__file__))
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # app/ (this script lives in app/scripts/)
 OUT = os.path.join(os.path.dirname(HERE), "site")
 DEMO = os.path.join(OUT, "demo")
 DATA = os.path.join(DEMO, "data")

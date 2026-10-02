@@ -105,7 +105,8 @@ More detail: [running the app](docs/running-the-app.md) · [requirements and evi
 ## Project structure
 
 ```
-app/            the app: server.py (FastAPI), demo.sh, build_site.py, test_demo.py
+app/            the app: server.py (FastAPI), demo.sh, test_demo.py
+  scripts/      what you run to make things: recordings, videos, the chat's answers, the website
   analyst/      the agent: data, tools, system prompt and tool loop, cases, briefing, scorecard, chat
   web/          the screens (HTML, CSS, JS, fonts, narration audio)
   recordings/   recorded live AI runs used by Replay and the online site
@@ -117,7 +118,7 @@ worker/         the online Ask chat (Cloudflare Worker)
 
 ## Credits
 
-<!-- team:start (written by app/build_site.py from app/web/team.json) -->
+<!-- team:start (written by app/scripts/build_site.py from app/web/team.json) -->
 <!-- team:end -->
 
 - Course: Agentic AI Workshop 2026, Capstone 2. The starting notebook and training guide belong to the course and are not included here.

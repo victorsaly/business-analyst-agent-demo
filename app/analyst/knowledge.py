@@ -1,7 +1,7 @@
 """The Ask chat's knowledge base: everything a course student might ask about, cut into short passages.
 
 Sources: the course's training guide and starting notebook (read from your local copy of the course repo,
-never committed here), our finished notebook, and every docs/*.md. Built by make_knowledge.py into
+never committed here), our finished notebook, and every docs/*.md. Built by scripts/make_knowledge.py into
 data/knowledge.json (git-ignored, because it contains course material) and bundled into the online chat's
 Cloudflare Worker. search() finds the passages that best match a question (BM25, no extra libraries);
 worker/src/index.js does the same in JavaScript.
