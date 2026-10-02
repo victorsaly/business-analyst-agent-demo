@@ -268,7 +268,7 @@ There is also a ready-made PDF: [presentation.pdf](https://victorsaly.github.io/
 | The browser says *This site can't be reached* | Wait five seconds and refresh. Check the Start window is still open and shows no error. |
 | *"address already in use"* (the Start window closes or shows an error) | The demo is already running in another window. Use that one, or close it and start again. To find it, see [Port 8501 already in use](#port-8501-already-in-use) below. |
 | *"NO AI KEY"* or *"AI KEY REJECTED"* when Setup or Start runs, or Live AI says *"No AI key set"* | Open `app/.env` (Step 4) and check the line is exactly `GROQ_API_KEY=gsk_…`. Then close the Start window and start again. On a Mac, `.env` is hidden in Finder: press **⌘ Shift .** to show hidden files. On Linux, press **Ctrl H** in the file manager. |
-| Live AI stops with a *rate limit* or *allowance* message | The free Groq plan has a daily limit. Switch to **Replay**: it plays back real recorded runs. |
+| Live AI stops with a *rate limit* or *allowance* message | The free Groq plan has a daily limit. If `app/.env` also has an `OPENAI_API_KEY`, the app switches to OpenAI by itself and this doesn't happen. Otherwise switch to **Replay**: it plays back real recorded runs. |
 | Setup stopped with an error about the internet | Check your connection (some office or university networks block downloads) and run Setup again. Running it twice is safe. |
 
 Still stuck? Copy the last lines of the Terminal or black window into the group chat, with a screenshot.

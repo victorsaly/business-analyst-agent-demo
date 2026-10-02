@@ -354,7 +354,7 @@ Keep this window open while you present. Close it to stop the demo.
 </tr>
 <tr>
 <td>Live AI stops with a <em>rate limit</em> or <em>allowance</em> message</td>
-<td>The free Groq plan has a daily limit. Switch to <strong>Replay</strong>: it plays back real recorded runs.</td>
+<td>The free Groq plan has a daily limit. If <code>app/.env</code> also has an <code>OPENAI_API_KEY</code>, the app switches to OpenAI by itself and this doesn't happen. Otherwise switch to <strong>Replay</strong>: it plays back real recorded runs.</td>
 </tr>
 <tr>
 <td>Setup stopped with an error about the internet</td>

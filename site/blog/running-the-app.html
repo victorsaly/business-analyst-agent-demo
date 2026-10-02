@@ -451,6 +451,35 @@ course material, and how we built it. Every answer uses only:</p>
 <li>course material: the passages that best match the question from the course's training guide and
     starting notebook, and from our finished notebook. These are numbered, and the answer cites them, like [2].</li>
 </ul>
+<p><strong>Which AI answers.</strong> Two AI services, depending on where you ask:</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Where</th>
+<th>AI service</th>
+<th>Model</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Local app</td>
+<td>Groq first; OpenAI takes over by itself when Groq's free daily allowance runs out (<a href="#ai-services-groq-then-openai">AI services</a>)</td>
+<td>Groq: <code>openai/gpt-oss-20b</code>; OpenAI: <code>gpt-5.4-mini</code></td>
+</tr>
+<tr>
+<td>Online (the website)</td>
+<td>OpenAI only, through the Cloudflare Worker</td>
+<td><code>gpt-5.4-mini</code></td>
+</tr>
+<tr>
+<td>The suggested questions</td>
+<td>Prepared once in advance with whichever service was working then; each answer shows which</td>
+<td>as shown under the answer</td>
+</tr>
+</tbody>
+</table></div>
+<p><code>openai/gpt-oss-20b</code> is an open model that OpenAI published and Groq runs, so an answer labelled
+<em>groq · openai/gpt-oss-20b</em> came from Groq, not from OpenAI's own service.</p>
 <p>While it works, the chat says what it's doing: reading the notes, then the passages it found, then the answer
 as it's written. <strong>Stop</strong> keeps what's written so far.</p>
 <p><strong>No training.</strong> The AI isn't trained on any of this. For each question, the chat looks up the relevant text

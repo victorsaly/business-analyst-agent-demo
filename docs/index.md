@@ -67,7 +67,7 @@ flowchart TB
   PK --> LLM["Groq or OpenAI<br/>(Live AI only)"]
   PK --> REC[("recordings")]
   REC --> WEB["Website on GitHub Pages<br/>(scripts/build_site.py)"]
-  WEB -- "Ask chat only" --> CW["Cloudflare Worker"]
+  WEB -- "Ask chat only" --> CW["Cloudflare Worker"] --> OAI["OpenAI<br/>(the online Ask chat)"]
   classDef red stroke:#c62828,stroke-width:2px,color:#b71c1c
   class DB,REC red
 ```
@@ -281,7 +281,8 @@ check("sandbox blocks imports", "error" in T.run_python("import os"))
 - A Story screen with the project timeline, and an Ask chat for course students. It answers questions
   about the task, each step and how we built it, and cites its sources: our notes, the course's training guide
   and starting notebook, and our notebook. Online it runs through a small
-  Cloudflare Worker that holds the AI key and caps questions per day ([how it works](running-the-app.md#the-ask-chat-local-and-online)).
+  Cloudflare Worker that holds the OpenAI key and caps questions per day (on your laptop it uses Groq first,
+  then OpenAI) ([how it works](running-the-app.md#the-ask-chat-local-and-online)).
 - A logo, clear "course demonstration" labels, and a tidy repo: code in `app/`, documents in `docs/`, the
   online copy in `site/`.
 

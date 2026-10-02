@@ -347,6 +347,17 @@ course material, and how we built it. Every answer uses only:
 - course material: the passages that best match the question from the course's training guide and
   starting notebook, and from our finished notebook. These are numbered, and the answer cites them, like [2].
 
+**Which AI answers.** Two AI services, depending on where you ask:
+
+| Where | AI service | Model |
+|---|---|---|
+| Local app | Groq first; OpenAI takes over by itself when Groq's free daily allowance runs out ([AI services](#ai-services-groq-then-openai)) | Groq: `openai/gpt-oss-20b`; OpenAI: `gpt-5.4-mini` |
+| Online (the website) | OpenAI only, through the Cloudflare Worker | `gpt-5.4-mini` |
+| The suggested questions | Prepared once in advance with whichever service was working then; each answer shows which | as shown under the answer |
+
+`openai/gpt-oss-20b` is an open model that OpenAI published and Groq runs, so an answer labelled
+*groq · openai/gpt-oss-20b* came from Groq, not from OpenAI's own service.
+
 While it works, the chat says what it's doing: reading the notes, then the passages it found, then the answer
 as it's written. **Stop** keeps what's written so far.
 

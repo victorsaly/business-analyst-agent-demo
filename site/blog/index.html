@@ -85,7 +85,7 @@ tools and rulebook; the website is that app with every answer saved in advance.<
   PK --&gt; LLM[&quot;Groq or OpenAI&lt;br/&gt;(Live AI only)&quot;]
   PK --&gt; REC[(&quot;recordings&quot;)]
   REC --&gt; WEB[&quot;Website on GitHub Pages&lt;br/&gt;(scripts/build_site.py)&quot;]
-  WEB -- &quot;Ask chat only&quot; --&gt; CW[&quot;Cloudflare Worker&quot;]
+  WEB -- &quot;Ask chat only&quot; --&gt; CW[&quot;Cloudflare Worker&quot;] --&gt; OAI[&quot;OpenAI&lt;br/&gt;(the online Ask chat)&quot;]
   classDef red stroke:#c62828,stroke-width:2px,color:#b71c1c
   class DB,REC red
 </pre></figure>
@@ -382,7 +382,8 @@ check(&quot;sandbox blocks imports&quot;, &quot;error&quot; in T.run_python(&quo
 <li>A Story screen with the project timeline, and an Ask chat for course students. It answers questions
     about the task, each step and how we built it, and cites its sources: our notes, the course's training guide
     and starting notebook, and our notebook. Online it runs through a small
-    Cloudflare Worker that holds the AI key and caps questions per day (<a href="running-the-app.html#the-ask-chat-local-and-online">how it works</a>).</li>
+    Cloudflare Worker that holds the OpenAI key and caps questions per day (on your laptop it uses Groq first,
+    then OpenAI) (<a href="running-the-app.html#the-ask-chat-local-and-online">how it works</a>).</li>
 <li>A logo, clear "course demonstration" labels, and a tidy repo: code in <code>app/</code>, documents in <code>docs/</code>, the
     online copy in <code>site/</code>.</li>
 </ul>

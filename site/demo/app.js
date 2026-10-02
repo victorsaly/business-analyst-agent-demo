@@ -776,6 +776,12 @@ function chatBusy(on) {
   form.classList.toggle("busy", on); CHAT.busy = on;
   document.getElementById("chatlog").setAttribute("aria-busy", on);
 }
+// "groq · openai/gpt-oss-20b" -> "Groq (gpt-oss-20b)", "openai · gpt-5.4-mini" -> "OpenAI (gpt-5.4-mini)": which service answered
+function service(model) {
+  const [name, id = ""] = String(model || "").split(" · ");
+  const label = { groq: "Groq", openai: "OpenAI" }[name] || name;
+  return id ? `${label} (${id.replace(/^openai\//, "")})` : label;
+}
 function finishAnswer(msg, q, answer, sources, foot) {
   const body = msg.querySelector(".body"), log = document.getElementById("chatlog");
   body.innerHTML = prose(answer) + sourcesHTML(sources) + resourcesFor(q, sources);
@@ -791,7 +797,7 @@ async function sayPrepared(q) {
   const writer = makeWriter(msg.querySelector(".body"), log);
   writer.set(hit.a); await writer.drain();
   chatBusy(false);
-  finishAnswer(msg, q, hit.a, [], `Prepared answer, written by the AI from our notes${hit.q.toLowerCase() !== q.toLowerCase() ? ` · closest question: “${esc(hit.q)}”` : ""}`);
+  finishAnswer(msg, q, hit.a, [], `Prepared answer, written by ${hit.model ? esc(service(hit.model)) : "the AI"} from our notes${hit.q.toLowerCase() !== q.toLowerCase() ? ` · closest question: “${esc(hit.q)}”` : ""}`);
   return true;
 }
 async function askChat(q) {
@@ -833,7 +839,7 @@ async function askChat(q) {
   chatBusy(false);
   CHAT.history.push({ role: "user", content: q }, { role: "assistant", content: r.answer });
   CHAT.history = CHAT.history.slice(-8);
-  finishAnswer(msg, q, r.answer, r.sources, `Live answer from ${esc(r.model)}, using only the course material and our notes`);
+  finishAnswer(msg, q, r.answer, r.sources, `Live answer from ${esc(service(r.model))}, using only the course material and our notes`);
 }
 function openChat() {
   const panel = document.getElementById("askpanel");
@@ -1174,7 +1180,7 @@ setAud(defaultAud());
   document.querySelectorAll("a[data-blog]").forEach((a) => (a.href = LINKS.blog));
   setupChat();
   META = await getJSON("/api/meta");
-  if (!META.ai_ready) document.querySelector('[data-mode="live"]').title = "No AI key: put GROQ_API_KEY in app/.env";
+  if (!META.ai_ready) document.querySelector('[data-mode="live"]').title = "No AI key: put GROQ_API_KEY (or OPENAI_API_KEY) in app/.env";
   if (STATIC) {
     document.querySelectorAll('[data-mode="live"], [data-mode="dry"]').forEach((b) => { b.disabled = true; b.title = LOCAL_ONLY; });
     document.getElementById("explain").insertAdjacentHTML("beforebegin", `<span class="tag online-tag" title="${esc(LOCAL_ONLY)}">Online replay · Live AI runs locally</span>`);
