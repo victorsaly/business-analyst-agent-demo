@@ -15,7 +15,7 @@ import re
 import requests
 
 from . import knowledge
-from .agent import LLMError, _chat, current
+from .agent import LLMError, _chat, _estimate_tokens, current
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DOCS = os.path.join(ROOT, "docs")
@@ -24,6 +24,7 @@ BRIEF = os.path.join(DOCS, "requirements.md")
 GUIDE = os.path.join(DOCS, "build-guide.md")
 GUIDE_SECTIONS = 3               # build-guide sections sent with each question
 COURSE_PASSAGES = 6              # course-material passages sent with each question
+GROQ_BUDGET = 8000               # estimated tokens; keeps a question plus answer under Groq's free 8,000 per minute
 NOTES = {"docs/requirements.md", "docs/history.md", "docs/build-guide.md"}   # already sent in full or by section
 
 STORY_PROMPT = """You answer questions about a course project: the "Business Performance Analyst Agent",
@@ -80,7 +81,7 @@ def _guide_sections(guide):
     return [(p.splitlines()[0].lstrip("# ").strip(), p.strip()) for p in parts if p.startswith("##")]
 
 
-def guide_for(question, guide):
+def guide_for(question, guide, n=GUIDE_SECTIONS):
     """The guide's outline plus the sections that best match the question (a step named by number always wins)."""
     sections = _guide_sections(guide)
     named = {int(n) for n in re.findall(r"\bstep\s*(\d+)", question.lower())}
@@ -93,7 +94,7 @@ def guide_for(question, guide):
             return 1000
         return 3 * len(q & _words(h)) + len(q & _words(text)) / 10
 
-    best = [s for s in sorted(sections, key=score, reverse=True)[:GUIDE_SECTIONS] if score(s) > 0]
+    best = [s for s in sorted(sections, key=score, reverse=True)[:n] if score(s) > 0]
     def line(h, text):
         pri = re.search(r"\*\*Priority:\*\*\s*(P\d)", text)
         return f"- {h}" + (f" ({pri.group(1)})" if pri else "")
@@ -129,14 +130,28 @@ def fixed_prompt(marker="@@PASSAGES@@"):
 def _prepare(question, history):
     """The messages for the AI, and the course passages they include."""
     asked = " ".join([str(m.get("content", "")) for m in list(history)[-4:] if m.get("role") == "user"] + [question])
-    found = course_passages(asked)
-    system = STORY_PROMPT.format(brief=_read(BRIEF), guide=guide_for(asked, _read(GUIDE)), history=_read(HISTORY),
-                                 passages=passages_text(found))
-    messages = [{"role": "system", "content": system}]
-    messages += [{"role": m["role"], "content": str(m["content"])[:1500]} for m in list(history)[-4:]
-                 if m.get("role") in ("user", "assistant")]
-    messages.append({"role": "user", "content": question})
-    return messages, found
+    found, sections = course_passages(asked), GUIDE_SECTIONS
+    turns = [{"role": m["role"], "content": str(m["content"])[:1500]} for m in list(history)[-4:]
+             if m.get("role") in ("user", "assistant")]
+    while True:
+        system = STORY_PROMPT.format(brief=_read(BRIEF), guide=guide_for(asked, _read(GUIDE), sections),
+                                     history=_read(HISTORY), passages=passages_text(found))
+        messages = [{"role": "system", "content": system}, *turns, {"role": "user", "content": question}]
+        if current()["name"] != "groq" or _estimate_tokens(messages) <= GROQ_BUDGET:
+            return messages, found
+        # trim the extras least likely to matter first
+        if len(found) > 2:
+            found = found[:-1]
+        elif sections > 1:
+            sections -= 1
+        elif turns:
+            turns = turns[2:]
+        elif found:
+            found = found[:-1]
+        elif sections:
+            sections -= 1
+        else:
+            return messages, found
 
 
 def _tidy(text):
