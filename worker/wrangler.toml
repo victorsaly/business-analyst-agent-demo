@@ -12,3 +12,9 @@ PER_VISITOR_LIMIT = "25"     # questions per day, per visitor
 [[kv_namespaces]]
 binding = "LIMITS"
 id = "c7f7b9634a2347889ecf3ab582805924"
+
+# Logs in the Cloudflare dashboard (Workers > analyst-agent-ask > Observability). Set here, not in the
+# dashboard: a deploy resets dashboard-only settings. The Worker doesn't log the visitors' questions.
+[observability.logs]
+enabled = true
+invocation_logs = true
