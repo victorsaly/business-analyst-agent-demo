@@ -27,8 +27,9 @@ app = FastAPI(title="Business Performance Analyst Agent", version=D.VERSION, des
 app.mount("/static", StaticFiles(directory=WEB), name="static")
 # the same paths as the website: the cover at /, the app at /demo/, and the pages around it
 SITE_MEDIA = os.path.join(os.path.dirname(HERE), "site", "media")   # the pitch video lives with the website
-for _name in ("home", "pitch", "deck", "fonts"):
-    app.mount(f"/{_name}", StaticFiles(directory=os.path.join(WEB, _name), html=True), name=_name)
+for _name in ("home", "pitch", "deck", "fonts", "team", "team-form"):   # team/: the photos on the deck and the blog
+    if os.path.isdir(os.path.join(WEB, _name)):
+        app.mount(f"/{_name}", StaticFiles(directory=os.path.join(WEB, _name), html=True), name=_name)
 if os.path.isdir(SITE_MEDIA):
     app.mount("/media", StaticFiles(directory=SITE_MEDIA), name="media")
 _openapi = app.openapi
