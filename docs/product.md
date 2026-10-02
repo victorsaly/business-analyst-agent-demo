@@ -44,6 +44,22 @@ presents a forecast or guess as a fact.
   daily allowance runs out), Replay of a recorded live run, Dry run (no AI, scripted, for testing only).
   Replay and dry run are always labelled as such on screen.
 
+The same screens serve three audiences, and the mode is always labelled on screen:
+
+```mermaid
+flowchart LR
+  accTitle: Who sees what on the day
+  T["Presenting team"] --> M{"Mode"}
+  M -- "AI and wifi working" --> L["Live AI<br/>Groq, then OpenAI"]
+  M -- "AI or wifi fails" --> R["Replay of a<br/>recorded live run"]
+  M -- "testing only" --> D["Dry run<br/>labelled in red"]
+  L --> J["Judges, on the projector<br/>(6 min demo, 2 min Q&A)"]
+  R --> J
+  R --> V["Narrated video"] --> J
+  classDef red stroke:#c62828,stroke-width:2px,color:#b71c1c
+  class D red
+```
+
 ## Capabilities and Constraints
 
 - Data: Microsoft AdventureWorks (MIT), 30 May 2022 to 29 Jun 2025, 31,465 orders, US dollars, 10 sales

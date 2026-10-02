@@ -6,7 +6,26 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/diff.min.js" defer></script>
-<script>addEventListener("DOMContentLoaded", () => window.hljs && hljs.highlightAll());</script>
+<script>addEventListener("DOMContentLoaded", () => window.hljs && hljs.highlightAll());</script><script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+mermaid.initialize({ startOnLoad: false, theme: "base", securityLevel: "strict",
+  flowchart: { curve: "basis", padding: 14, nodeSpacing: 34, rankSpacing: 40 }, sequence: { mirrorActors: false },
+  themeVariables: { fontFamily: '"Patrick Hand SC", "Marker Felt", cursive', fontSize: "17px",
+    background: "#fcfbf7", primaryColor: "#ffffff", primaryTextColor: "#1e3a8a", primaryBorderColor: "#1e3a8a",
+    secondaryColor: "#eef2fb", tertiaryColor: "#eef2fb", lineColor: "#3f5a9e", textColor: "#1d2433",
+    clusterBkg: "#eef2fb", clusterBorder: "#a9b8dc", edgeLabelBackground: "#ffffff",
+    noteBkgColor: "#eef2fb", noteBorderColor: "#a9b8dc", noteTextColor: "#1e3a8a", actorLineColor: "#a9b8dc", signalColor: "#3f5a9e",
+    cScale0: "#eef2fb", cScale1: "#ffffff", cScale2: "#eef2fb", cScale3: "#ffffff", cScale4: "#eef2fb",
+    cScaleLabel0: "#1e3a8a", cScaleLabel1: "#1e3a8a", cScaleLabel2: "#1e3a8a", cScaleLabel3: "#1e3a8a", cScaleLabel4: "#1e3a8a",
+    cScalePeer0: "#a9b8dc", cScalePeer1: "#a9b8dc", cScalePeer2: "#a9b8dc", cScalePeer3: "#a9b8dc", cScalePeer4: "#a9b8dc" } });
+await document.fonts.ready;   // measure the labels in the hand-lettered font, not the fallback
+await mermaid.run({ querySelector: "pre.mermaid" });
+// On a phone, shrinking a wide diagram to fit makes its words tiny: keep it at a readable size and let it scroll sideways.
+if (matchMedia("(max-width: 700px)").matches) document.querySelectorAll("pre.mermaid svg").forEach((svg) => {
+  const w = svg.viewBox.baseVal.width * 0.8;
+  if (w > svg.parentElement.clientWidth) { svg.style.setProperty("max-width", "none", "important"); svg.style.width = w + "px"; }
+});
+</script>
 <script src="../blog.js" defer></script></head>
 <body><header class="top"><div class="stripe"></div><div class="in">
 <a class="brand" href="index.html"><img src="../logo.svg" alt="" width="32" height="32"> Business Performance Analyst Agent</a>
@@ -49,6 +68,19 @@ presents a forecast or guess as a fact.</p>
     daily allowance runs out), Replay of a recorded live run, Dry run (no AI, scripted, for testing only).
     Replay and dry run are always labelled as such on screen.</li>
 </ul>
+<p>The same screens serve three audiences, and the mode is always labelled on screen:</p>
+<figure class="diagram"><pre class="mermaid">flowchart LR
+  accTitle: Who sees what on the day
+  T[&quot;Presenting team&quot;] --&gt; M{&quot;Mode&quot;}
+  M -- &quot;AI and wifi working&quot; --&gt; L[&quot;Live AI&lt;br/&gt;Groq, then OpenAI&quot;]
+  M -- &quot;AI or wifi fails&quot; --&gt; R[&quot;Replay of a&lt;br/&gt;recorded live run&quot;]
+  M -- &quot;testing only&quot; --&gt; D[&quot;Dry run&lt;br/&gt;labelled in red&quot;]
+  L --&gt; J[&quot;Judges, on the projector&lt;br/&gt;(6 min demo, 2 min Q&amp;A)&quot;]
+  R --&gt; J
+  R --&gt; V[&quot;Narrated video&quot;] --&gt; J
+  classDef red stroke:#c62828,stroke-width:2px,color:#b71c1c
+  class D red
+</pre></figure>
 <h2 id="capabilities-and-constraints">Capabilities and Constraints</h2>
 <ul>
 <li>Data: Microsoft AdventureWorks (MIT), 30 May 2022 to 29 Jun 2025, 31,465 orders, US dollars, 10 sales
