@@ -32,7 +32,7 @@ TEAM = os.path.join(HERE, "web", "team.json")   # the team: also shown on the fr
 
 
 def team():
-    """The team members ({name, linkedin?}), or [] while app/web/team.json has none yet: then nothing shows."""
+    """The team members ({name, linkedin?, role?, bio?, photo?}), or [] while app/web/team.json has none yet: then nothing shows."""
     try:
         with open(TEAM, encoding="utf-8") as f:
             return [m for m in json.load(f).get("members", []) if m.get("name", "").strip()]
@@ -46,11 +46,19 @@ def areas():
 
 
 def team_markdown():
-    """The team page, written as Markdown so it renders like every other page."""
-    rows = "\n".join(f"| {html.escape(m['name'].strip()).replace('|', '&#124;')} | " + (f"[LinkedIn]({m['linkedin'].strip()})" if m.get("linkedin", "").strip() else "")
-                     + " |" for m in team())
+    """The team page, written as Markdown so it renders like every other page: one section per person, each name an h2
+    (so "On this page" lists them), then their photo, role, bio and LinkedIn as one HTML block. The photo is a copy kept
+    in app/web/team/ (scripts/pull_team.py downloads it); @ASSETS@ becomes the path to the shared files in render()."""
+    e = lambda v: html.escape(str(v or "").strip())
+    people = []
+    for m in team():
+        face = f'<img class="face" src="@ASSETS@{e(m["photo"])}" alt="" width="112" height="112" loading="lazy">' if m.get("photo") else ""
+        role = f'<p class="role">{e(m["role"])}</p>' if m.get("role") else ""
+        bio = f"<p>{e(m['bio'])}</p>" if m.get("bio") else ""
+        link = f'<p><a href="{e(m["linkedin"])}" rel="noopener">LinkedIn</a></p>' if m.get("linkedin", "").strip() else ""
+        people.append(f"## {e(m['name'])}\n\n<div class=\"member\">{face}<div>{role}{bio}{link}</div></div>\n")
     return ("# The team\n\nCapstone 2 of the Agentic AI Workshop 2026 was built as a team. "
-            "These are the people who made it.\n\n| Name | Profile |\n|---|---|\n" + rows + "\n")
+            "These are the people who made it.\n\n" + "\n".join(people))
 
 
 def made_by():
@@ -218,6 +226,7 @@ def render(name, links=SITE_LINKS):
     title = re.search(r"<h1[^>]*>(.*?)</h1>", body, re.S)
     title = re.sub(r"<[^>]+>", "", title.group(1)) if title else name
     L, a = links, links["assets"]
+    body = body.replace("@ASSETS@", a)   # the team page's photos
     here = ' aria-current="page"'
     nav = "".join(f'<a href="{n}.html"{here if n == name else ""}>{label}</a>' for n, label in NAV)
     sidebar = "".join(f"<h2>{area}</h2><ul>" + "".join(f'<li><a href="{n}.html"{here if n == name else ""}>{label}</a></li>'

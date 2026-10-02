@@ -139,3 +139,10 @@ pre .copy:hover { border-color: var(--ink); }
 .diagram .edgeLabel, .diagram .edgeLabel p { font-family: var(--typed); font-size: 13px; color: var(--ink-2); }
 @media (hover: none) { .search kbd { display: none; } .search input { padding-right: 0.6rem; } pre .copy { opacity: 1; } }
 .diagram line[class^="node-line"] { stroke: var(--rule-mid) !important; }   /* timeline: the underline under each entry, in the ruled-paper blue */
+
+/* the team page: one section per person, photo beside role, bio and LinkedIn */
+.member { display: flex; gap: 1.2rem; align-items: flex-start; margin: 0.6rem 0 1.6rem; }
+.member .face { width: 7rem; height: 7rem; object-fit: cover; border: 2px solid var(--ink); box-shadow: 4px 4px 0 var(--red); flex: none; }
+.member p { margin: 0 0 0.5rem; max-width: 40rem; }
+.member .role { font-family: var(--typed); font-size: 0.9rem; color: var(--red-ink); }
+@media (max-width: 500px) { .member { flex-direction: column; } }
