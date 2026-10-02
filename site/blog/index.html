@@ -58,12 +58,12 @@ notebook untouched and added a new Section 6 at the bottom. Nothing that already
 members who don't write Python could follow along cell by cell
 (<a href="build-guide.html">the step-by-step guide</a>).</p>
 <h2 id="how-it-works-in-one-picture">How it works, in one picture</h2>
-<p>The AI never sees the database directly. It asks one of five tools, each tool reads the data, and the tool
+<p>The AI never sees the database directly. It asks one of its tools (the brief's five, plus <code>explain_change</code>, a stretch goal), each tool reads the data, and the tool
 log, not the AI, supplies the queries shown under every answer.</p>
 <figure class="diagram"><pre class="mermaid">flowchart LR
   accTitle: How the agent answers a question
   Q([&quot;A manager's question&quot;]) --&gt; AI[&quot;The AI plans&lt;br/&gt;and picks a tool&quot;]
-  AI -- &quot;calls&quot; --&gt; T[&quot;Five tools&lt;br/&gt;get_schema · run_sql · run_python&lt;br/&gt;make_chart · detect_anomalies&quot;]
+  AI -- &quot;calls&quot; --&gt; T[&quot;The tools&lt;br/&gt;get_schema · run_sql · run_python&lt;br/&gt;make_chart · detect_anomalies&lt;br/&gt;+ explain_change (stretch)&quot;]
   T -- &quot;reads only&quot; --&gt; DB[(&quot;AdventureWorks&lt;br/&gt;read-only&quot;)]
   T -- &quot;result, or error + hint&quot; --&gt; AI
   AI --&gt; A[&quot;Answer + chart&quot;]

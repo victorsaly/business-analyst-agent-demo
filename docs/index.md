@@ -34,14 +34,14 @@ members who don't write Python could follow along cell by cell
 
 ## How it works, in one picture
 
-The AI never sees the database directly. It asks one of five tools, each tool reads the data, and the tool
+The AI never sees the database directly. It asks one of its tools (the brief's five, plus `explain_change`, a stretch goal), each tool reads the data, and the tool
 log, not the AI, supplies the queries shown under every answer.
 
 ```mermaid
 flowchart LR
   accTitle: How the agent answers a question
   Q(["A manager's question"]) --> AI["The AI plans<br/>and picks a tool"]
-  AI -- "calls" --> T["Five tools<br/>get_schema · run_sql · run_python<br/>make_chart · detect_anomalies"]
+  AI -- "calls" --> T["The tools<br/>get_schema · run_sql · run_python<br/>make_chart · detect_anomalies<br/>+ explain_change (stretch)"]
   T -- "reads only" --> DB[("AdventureWorks<br/>read-only")]
   T -- "result, or error + hint" --> AI
   AI --> A["Answer + chart"]
