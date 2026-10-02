@@ -23,7 +23,8 @@ a:hover { color: var(--red-ink); }
 .stripe { height: 4px; background: repeating-linear-gradient(to bottom, var(--red) 0 1px, transparent 1px 2px); }
 .wrap { max-width: 78rem; margin: 0 auto; padding: 0 16px; display: grid; grid-template-columns: 15rem minmax(0, 1fr); gap: 2.5rem; }
 main { grid-column: 2; grid-row: 1; min-width: 0; padding: 2rem 0 3rem; overflow-wrap: anywhere; }
-.areas { grid-column: 1; grid-row: 1; position: sticky; top: 4.5rem; align-self: start; padding: 2rem 0; font-size: 0.95rem; }
+.areas { grid-column: 1; grid-row: 1; position: sticky; top: 4.5rem; align-self: start; padding: 2rem 0; font-size: 0.95rem;
+  max-height: calc(100vh - 4.5rem); overflow-y: auto; overscroll-behavior: contain; padding-right: 0.4rem; }   /* sticky, so it scrolls on its own once it is taller than the window */
 .areas h2 { font-size: 1.15rem; margin: 1.1rem 0 0.2rem; border-bottom: 1.5px solid var(--ink); }
 .areas h2:first-child { margin-top: 0; }
 .areas ul { list-style: none; padding: 0; margin: 0; }
@@ -56,7 +57,7 @@ hr { border: 0; border-top: 1px solid var(--rule-mid); margin: 2rem 0; }
 @media (max-width: 900px) {
   .wrap { grid-template-columns: minmax(0, 1fr); gap: 0; }
   main, .areas { grid-column: 1; grid-row: auto; }
-  .areas { position: static; border-top: 2px solid var(--ink); padding: 1rem 0 2rem; }
+  .areas { position: static; max-height: none; overflow: visible; border-top: 2px solid var(--ink); padding: 1rem 0 2rem; }
 }
 @media (max-width: 700px) { h1 { font-size: 2rem; } h2 { font-size: 1.5rem; } .top nav { margin-left: 0; } .top { position: static; } }
 
