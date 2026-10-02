@@ -872,7 +872,7 @@ async function renderHome() {
 async function renderStory() {
   view.innerHTML = `
   <h1 class="page-title">How we got here</h1>
-  <p class="page-lede">A course project, start to finish: Capstone 2 of the Agentic AI Workshop 2026, built on 1 October 2026. Follow the timeline, or ask the chat about the task, any of its steps, the course material, or how we built it. The full write-up, from the original notebook to this app: <a href="${LINKS.blog}">How this was made</a>.</p>
+  <p class="page-lede">A course project, start to finish: Capstone 2 of the Agentic AI Workshop 2026, built on 1 October 2026, with final touches on 2 October. Follow the timeline, or ask the chat about the task, any of its steps, the course material, or how we built it. The full write-up, from the original notebook to this app: <a href="${LINKS.blog}">How this was made</a>.</p>
   <div class="story">
     <section><div class="rule-head"><h2>Timeline</h2><span class="total">1 Oct 2026</span></div><ol class="timeline" id="tl"></ol></section>
     <section class="ask-card"><div class="rule-head"><h2>Ask about the course, the task and its steps</h2></div>

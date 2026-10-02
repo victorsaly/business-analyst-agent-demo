@@ -1,5 +1,5 @@
 {
-  "_about": "The Story screen's timeline (1 October 2026, UK time, from file timestamps). Full version: docs/history.md.",
+  "_about": "The Story screen's timeline (1 to 2 October 2026, UK time, from file timestamps). Full version: docs/history.md.",
   "steps": [
     {
       "time": "15:15",
@@ -42,14 +42,19 @@
       "text": "Fixed a briefing stall, added Stakeholder and Developer views, spoken explanations with live captions, and this online copy."
     },
     {
-      "time": "Evening",
+      "time": "22:00",
       "title": "Checked against the brief",
       "text": "Every line of the brief, with evidence. Fixed a returns answer, added cost, recorded the planted anomaly. Scorecard 7 of 7."
     },
     {
-      "time": "Night",
+      "time": "23:49",
       "title": "A finished product",
       "text": "A Home screen with every area, a floating Ask chat that streams answers and links the blog, API and code, the blog and API reference, and every track re-recorded live."
+    },
+    {
+      "time": "2 Oct, morning",
+      "title": "Final touches",
+      "text": "A last read-through of every screen and the write-up, then a clean check that the project downloads and runs on a fresh PC."
     }
   ]
 }

@@ -4,17 +4,18 @@ A course project, not a product: Capstone 2 of the Agentic AI Workshop 2026, whi
 Performance Analyst Agent" that answers managers' questions about sales data. The company, AdventureWorks,
 is Microsoft's public sample database of a made-up bicycle maker. No real business data is used.
 
-Everything happened on 1 October 2026. Times are UK time, taken from file timestamps and the git
+The build happened on 1 October 2026, with final touches on the morning of 2 October. Times are UK time, taken from file timestamps and the git
 history, so they are approximate.
 
 ```mermaid
 timeline
-  title 1 October 2026, from afternoon to night
+  title 1 to 2 October 2026, from afternoon to the next morning
   Start : Starter notebook on made-up data
   Afternoon : Cut the AI cost by 32% : Brief turned into 13 steps : Section 6 built in the notebook
   Early evening : Demo app around the agent : Cassette J-card design
   Evening : Real AI runs recorded, 6 of 7 : Clear for every audience : Checked against the brief, 7 of 7
   Night : Home screen, blog and API docs : Every track re-recorded live
+  Next morning : Final touches and a clean-PC check
 ```
 
 ## The starting point (15:15)
