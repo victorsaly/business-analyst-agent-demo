@@ -87,7 +87,7 @@ async function team(request, env, origin, cors) {
   const text = (v, max) => String(v || "").trim().slice(0, max);
   const isUrl = (v) => { try { return new URL(v).protocol === "https:"; } catch { return false; } };
   const entry = {
-    name: text(b.name, 100), linkedin: text(b.linkedin, 300), role: text(b.role, 150),
+    name: text(b.name, 100), linkedin: text(b.linkedin, 300).replace(/[?#].*$/, ""), role: text(b.role, 150),   // no ?isSelfProfile=true etc.
     skills: (Array.isArray(b.skills) ? b.skills : []).filter((s) => SKILLS.includes(s)),
     other_skills: text(b.other_skills, 200), tools: text(b.tools, 500), bio: text(b.bio, 800), photo: text(b.photo, 300),
   };

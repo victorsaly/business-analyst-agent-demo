@@ -21,7 +21,7 @@ SKILLS = ["Python", "SQL / data analysis", "AI and prompting", "Web", "Design / 
 
 
 def wrangler(*args):
-    out = subprocess.run(["npx", "--yes", "wrangler@3", "kv", "key", *args, "--binding", "LIMITS", "--remote"],
+    out = subprocess.run(["npx", "--yes", "wrangler@3", "kv", "key", *args, "--binding", "LIMITS"],
                          cwd=WORKER, capture_output=True, text=True, check=True).stdout
     return out[out.index("[") if args[0] == "list" else 0:]   # list prints a banner before its JSON
 
