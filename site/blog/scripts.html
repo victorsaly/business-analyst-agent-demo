@@ -33,7 +33,8 @@ if (matchMedia("(max-width: 700px)").matches) document.querySelectorAll("pre.mer
 <div class="wrap"><main><span class="course">Course demonstration · Capstone 2 · Agentic AI Workshop 2026</span>
 <h1 id="making-things-locally-the-scripts">Making things locally: the scripts</h1>
 <p>The app itself is <code>server.py</code> and the <code>analyst</code> package. Everything else it shows (the recorded runs, the
-videos, the chat's prepared answers, the website) is made by a script in <code>app/scripts/</code>. This page says what
+videos, the chat's prepared answers, the website) is made by a script in
+<a href="https://github.com/victorsaly/business-analyst-agent-demo/tree/main/app/scripts"><code>app/scripts/</code></a>. This page says what
 each one makes, what it needs, and when to run it again.</p>
 <p>Run them from the <code>app</code> folder. On a Mac or Linux, <code>./demo.sh</code> has a short name for each. On Windows, use the
 long form:</p>
@@ -69,49 +70,49 @@ long form:</p>
 </thead>
 <tbody>
 <tr>
-<td><code>check_key</code></td>
+<td><a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/app/scripts/check_key.py"><code>check_key</code></a></td>
 <td>(run by the double-click setup and start files)</td>
 <td>A plain message: is the AI key in <code>.env</code> working?</td>
 <td>Checks the key only</td>
 </tr>
 <tr>
-<td><code>prepare_recordings</code></td>
+<td><a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/app/scripts/prepare_recordings.py"><code>prepare_recordings</code></a></td>
 <td><code>prepare</code></td>
 <td>One live run of every demo case, saved for Replay</td>
 <td>Yes, about 120,000 to 160,000 tokens</td>
 </tr>
 <tr>
-<td><code>record_video</code></td>
+<td><a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/app/scripts/record_video.py"><code>record_video</code></a></td>
 <td><code>video</code>, <code>video-dry</code></td>
 <td>The narrated walkthrough video, <code>video/demo.mp4</code></td>
 <td>No (replays the recordings)</td>
 </tr>
 <tr>
-<td><code>make_promo</code></td>
+<td><a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/app/scripts/make_promo.py"><code>make_promo</code></a></td>
 <td><code>pitch</code></td>
 <td>The 60-second pitch video, <code>video/pitch.mp4</code></td>
 <td>No</td>
 </tr>
 <tr>
-<td><code>make_explain_timings</code></td>
+<td><a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/app/scripts/make_explain_timings.py"><code>make_explain_timings</code></a></td>
 <td><code>timings</code></td>
 <td>Word timings for the Explain captions</td>
 <td>No</td>
 </tr>
 <tr>
-<td><code>make_knowledge</code></td>
+<td><a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/app/scripts/make_knowledge.py"><code>make_knowledge</code></a></td>
 <td><code>knowledge</code></td>
 <td>The Ask chat's knowledge base</td>
 <td>No</td>
 </tr>
 <tr>
-<td><code>make_story_answers</code></td>
+<td><a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/app/scripts/make_story_answers.py"><code>make_story_answers</code></a></td>
 <td><code>story</code></td>
 <td>Prepared answers for the chat's suggested questions</td>
 <td>Yes</td>
 </tr>
 <tr>
-<td><code>build_site</code></td>
+<td><a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/app/scripts/build_site.py"><code>build_site</code></a></td>
 <td><code>site</code></td>
 <td>The website, in <code>../site</code></td>
 <td>No</td>
@@ -120,12 +121,14 @@ long form:</p>
 </table></div>
 <p>The checks (<code>./demo.sh test</code>) stay in <code>app/test_demo.py</code>: they test the app rather than make anything.</p>
 <h2 id="check_key">check_key</h2>
+<p><em>Source: <a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/app/scripts/check_key.py">app/scripts/check_key.py</a></em></p>
 <p>Reads <code>app/.env</code> and asks each AI service whether the key works. It prints one of three things: the key is
 fine, the key is missing, or the service rejected it, with what to do next. It never stops anything, because
 Replay mode works without a key. The double-click Setup and Start files run it for you.</p>
 <pre><code class="language-bash">.venv/bin/python -m scripts.check_key
 </code></pre>
 <h2 id="prepare_recordings">prepare_recordings</h2>
+<p><em>Source: <a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/app/scripts/prepare_recordings.py">app/scripts/prepare_recordings.py</a></em></p>
 <p>Runs every demo case live, once, and saves each run to <code>recordings/</code>. It also records the scorecard's extra
 questions and the weekly briefing. Replay mode, both videos and the website all play these recordings back,
 so this is the one run that has to happen with a working AI.</p>
@@ -136,6 +139,7 @@ name them:</p>
 </code></pre>
 <p><strong>Run it again</strong> after changing the rulebook, a tool, or a demo case. A live run overwrites that case's recording.</p>
 <h2 id="record_video">record_video</h2>
+<p><em>Source: <a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/app/scripts/record_video.py">app/scripts/record_video.py</a></em></p>
 <p>Opens the app in a real browser, plays every scene from the recordings, and saves <code>video/demo.mp4</code>. On a Mac it
 adds a spoken narration with the built-in <code>say</code> voices. It needs <code>ffmpeg</code>.</p>
 <div class="table"><table>
@@ -169,6 +173,7 @@ adds a spoken narration with the built-in <code>say</code> voices. It needs <cod
 </tbody>
 </table></div>
 <h2 id="make_promo">make_promo</h2>
+<p><em>Source: <a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/app/scripts/make_promo.py">app/scripts/make_promo.py</a></em></p>
 <p>Renders the 60-second pitch video, <code>video/pitch.mp4</code>. It plays scenes from the app in a browser, cuts them to
 the music, and lays the voiceover lines on top. Before rendering, it checks that each recording it shows
 still says what the voiceover claims. A new live run can change an answer, and it stops if one no longer
@@ -177,6 +182,7 @@ and the recordings.</p>
 <pre><code class="language-bash">./demo.sh pitch
 </code></pre>
 <h2 id="make_explain_timings">make_explain_timings</h2>
+<p><em>Source: <a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/app/scripts/make_explain_timings.py">app/scripts/make_explain_timings.py</a></em></p>
 <p>The "Explain this page" button plays a voice clip and highlights each word as it's spoken. This script measures
 the pauses in each clip with <code>ffmpeg</code> and works out when each word starts. It writes
 <code>web/explain/timings.json</code>.</p>
@@ -184,6 +190,7 @@ the pauses in each clip with <code>ffmpeg</code> and works out when each word st
 <pre><code class="language-bash">./demo.sh timings
 </code></pre>
 <h2 id="make_knowledge">make_knowledge</h2>
+<p><em>Source: <a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/app/scripts/make_knowledge.py">app/scripts/make_knowledge.py</a></em></p>
 <p>Builds the Ask chat's knowledge base: the course's training guide and starting notebook, our finished
 notebook, and every page of this blog, cut into passages the chat can search. It writes <code>data/knowledge.json</code>
 for the local app and <code>../worker/knowledge.json</code> for the online chat.</p>
@@ -192,6 +199,7 @@ git-ignored, because they hold course material. Without <code>--course</code>, i
 <pre><code class="language-bash">./demo.sh knowledge --course /path/to/capstone-project-2-business_analyst_agent
 </code></pre>
 <h2 id="make_story_answers">make_story_answers</h2>
+<p><em>Source: <a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/app/scripts/make_story_answers.py">app/scripts/make_story_answers.py</a></em></p>
 <p>Asks the AI each suggested question in the chat, with the same notes and rules as the live chat, and saves the
 answers to <code>web/story/answers.json</code>. Those answers appear instantly and cost nothing, online and locally.</p>
 <pre><code class="language-bash">./demo.sh story              # every question
@@ -199,6 +207,7 @@ answers to <code>web/story/answers.json</code>. Those answers appear instantly a
 </code></pre>
 <p><strong>Run it again</strong> after editing the history, the requirements or the build guide, then rebuild the site.</p>
 <h2 id="build_site">build_site</h2>
+<p><em>Source: <a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/app/scripts/build_site.py">app/scripts/build_site.py</a></em></p>
 <p>Builds the public website into <code>../site</code>, which GitHub publishes as Pages:</p>
 <ul>
 <li><strong>The front page:</strong> the pitch video and links.</li>

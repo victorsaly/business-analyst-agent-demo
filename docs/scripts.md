@@ -1,7 +1,8 @@
 # Making things locally: the scripts
 
 The app itself is `server.py` and the `analyst` package. Everything else it shows (the recorded runs, the
-videos, the chat's prepared answers, the website) is made by a script in `app/scripts/`. This page says what
+videos, the chat's prepared answers, the website) is made by a script in
+[`app/scripts/`](../app/scripts/). This page says what
 each one makes, what it needs, and when to run it again.
 
 Run them from the `app` folder. On a Mac or Linux, `./demo.sh` has a short name for each. On Windows, use the
@@ -37,18 +38,20 @@ flowchart LR
 
 | Script | `./demo.sh` | Makes | Uses the AI? |
 |---|---|---|---|
-| `check_key` | (run by the double-click setup and start files) | A plain message: is the AI key in `.env` working? | Checks the key only |
-| `prepare_recordings` | `prepare` | One live run of every demo case, saved for Replay | Yes, about 120,000 to 160,000 tokens |
-| `record_video` | `video`, `video-dry` | The narrated walkthrough video, `video/demo.mp4` | No (replays the recordings) |
-| `make_promo` | `pitch` | The 60-second pitch video, `video/pitch.mp4` | No |
-| `make_explain_timings` | `timings` | Word timings for the Explain captions | No |
-| `make_knowledge` | `knowledge` | The Ask chat's knowledge base | No |
-| `make_story_answers` | `story` | Prepared answers for the chat's suggested questions | Yes |
-| `build_site` | `site` | The website, in `../site` | No |
+| [`check_key`](../app/scripts/check_key.py) | (run by the double-click setup and start files) | A plain message: is the AI key in `.env` working? | Checks the key only |
+| [`prepare_recordings`](../app/scripts/prepare_recordings.py) | `prepare` | One live run of every demo case, saved for Replay | Yes, about 120,000 to 160,000 tokens |
+| [`record_video`](../app/scripts/record_video.py) | `video`, `video-dry` | The narrated walkthrough video, `video/demo.mp4` | No (replays the recordings) |
+| [`make_promo`](../app/scripts/make_promo.py) | `pitch` | The 60-second pitch video, `video/pitch.mp4` | No |
+| [`make_explain_timings`](../app/scripts/make_explain_timings.py) | `timings` | Word timings for the Explain captions | No |
+| [`make_knowledge`](../app/scripts/make_knowledge.py) | `knowledge` | The Ask chat's knowledge base | No |
+| [`make_story_answers`](../app/scripts/make_story_answers.py) | `story` | Prepared answers for the chat's suggested questions | Yes |
+| [`build_site`](../app/scripts/build_site.py) | `site` | The website, in `../site` | No |
 
 The checks (`./demo.sh test`) stay in `app/test_demo.py`: they test the app rather than make anything.
 
 ## check_key
+
+*Source: [app/scripts/check_key.py](../app/scripts/check_key.py)*
 
 Reads `app/.env` and asks each AI service whether the key works. It prints one of three things: the key is
 fine, the key is missing, or the service rejected it, with what to do next. It never stops anything, because
@@ -59,6 +62,8 @@ Replay mode works without a key. The double-click Setup and Start files run it f
 ```
 
 ## prepare_recordings
+
+*Source: [app/scripts/prepare_recordings.py](../app/scripts/prepare_recordings.py)*
 
 Runs every demo case live, once, and saves each run to `recordings/`. It also records the scorecard's extra
 questions and the weekly briefing. Replay mode, both videos and the website all play these recordings back,
@@ -76,6 +81,8 @@ name them:
 
 ## record_video
 
+*Source: [app/scripts/record_video.py](../app/scripts/record_video.py)*
+
 Opens the app in a real browser, plays every scene from the recordings, and saves `video/demo.mp4`. On a Mac it
 adds a spoken narration with the built-in `say` voices. It needs `ffmpeg`.
 
@@ -89,6 +96,8 @@ adds a spoken narration with the built-in `say` voices. It needs `ffmpeg`.
 
 ## make_promo
 
+*Source: [app/scripts/make_promo.py](../app/scripts/make_promo.py)*
+
 Renders the 60-second pitch video, `video/pitch.mp4`. It plays scenes from the app in a browser, cuts them to
 the music, and lays the voiceover lines on top. Before rendering, it checks that each recording it shows
 still says what the voiceover claims. A new live run can change an answer, and it stops if one no longer
@@ -101,6 +110,8 @@ and the recordings.
 
 ## make_explain_timings
 
+*Source: [app/scripts/make_explain_timings.py](../app/scripts/make_explain_timings.py)*
+
 The "Explain this page" button plays a voice clip and highlights each word as it's spoken. This script measures
 the pauses in each clip with `ffmpeg` and works out when each word starts. It writes
 `web/explain/timings.json`.
@@ -112,6 +123,8 @@ the pauses in each clip with `ffmpeg` and works out when each word starts. It wr
 ```
 
 ## make_knowledge
+
+*Source: [app/scripts/make_knowledge.py](../app/scripts/make_knowledge.py)*
 
 Builds the Ask chat's knowledge base: the course's training guide and starting notebook, our finished
 notebook, and every page of this blog, cut into passages the chat can search. It writes `data/knowledge.json`
@@ -126,6 +139,8 @@ git-ignored, because they hold course material. Without `--course`, it uses only
 
 ## make_story_answers
 
+*Source: [app/scripts/make_story_answers.py](../app/scripts/make_story_answers.py)*
+
 Asks the AI each suggested question in the chat, with the same notes and rules as the live chat, and saves the
 answers to `web/story/answers.json`. Those answers appear instantly and cost nothing, online and locally.
 
@@ -137,6 +152,8 @@ answers to `web/story/answers.json`. Those answers appear instantly and cost not
 **Run it again** after editing the history, the requirements or the build guide, then rebuild the site.
 
 ## build_site
+
+*Source: [app/scripts/build_site.py](../app/scripts/build_site.py)*
 
 Builds the public website into `../site`, which GitHub publishes as Pages:
 
