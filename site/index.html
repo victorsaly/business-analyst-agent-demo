@@ -50,7 +50,7 @@
   v.addEventListener("play", () => player.classList.add("playing"));
   v.addEventListener("ended", () => player.classList.remove("playing"));
   // The team, from team.json (also used by the blog and the readme). While it has no names, nothing shows.
-  fetch("../team.json").then(r => r.ok ? r.json() : { members: [] }).then(({ members = [] }) => {
+  fetch("team.json").then(r => r.ok ? r.json() : { members: [] }).then(({ members = [] }) => {
     const box = document.getElementById("team"), esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
     const people = members.filter(m => m.name && m.name.trim());
     if (!people.length) return;

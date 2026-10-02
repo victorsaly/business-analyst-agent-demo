@@ -200,7 +200,7 @@ def main():
             src, dst = os.path.join(web, item), os.path.join(OUT, item)
             shutil.copytree(src, dst, dirs_exist_ok=True) if os.path.isdir(src) else shutil.copy2(src, dst)
     cover = open(os.path.join(web, "cover", "index.html"), encoding="utf-8").read()   # the one-screen cover with the pitch
-    open(os.path.join(OUT, "index.html"), "w", encoding="utf-8").write(cover.replace('="../', '="'))
+    open(os.path.join(OUT, "index.html"), "w", encoding="utf-8").write(cover.replace('="../', '="').replace('fetch("../', 'fetch("'))
     open(os.path.join(OUT, ".nojekyll"), "w").close()
     # the demo app: same files, asset paths made relative, flagged as the online copy
     os.makedirs(DEMO, exist_ok=True)
