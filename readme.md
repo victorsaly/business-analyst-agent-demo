@@ -76,7 +76,7 @@ Python (FastAPI, pandas, matplotlib, SQLite) · hand-written HTML/CSS/JS front e
 
 ## Run locally
 
-**No programming needed:** the step-by-step guide for Mac and Windows is in [docs/getting-started.md](docs/getting-started.md). In short: download the ZIP, install Python 3.10+, double-click `Mac - 1 Setup.command` / `Windows - 1 Setup.bat`, then `Mac - 2 Start.command` / `Windows - 2 Start.bat`. The app opens at <http://localhost:8501>.
+**No programming needed:** the step-by-step guide for Mac and Windows is in [docs/getting-started.md](docs/getting-started.md). In short: download the ZIP, install Python 3.10+, double-click `Mac - 1 Setup.command` / `Windows - 1 Setup.bat`, then `Mac - 2 Start.command` / `Windows - 2 Start.bat`. Setup shows each step as it runs and checks your AI key at the end; Start checks the key again and tells you if `app/.env` needs one. The app opens at <http://localhost:8501>.
 
 **From a terminal:**
 

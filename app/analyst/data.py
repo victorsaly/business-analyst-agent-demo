@@ -90,8 +90,16 @@ LEFT JOIN SalesTerritory t    ON t.TerritoryID = h.TerritoryID
 def _zip_bytes():
     if not os.path.exists(AW_ZIP_LOCAL):
         print("Downloading AdventureWorks (about 17 MB)...")
-        with open(AW_ZIP_LOCAL, "wb") as f:
-            f.write(urllib.request.urlopen(AW_URL, timeout=120).read())
+        part = AW_ZIP_LOCAL + ".part"  # renamed only when complete, so a cut-off download is retried
+        with urllib.request.urlopen(AW_URL, timeout=120) as r, open(part, "wb") as f:
+            total, done = int(r.headers.get("Content-Length") or 0), 0
+            while chunk := r.read(256 * 1024):
+                f.write(chunk)
+                done += len(chunk)
+                pct = f" ({done * 100 // total}%)" if total else ""
+                print(f"\r  {done / 1e6:.1f} MB{pct}   ", end="", flush=True)
+        print()
+        os.replace(part, AW_ZIP_LOCAL)
     with open(AW_ZIP_LOCAL, "rb") as f:
         return f.read()
 
@@ -108,7 +116,8 @@ def build(name="real"):
     with zipfile.ZipFile(io.BytesIO(_zip_bytes())) as z:
         names = {n.split("/")[-1]: n for n in z.namelist()}
         ddl = z.read(names["instawdb.sql"]).decode("utf-8-sig", errors="ignore")
-        for table in AW_TABLES:
+        for i, table in enumerate(AW_TABLES, 1):
+            print(f"  Loading table {i}/{len(AW_TABLES)}: {table}", flush=True)
             block = re.search(r"CREATE TABLE \[\w+\]\.\[" + table + r"\]\((.*?)\n\)", ddl, re.S).group(1)
             cols = re.findall(r"^\s{4}\[(\w+)\]", block, re.M)
             df = pd.read_csv(z.open(names[f"{table}.csv"]), sep="\t", header=None, names=cols,

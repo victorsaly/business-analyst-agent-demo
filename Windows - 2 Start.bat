@@ -6,6 +6,8 @@ if not exist .venv\Scripts\python.exe (
   pause
   exit /b 1
 )
+.venv\Scripts\python check_key.py
+echo.
 echo Starting the demo... your browser will open http://localhost:8501
 echo Keep this window open while you present. Close it to stop the demo.
 start "" cmd /c "timeout /t 3 >nul & start http://localhost:8501"

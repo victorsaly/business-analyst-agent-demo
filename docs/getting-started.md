@@ -118,30 +118,48 @@ Don't share your key or put it in a document or chat: anyone who has it can use 
    1. Click **Done**.
    2. Right-click the file, choose **Open**, then click **Open** again.
    3. On newer macOS, if there is no **Open** button: go to **System Settings → Privacy & Security**, scroll down, and click **Open Anyway**.
-3. A Terminal window opens and works for a few minutes. Leave it alone until it says `Setup done.`
+3. A Terminal window opens and works for a few minutes. Leave it alone until it says `===== SETUP DONE =====`.
 
 **Windows**
 
 1. Open the project folder and double-click `Windows - 1 Setup.bat`.
 2. If a blue *Windows protected your PC* box appears, click **More info**, then **Run anyway**.
-3. A black window opens and works for a few minutes. Leave it alone until it says `Setup done.`
+3. A black window opens and works for a few minutes. Leave it alone until it says `===== SETUP DONE =====`.
 
-When it has finished, the window shows something like this (the Mac version; Windows is the same apart from
-the last lines):
+Setup works through four numbered steps, and the window title always shows the current one. Step 3
+(installing Python packages) is the slow part: you see package names and progress bars scroll past, which
+means it is working. A shortened example (the Mac version; Windows is the same apart from the last lines):
 
 ```text
 == Business Performance Analyst Agent: setup (Mac) ==
+
+[1/4 Creating the Python environment] in app/.venv ...
+
+[2/4 Updating pip] ...
+
+[3/4 Installing Python packages] This is the slow part, a few minutes. Progress shows below.
+Collecting pandas>=2.0
+  Downloading pandas-2.2.3-cp312-cp312-macosx_11_0_arm64.whl (11.3 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11.3/11.3 MB 8.1 MB/s
+...
+Successfully installed ...
+
+[4/4 Preparing the AdventureWorks database] ...
 Downloading AdventureWorks (about 17 MB)...
+  17.2 MB (100%)
+  Loading table 1/7: SalesOrderHeader
+  ...
 Database ready: /Users/you/Desktop/business-analyst-agent-demo-main/app/data/adventureworks.db
 
-Setup done.
-A text file called .env will open now. Paste your free Groq key after GROQ_API_KEY= and save it.
-(No key? Skip this: Replay mode works without one.)
-Next: double-click 'Mac - 2 Start.command'.
-Press Enter to close this window.
+===== SETUP DONE =====
+
+Last step: your free AI key for Live AI (get one at https://console.groq.com/keys).
 ```
 
-At the same time a text file called `.env` opens (TextEdit on Mac, Notepad on Windows). To add your key:
+If something goes wrong, the window says `===== SETUP FAILED at step …` with the step that failed. Fix the
+cause (usually the internet connection) and double-click Setup again; finished steps are quick the second time.
+
+After `SETUP DONE`, a text file called `.env` opens (TextEdit on Mac, Notepad on Windows). To add your key:
 
 1. Click at the end of the line `GROQ_API_KEY=`.
 2. Paste your Groq key straight after the `=`, with no spaces. The line should look like this:
@@ -150,8 +168,18 @@ At the same time a text file called `.env` opens (TextEdit on Mac, Notepad on Wi
    GROQ_API_KEY=gsk_your_key_here
    ```
 
-3. Save the file (**⌘ S** on Mac, **Ctrl S** on Windows) and close it.
-4. Press **Enter** in the setup window to close it (on Windows, press any key).
+3. Save the file (**⌘ S** on Mac, **Ctrl S** on Windows).
+4. Tell Setup you're done: on **Windows**, close Notepad; on **Mac**, press **Enter** in the Terminal window.
+5. Setup checks the key with Groq and shows one of these:
+
+   | Message | Meaning |
+   |---|---|
+   | `AI key for groq: OK` | All set. Live AI will work. |
+   | `NO AI KEY` | `.env` has no key. Fine if you only want Replay; otherwise add it (see above). |
+   | `AI KEY REJECTED` | The key is wrong or was deleted in Groq. Copy it again, or create a new one (Step 3). |
+   | `could not reach … to check it` | No internet right now. The key may be fine; it is checked again on every Start. |
+
+6. Press **Enter** in the setup window to close it (on Windows, press any key).
 
 No key? Close the `.env` file without changing it. Running Setup a second time is safe: it keeps your `.env`.
 
@@ -160,9 +188,11 @@ No key? Close the `.env` file without changing it. Running Setup a second time i
 1. Double-click the Start file:
    - **Mac:** `Mac - 2 Start.command`
    - **Windows:** `Windows - 2 Start.bat`
-2. A window opens and shows:
+2. A window opens. It first checks your AI key (same messages as in Step 4), then shows:
 
    ```text
+   AI key for groq: OK (model openai/gpt-oss-20b).
+
    Starting the demo... your browser will open http://localhost:8501
    Keep this window open while you present. Close it to stop the demo.
    ```
@@ -201,12 +231,14 @@ There is also a ready-made PDF: [presentation.pdf](https://victorsaly.github.io/
 
 | What you see | What to do |
 |---|---|
+| Setup seems stuck | Look at the window title: it names the step. Step 3 can take several minutes on slow wifi; as long as lines keep appearing, it is working. |
+| *"SETUP FAILED at step …"* | Read the lines just above it. Usually the internet dropped: reconnect and double-click Setup again. |
 | *"Python 3.10 or newer is not installed yet"* | Install Python (Step 2), then double-click the Setup file again. On Windows, make sure you ticked **Add python.exe to PATH**. If you didn't, run the Python installer again, choose **Modify**, and tick it. |
 | Windows opens the **Microsoft Store** when you run Setup | Install Python from python.org instead (Step 2), then run Setup again. |
 | *"Run 'Mac - 1 Setup.command' first."* or *"Run "Windows - 1 Setup.bat" first."* | Do Step 4 before Step 5. |
 | The browser says *This site can't be reached* | Wait five seconds and refresh. Check the Start window is still open and shows no error. |
 | *"address already in use"* (the Start window closes or shows an error) | The demo is already running in another window. Use that one, or close it and start again. To find it, see [Port 8501 already in use](#port-8501-already-in-use) below. |
-| Live AI says *"No AI key set"*, or that the key is wrong | Open `app/.env` (Step 4) and check the line is exactly `GROQ_API_KEY=gsk_…`. Then close the Start window and start again. On a Mac, `.env` is hidden in Finder: press **⌘ Shift .** to show hidden files. |
+| *"NO AI KEY"* or *"AI KEY REJECTED"* when Setup or Start runs, or Live AI says *"No AI key set"* | Open `app/.env` (Step 4) and check the line is exactly `GROQ_API_KEY=gsk_…`. Then close the Start window and start again. On a Mac, `.env` is hidden in Finder: press **⌘ Shift .** to show hidden files. |
 | Live AI stops with a *rate limit* or *allowance* message | The free Groq plan has a daily limit. Switch to **Replay**: it plays back real recorded runs. |
 | Setup stopped with an error about the internet | Check your connection (some office or university networks block downloads) and run Setup again. Running it twice is safe. |
 
