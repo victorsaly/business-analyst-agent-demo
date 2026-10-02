@@ -60,9 +60,12 @@ def save_photo(name, url):
 
 
 def same(a, b):
+    """The same person: the same LinkedIn profile, or, when either has no LinkedIn (added to team.json by hand), the same name.
+    Two people who share a name stay two people."""
     norm = lambda u: u.lower().split("?")[0].rstrip("/").split("linkedin.com")[-1]
-    return (a.get("linkedin") and b.get("linkedin") and norm(a["linkedin"]) == norm(b["linkedin"])) \
-        or a.get("name", "").strip().lower() == b.get("name", "").strip().lower()
+    if a.get("linkedin", "").strip() and b.get("linkedin", "").strip():
+        return norm(a["linkedin"]) == norm(b["linkedin"])
+    return a.get("name", "").strip().lower() == b.get("name", "").strip().lower()
 
 
 def main():

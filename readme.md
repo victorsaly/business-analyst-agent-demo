@@ -119,6 +119,7 @@ worker/         the online Ask chat (Cloudflare Worker)
 ## Credits
 
 <!-- team:start (written by app/scripts/build_site.py from app/web/team.json) -->
+- **The team:** [Victor Saly](https://www.linkedin.com/in/victorsaly)
 <!-- team:end -->
 
 - Course: Agentic AI Workshop 2026, Capstone 2. The starting notebook and training guide belong to the course and are not included here.
