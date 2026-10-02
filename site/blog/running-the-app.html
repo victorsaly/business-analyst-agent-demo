@@ -118,6 +118,16 @@ notepad .env
   classDef red stroke:#c62828,stroke-width:2px,color:#b71c1c
   class D red
 </pre></figure>
+<p>One real AI run feeds everything else, so you only pay for it once:</p>
+<figure class="diagram"><pre class="mermaid">flowchart LR
+  accTitle: From one live run to the video and the website
+  L[&quot;Live AI run&lt;br/&gt;(prepare)&quot;] --&gt; R[(&quot;recordings/&quot;)]
+  R --&gt; RP[&quot;Replay mode&quot;]
+  R --&gt; V[&quot;Narrated video&lt;br/&gt;(video)&quot;]
+  R --&gt; S[&quot;Website&lt;br/&gt;(site)&quot;]
+  classDef red stroke:#c62828,stroke-width:2px,color:#b71c1c
+  class R red
+</pre></figure>
 <h2 id="the-screens">The screens</h2>
 <p>The app looks like a hand-lettered cassette J-card, and the demo is laid out as a six-minute mixtape.</p>
 <div class="table"><table>
@@ -312,6 +322,18 @@ talking point for each screen. The video uses this.</p>
 </ol>
 <p>If Groq runs out of its daily allowance or credit, the agent switches to OpenAI and carries on. The footer of
 each answer shows which model answered.</p>
+<figure class="diagram"><pre class="mermaid">flowchart LR
+  accTitle: Which AI service answers
+  A[&quot;A question&quot;] --&gt; P{&quot;LLM_PROVIDER&lt;br/&gt;set to openai?&quot;}
+  P -- yes --&gt; O[&quot;OpenAI&quot;]
+  P -- no --&gt; G[&quot;Groq&quot;]
+  G -- &quot;daily limit&lt;br/&gt;or credit gone&quot; --&gt; O
+  G --&gt; ANS[&quot;Answer, with the model&lt;br/&gt;named in the footer&quot;]
+  O --&gt; ANS
+  G -- &quot;no key at all&quot; --&gt; N[&quot;Live AI stops;&lt;br/&gt;Replay and Dry run still work&quot;]
+  classDef red stroke:#c62828,stroke-width:2px,color:#b71c1c
+  class N red
+</pre></figure>
 <p>To make OpenAI the first choice, add this line to <code>.env</code>. The current recordings were made this way, because
 OpenAI follows the rules more reliably than the free model:</p>
 <pre><code class="language-text">LLM_PROVIDER=openai

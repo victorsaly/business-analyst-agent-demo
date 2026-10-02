@@ -90,6 +90,19 @@ flowchart LR
   class D red
 ```
 
+One real AI run feeds everything else, so you only pay for it once:
+
+```mermaid
+flowchart LR
+  accTitle: From one live run to the video and the website
+  L["Live AI run<br/>(prepare)"] --> R[("recordings/")]
+  R --> RP["Replay mode"]
+  R --> V["Narrated video<br/>(video)"]
+  R --> S["Website<br/>(site)"]
+  classDef red stroke:#c62828,stroke-width:2px,color:#b71c1c
+  class R red
+```
+
 ## The screens
 
 The app looks like a hand-lettered cassette J-card, and the demo is laid out as a six-minute mixtape.
@@ -244,6 +257,20 @@ The agent tries the services set in `app/.env` in this order:
 
 If Groq runs out of its daily allowance or credit, the agent switches to OpenAI and carries on. The footer of
 each answer shows which model answered.
+
+```mermaid
+flowchart LR
+  accTitle: Which AI service answers
+  A["A question"] --> P{"LLM_PROVIDER<br/>set to openai?"}
+  P -- yes --> O["OpenAI"]
+  P -- no --> G["Groq"]
+  G -- "daily limit<br/>or credit gone" --> O
+  G --> ANS["Answer, with the model<br/>named in the footer"]
+  O --> ANS
+  G -- "no key at all" --> N["Live AI stops;<br/>Replay and Dry run still work"]
+  classDef red stroke:#c62828,stroke-width:2px,color:#b71c1c
+  class N red
+```
 
 To make OpenAI the first choice, add this line to `.env`. The current recordings were made this way, because
 OpenAI follows the rules more reliably than the free model:

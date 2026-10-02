@@ -304,6 +304,19 @@ still apply, including <code>ANOMALY_THRESHOLD</code>. The long per-argument des
 own trace entry, so the weekly briefing, its chart safety net, the app's anomaly table and the
 scorecard's tool check need no changes. The model receives one compact combined result: a summary
 and the list of normal segments for each metric.</p>
+<figure class="diagram"><pre class="mermaid">flowchart LR
+  accTitle: Scanning five metrics, before and after
+  subgraph before[&quot;Before: 5 calls, often 5 rounds&quot;]
+    direction LR
+    B1[&quot;revenue&quot;] --&gt; B2[&quot;cost&quot;] --&gt; B3[&quot;margin&quot;] --&gt; B4[&quot;orders&quot;] --&gt; B5[&quot;units&quot;]
+  end
+  subgraph after[&quot;After: 1 call, 1 round&quot;]
+    direction LR
+    A1[&quot;detect_anomalies&lt;br/&gt;metrics = all five&lt;br/&gt;(~323-token result)&quot;]
+  end
+  classDef red stroke:#c62828,stroke-width:2px,color:#b71c1c
+  class A1 red
+</pre></figure>
 <h3 id="original_2">Original</h3>
 <p>None. The agent called <code>detect_anomalies</code> once per metric.</p>
 <h3 id="optimized-add-at-the-end-of-the-54-cell">Optimized (add at the end of the §5.4 cell)</h3>

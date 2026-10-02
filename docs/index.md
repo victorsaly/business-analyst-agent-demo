@@ -50,6 +50,28 @@ flowchart LR
   class DB,S red
 ```
 
+### What lives where
+
+The same agent code runs in three places. The notebook is where it was built; the demo app wraps the same
+tools and rulebook; the website is that app with every answer saved in advance.
+
+```mermaid
+flowchart TB
+  accTitle: What lives where
+  NB["Course notebook<br/>where it was built"] -. "same tools and rulebook" .-> PK
+  subgraph app["Demo app, on your laptop"]
+    direction LR
+    BR["Screens in<br/>your browser"] --> SV["Local server"] --> PK["analyst package<br/>tools · agent · cases"]
+  end
+  PK --> DB[("AdventureWorks<br/>read-only")]
+  PK --> LLM["Groq or OpenAI<br/>(Live AI only)"]
+  PK --> REC[("recordings")]
+  REC --> WEB["Website on GitHub Pages<br/>(build_site.py)"]
+  WEB -- "Ask chat only" --> CW["Cloudflare Worker"]
+  classDef red stroke:#c62828,stroke-width:2px,color:#b71c1c
+  class DB,REC red
+```
+
 ## The brief, requirement by requirement
 
 Each line of the brief, what the original notebook had, what we built, and where to see it.

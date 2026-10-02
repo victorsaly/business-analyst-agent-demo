@@ -6,7 +6,21 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/diff.min.js" defer></script>
-<script>addEventListener("DOMContentLoaded", () => window.hljs && hljs.highlightAll());</script>
+<script>addEventListener("DOMContentLoaded", () => window.hljs && hljs.highlightAll());</script><script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+mermaid.initialize({ startOnLoad: false, theme: "base", securityLevel: "strict",
+  flowchart: { curve: "basis", padding: 14, nodeSpacing: 34, rankSpacing: 40 }, sequence: { mirrorActors: false },
+  themeVariables: { fontFamily: '"Patrick Hand SC", "Marker Felt", cursive', fontSize: "17px",
+    background: "#fcfbf7", primaryColor: "#ffffff", primaryTextColor: "#1e3a8a", primaryBorderColor: "#1e3a8a",
+    secondaryColor: "#eef2fb", tertiaryColor: "#eef2fb", lineColor: "#3f5a9e", textColor: "#1d2433",
+    clusterBkg: "#eef2fb", clusterBorder: "#a9b8dc", edgeLabelBackground: "#ffffff",
+    noteBkgColor: "#eef2fb", noteBorderColor: "#a9b8dc", noteTextColor: "#1e3a8a", actorLineColor: "#a9b8dc", signalColor: "#3f5a9e",
+    cScale0: "#eef2fb", cScale1: "#ffffff", cScale2: "#eef2fb", cScale3: "#ffffff", cScale4: "#eef2fb",
+    cScaleLabel0: "#1e3a8a", cScaleLabel1: "#1e3a8a", cScaleLabel2: "#1e3a8a", cScaleLabel3: "#1e3a8a", cScaleLabel4: "#1e3a8a",
+    cScalePeer0: "#a9b8dc", cScalePeer1: "#a9b8dc", cScalePeer2: "#a9b8dc", cScalePeer3: "#a9b8dc", cScalePeer4: "#a9b8dc" } });
+await document.fonts.ready;   // measure the labels in the hand-lettered font, not the fallback
+await mermaid.run({ querySelector: "pre.mermaid" });
+</script>
 <script src="../blog.js" defer></script></head>
 <body><header class="top"><div class="stripe"></div><div class="in">
 <a class="brand" href="index.html"><img src="../logo.svg" alt="" width="32" height="32"> Business Performance Analyst Agent</a>
@@ -382,6 +396,30 @@ first). To add one, hover the mouse just below the last cell and click <strong>+
 for a heading). Paste the code exactly as shown, including the lines starting with <code>#</code>. To paste,
 press <em>Cmd+V</em> on a Mac or <em>Ctrl+V</em> on Windows.</p>
 </blockquote>
+<figure class="diagram"><pre class="mermaid">flowchart TB
+  accTitle: The 13 steps in order
+  subgraph g1[&quot;Get ready&quot;]
+    direction LR
+    S0[&quot;0 · Get set up&quot;] --&gt; S1[&quot;1 · Stop old cells&lt;br/&gt;wasting the allowance&quot;] --&gt; S2[&quot;2 · Load&lt;br/&gt;AdventureWorks&quot;]
+  end
+  subgraph g2[&quot;Build the agent&quot;]
+    direction LR
+    S3[&quot;3 · Five tools&quot;] --&gt; S4[&quot;4 · Volume / price / mix&lt;br/&gt;(stretch)&quot;] --&gt; S5[&quot;5 · Tool menu cards&quot;] --&gt; S6[&quot;6 · Rulebook&quot;]
+  end
+  subgraph g3[&quot;Show it works&quot;]
+    direction LR
+    S7[&quot;7 · Switch over,&lt;br/&gt;show its working&quot;] --&gt; S8[&quot;8 · New scorecard&quot;] --&gt; S9[&quot;9 · Weekly briefing&quot;] --&gt; S10[&quot;10 · Try the&lt;br/&gt;brief's questions&quot;]
+  end
+  subgraph g4[&quot;Present it&quot;]
+    direction LR
+    S11[&quot;11 · Chat app&lt;br/&gt;(optional)&quot;] --&gt; S12[&quot;12 · Rehearse the&lt;br/&gt;planted anomaly&quot;] --&gt; S13[&quot;13 · 6-minute&lt;br/&gt;demo plan&quot;]
+  end
+  g1 --&gt; g2 --&gt; g3 --&gt; g4
+  classDef red stroke:#c62828,stroke-width:2px,color:#b71c1c
+  classDef optional stroke-dasharray:5 4
+  class S6 red
+  class S4,S11 optional
+</pre></figure>
 <h3 id="step-0-get-set-up">Step 0: Get set up</h3>
 <p><strong>Priority:</strong> P1 · <strong>Who:</strong> anyone</p>
 <p>Colab runs in the web browser, so these steps are the same on Mac and Windows.</p>

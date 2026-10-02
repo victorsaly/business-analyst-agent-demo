@@ -123,6 +123,32 @@ We loaded AdventureWorks and checked it. These facts affect the answers to the b
 > for a heading). Paste the code exactly as shown, including the lines starting with `#`. To paste,
 > press *Cmd+V* on a Mac or *Ctrl+V* on Windows.
 
+```mermaid
+flowchart TB
+  accTitle: The 13 steps in order
+  subgraph g1["Get ready"]
+    direction LR
+    S0["0 · Get set up"] --> S1["1 · Stop old cells<br/>wasting the allowance"] --> S2["2 · Load<br/>AdventureWorks"]
+  end
+  subgraph g2["Build the agent"]
+    direction LR
+    S3["3 · Five tools"] --> S4["4 · Volume / price / mix<br/>(stretch)"] --> S5["5 · Tool menu cards"] --> S6["6 · Rulebook"]
+  end
+  subgraph g3["Show it works"]
+    direction LR
+    S7["7 · Switch over,<br/>show its working"] --> S8["8 · New scorecard"] --> S9["9 · Weekly briefing"] --> S10["10 · Try the<br/>brief's questions"]
+  end
+  subgraph g4["Present it"]
+    direction LR
+    S11["11 · Chat app<br/>(optional)"] --> S12["12 · Rehearse the<br/>planted anomaly"] --> S13["13 · 6-minute<br/>demo plan"]
+  end
+  g1 --> g2 --> g3 --> g4
+  classDef red stroke:#c62828,stroke-width:2px,color:#b71c1c
+  classDef optional stroke-dasharray:5 4
+  class S6 red
+  class S4,S11 optional
+```
+
 ### Step 0: Get set up
 **Priority:** P1 · **Who:** anyone
 

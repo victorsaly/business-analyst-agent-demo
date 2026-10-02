@@ -66,6 +66,24 @@ log, not the AI, supplies the queries shown under every answer.</p>
   classDef red stroke:#c62828,stroke-width:2px,color:#b71c1c
   class DB,S red
 </pre></figure>
+<h3 id="what-lives-where">What lives where</h3>
+<p>The same agent code runs in three places. The notebook is where it was built; the demo app wraps the same
+tools and rulebook; the website is that app with every answer saved in advance.</p>
+<figure class="diagram"><pre class="mermaid">flowchart TB
+  accTitle: What lives where
+  NB[&quot;Course notebook&lt;br/&gt;where it was built&quot;] -. &quot;same tools and rulebook&quot; .-&gt; PK
+  subgraph app[&quot;Demo app, on your laptop&quot;]
+    direction LR
+    BR[&quot;Screens in&lt;br/&gt;your browser&quot;] --&gt; SV[&quot;Local server&quot;] --&gt; PK[&quot;analyst package&lt;br/&gt;tools · agent · cases&quot;]
+  end
+  PK --&gt; DB[(&quot;AdventureWorks&lt;br/&gt;read-only&quot;)]
+  PK --&gt; LLM[&quot;Groq or OpenAI&lt;br/&gt;(Live AI only)&quot;]
+  PK --&gt; REC[(&quot;recordings&quot;)]
+  REC --&gt; WEB[&quot;Website on GitHub Pages&lt;br/&gt;(build_site.py)&quot;]
+  WEB -- &quot;Ask chat only&quot; --&gt; CW[&quot;Cloudflare Worker&quot;]
+  classDef red stroke:#c62828,stroke-width:2px,color:#b71c1c
+  class DB,REC red
+</pre></figure>
 <h2 id="the-brief-requirement-by-requirement">The brief, requirement by requirement</h2>
 <p>Each line of the brief, what the original notebook had, what we built, and where to see it.
 The "Steps" link to the <a href="build-guide.html">build guide</a>; the notebook is

@@ -273,6 +273,21 @@ own trace entry, so the weekly briefing, its chart safety net, the app's anomaly
 scorecard's tool check need no changes. The model receives one compact combined result: a summary
 and the list of normal segments for each metric.
 
+```mermaid
+flowchart LR
+  accTitle: Scanning five metrics, before and after
+  subgraph before["Before: 5 calls, often 5 rounds"]
+    direction LR
+    B1["revenue"] --> B2["cost"] --> B3["margin"] --> B4["orders"] --> B5["units"]
+  end
+  subgraph after["After: 1 call, 1 round"]
+    direction LR
+    A1["detect_anomalies<br/>metrics = all five<br/>(~323-token result)"]
+  end
+  classDef red stroke:#c62828,stroke-width:2px,color:#b71c1c
+  class A1 red
+```
+
 ### Original
 
 None. The agent called `detect_anomalies` once per metric.
