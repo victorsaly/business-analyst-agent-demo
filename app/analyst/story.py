@@ -22,6 +22,7 @@ DOCS = os.path.join(ROOT, "docs")
 HISTORY = os.path.join(DOCS, "history.md")
 BRIEF = os.path.join(DOCS, "requirements.md")
 GUIDE = os.path.join(DOCS, "build-guide.md")
+TEAM = os.path.join(ROOT, "app", "web", "team.json")   # who built it; ./demo.sh team fills it from the team form
 GUIDE_SECTIONS = 3               # build-guide sections sent with each question
 COURSE_PASSAGES = 6              # course-material passages sent with each question
 GROQ_BUDGET = 8000               # estimated tokens; keeps a question plus answer under Groq's free 8,000 per minute
@@ -32,7 +33,8 @@ Capstone 2 of the Agentic AI Workshop 2026. Most askers are students on the cour
 - THE TASK: what the brief asks for, and whether each requirement is met (see THE BRIEF);
 - THE STEPS: how to do the task, step by step (see THE STEP-BY-STEP GUIDE);
 - THE STORY: how the project got to where it is (see PROJECT HISTORY);
-- THE COURSE: what the training guide, the starting notebook or our finished notebook say or do (see COURSE MATERIAL).
+- THE COURSE: what the training guide, the starting notebook or our finished notebook say or do (see COURSE MATERIAL);
+- THE TEAM: who is on the project team and what each person did (see THE TEAM).
 
 RULES
 1. Answer ONLY from the notes and course material below. If they don't cover it, say "The course
@@ -57,6 +59,9 @@ THE STEP-BY-STEP GUIDE (docs/build-guide.md: its outline, then the sections that
 PROJECT HISTORY (docs/history.md)
 {history}
 
+THE TEAM (app/web/team.json, in the order the site shows them)
+{team}
+
 COURSE MATERIAL (numbered passages picked for this question)
 {passages}
 """
@@ -68,6 +73,21 @@ _STOP = set("a an and are as at be but by can did do does for from how i in is i
 def _read(path):
     with open(path, encoding="utf-8") as f:
         return f.read()
+
+
+def team_text():
+    """One line per team member: name, role, what they did, LinkedIn."""
+    try:
+        with open(TEAM, encoding="utf-8") as f:
+            members = [m for m in json.load(f).get("members", []) if m.get("name", "").strip()]
+    except (OSError, ValueError):
+        members = []
+    lines = []
+    for m in members:
+        bio = re.sub(r"\s+", " ", m.get("bio") or "").strip()
+        lines.append("- " + " | ".join(x for x in (m["name"].strip(), (m.get("role") or "").strip(), bio,
+                                                    (m.get("linkedin") or "").strip()) if x))
+    return f"{len(members)} people:\n" + "\n".join(lines) if members else "(not listed yet)"
 
 
 def _words(text):
@@ -124,7 +144,7 @@ def fixed_prompt(marker="@@PASSAGES@@"):
     """The prompt for the online chat (worker/): the guide as an outline only, and a marker where the
     Worker puts the passages it picks for each question."""
     return STORY_PROMPT.format(brief=_read(BRIEF), guide=guide_for("", _read(GUIDE)), history=_read(HISTORY),
-                               passages=marker)
+                               team=team_text(), passages=marker)
 
 
 def _prepare(question, history):
@@ -135,7 +155,7 @@ def _prepare(question, history):
              if m.get("role") in ("user", "assistant")]
     while True:
         system = STORY_PROMPT.format(brief=_read(BRIEF), guide=guide_for(asked, _read(GUIDE), sections),
-                                     history=_read(HISTORY), passages=passages_text(found))
+                                     history=_read(HISTORY), team=team_text(), passages=passages_text(found))
         messages = [{"role": "system", "content": system}, *turns, {"role": "user", "content": question}]
         if current()["name"] != "groq" or _estimate_tokens(messages) <= GROQ_BUDGET:
             return messages, found
