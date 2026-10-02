@@ -293,7 +293,7 @@ async def story_chat(request: Request):
 
 
 @app.post("/api/story/stream", tags=["Ask chat"], summary="Ask the course chat, streamed (local)", openapi_extra=D.ASK_BODY,
-          responses={200: {"description": "Server-Sent Events: `delta` events with each piece of the answer as it's written, "
+          responses={200: {"description": "Server-Sent Events: `status` events (searching, then the passages found), `delta` events with each piece of the answer as it's written, "
                                           "then `done` with the whole `answer`, its `sources` and the `model` (or `error`).",
                            "content": {"text/event-stream": {"example": 'data: {"type": "delta", "text": "The training guide"}\n\n'
                                                                        'data: {"type": "done", "answer": "...", "sources": [], "model": "openai · gpt-5.4-mini"}\n\n'}}}})

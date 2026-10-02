@@ -717,9 +717,9 @@ function resourcesFor(question, sources = []) {
 const sourcesHTML = (sources) => (sources || []).length
   ? `<ol class="sources">${sources.map((x) => `<li value="${x.n}">${x.url ? `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.source)}</a>` : esc(x.source)} · ${esc(x.title)}</li>`).join("")}</ol>` : "";
 
-async function streamChat(question, onDelta) {   // POST, then read the Server-Sent Events as they arrive
+async function streamChat(question, onDelta, onStatus, signal) {   // POST, then read the Server-Sent Events as they arrive
   const body = JSON.stringify({ question, history: CHAT.history, stream: true });
-  const r = await fetch(STATIC ? ASK_URL : "/api/story/stream", { method: "POST", headers: { "Content-Type": "application/json" }, body });
+  const r = await fetch(STATIC ? ASK_URL : "/api/story/stream", { method: "POST", headers: { "Content-Type": "application/json" }, body, signal });
   if (!r.ok) { const d = await r.json().catch(() => ({})); return { error: d.error || `The chat service answered ${r.status}.` }; }
   const reader = r.body.getReader(), dec = new TextDecoder();
   let buf = "", done = null;
@@ -733,6 +733,7 @@ async function streamChat(question, onDelta) {   // POST, then read the Server-S
       if (!line) continue;
       const ev = JSON.parse(line.slice(6));
       if (ev.type === "delta") onDelta(ev.text);
+      else if (ev.type === "status") onStatus?.(ev);
       else if (ev.type === "done") done = ev;
       else if (ev.type === "error") return { error: ev.message };
     }
@@ -746,34 +747,93 @@ function chatSay(who, html, foot = "") {
   log.scrollTop = log.scrollHeight;
   return log.lastElementChild;
 }
-function fromPrepared(q) {
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
+const statusHTML = (text, extra = "") => `<div class="status"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="stage">${text}</span>${extra}</div>`;
+
+function makeWriter(body, log) {   // shows the answer as it's written: pieces arrive in bursts, the text catches up smoothly
+  let target = "", shown = 0, raf = 0, waiting = null;
+  const tick = () => {
+    raf = 0;
+    const backlog = target.length - shown;
+    if (backlog > 0) {
+      shown = REDUCED ? target.length : Math.min(target.length, shown + Math.max(2, Math.ceil(backlog / 14)));
+      const stick = log.scrollHeight - log.scrollTop - log.clientHeight < 90;   // don't yank the page if they scrolled up to read
+      body.innerHTML = prose(target.slice(0, shown)) + '<span class="caret" aria-hidden="true"></span>';
+      if (stick) log.scrollTop = log.scrollHeight;
+    }
+    if (shown < target.length) raf = requestAnimationFrame(tick);
+    else if (waiting) { waiting(); waiting = null; }
+  };
+  return {
+    set(text) { target = text; if (!raf) raf = requestAnimationFrame(tick); },
+    drain: () => (shown >= target.length ? Promise.resolve() : new Promise((res) => { waiting = res; })),
+    stop() { cancelAnimationFrame(raf); raf = 0; waiting?.(); waiting = null; },
+  };
+}
+function chatBusy(on) {
+  const form = document.getElementById("chatform");
+  form.classList.toggle("busy", on); CHAT.busy = on;
+  document.getElementById("chatlog").setAttribute("aria-busy", on);
+}
+function finishAnswer(msg, q, answer, sources, foot) {
+  const body = msg.querySelector(".body"), log = document.getElementById("chatlog");
+  body.innerHTML = prose(answer) + sourcesHTML(sources) + resourcesFor(q, sources);
+  msg.insertAdjacentHTML("beforeend", `<p class="foot">${foot}</p>`);
+  log.scrollTop = log.scrollHeight;
+}
+async function sayPrepared(q) {
   const hit = CHAT.prepared.find((x) => x.q.toLowerCase() === q.toLowerCase()) || closest(q, CHAT.prepared);
   if (!hit) return false;
-  chatSay("ai", prose(hit.a) + resourcesFor(q), `Prepared answer, written by the AI from our notes${hit.q.toLowerCase() !== q.toLowerCase() ? ` · closest question: “${esc(hit.q)}”` : ""}`);
+  const msg = chatSay("ai", statusHTML("Found a prepared answer…")), log = document.getElementById("chatlog");
+  chatBusy(true);
+  await sleep(REDUCED ? 0 : 450);
+  const writer = makeWriter(msg.querySelector(".body"), log);
+  writer.set(hit.a); await writer.drain();
+  chatBusy(false);
+  finishAnswer(msg, q, hit.a, [], `Prepared answer, written by the AI from our notes${hit.q.toLowerCase() !== q.toLowerCase() ? ` · closest question: “${esc(hit.q)}”` : ""}`);
   return true;
 }
 async function askChat(q) {
-  q = String(q || "").trim(); if (!q) return;
+  q = String(q || "").trim(); if (!q || CHAT.busy) return;
   openChat();
   chatSay("me", esc(q));
-  if (CHAT.prepared.some((x) => x.q.toLowerCase() === q.toLowerCase())) { fromPrepared(q); return; }   // prepared: instant, no cost
-  const msg = chatSay("ai", `<p class="thinking">Reading the course material and our notes…</p>`);
-  const body = msg.querySelector(".body"), log = document.getElementById("chatlog");
-  let text = "", queued = false;
-  const paint = () => { queued = false; body.innerHTML = prose(text) + '<span class="caret" aria-hidden="true"></span>'; log.scrollTop = log.scrollHeight; };
-  document.getElementById("chatform").classList.add("busy");
-  const r = await streamChat(q, (piece) => { text += piece; if (!queued) { queued = true; requestAnimationFrame(paint); } }).catch((e) => ({ error: String(e) }));
-  document.getElementById("chatform").classList.remove("busy");
-  if (r.error) {
-    msg.remove();
-    if (!fromPrepared(q)) chatSay("ai", `<p>The AI isn't available right now (${esc(String(r.error).slice(0, 180))}). Try a suggested question.</p>` + resourcesFor(q));
+  if (CHAT.prepared.some((x) => x.q.toLowerCase() === q.toLowerCase())) { await sayPrepared(q); return; }   // prepared: no AI call, no cost
+  const msg = chatSay("ai", statusHTML("Reading our notes…")), body = msg.querySelector(".body"), log = document.getElementById("chatlog");
+  const writer = makeWriter(body, log), ctl = new AbortController();
+  let text = "", started = false, stopped = false;
+  const stage = (t, extra = "") => { if (!started) body.innerHTML = statusHTML(t, extra); };
+  const timers = [setTimeout(() => stage("Searching the course material…"), 1500),
+                  setTimeout(() => stage("Still working. The AI service can be slow, hang on…"), 7000)];
+  CHAT.stop = () => { stopped = true; ctl.abort(); };
+  chatBusy(true);
+  const r = await streamChat(q, (piece) => {
+    if (!started) { started = true; timers.forEach(clearTimeout); }
+    text += piece; writer.set(text);
+  }, (ev) => {
+    if (ev.stage === "found") {
+      timers.forEach(clearTimeout);
+      const names = (ev.passages || []).map((p) => `<li>${esc(p.source)} · ${esc(p.title)}</li>`).join("");
+      stage(ev.passages.length ? `Found ${ev.passages.length} passage${ev.passages.length === 1 ? "" : "s"} in the course material. Writing the answer…` : "Using our notes. Writing the answer…", names ? `<ul class="found">${names}</ul>` : "");
+    }
+  }, ctl.signal).catch((e) => ({ error: String(e) }));
+  timers.forEach(clearTimeout);
+  CHAT.stop = null;
+  if (stopped) {   // they pressed Stop: keep what was written so far
+    writer.stop(); chatBusy(false);
+    if (text) { body.innerHTML = prose(text); msg.insertAdjacentHTML("beforeend", `<p class="foot">Stopped. Ask again for the full answer.</p>`); } else msg.remove();
     return;
   }
+  if (r.error) {
+    writer.stop(); chatBusy(false); msg.remove();
+    if (!(await sayPrepared(q))) chatSay("ai", `<p>The AI isn't available right now (${esc(String(r.error).slice(0, 180))}). Try a suggested question.</p>` + resourcesFor(q));
+    return;
+  }
+  await writer.drain();   // let the last words finish appearing before the final version replaces them
+  chatBusy(false);
   CHAT.history.push({ role: "user", content: q }, { role: "assistant", content: r.answer });
   CHAT.history = CHAT.history.slice(-8);
-  body.innerHTML = prose(r.answer) + sourcesHTML(r.sources) + resourcesFor(q, r.sources);
-  msg.insertAdjacentHTML("beforeend", `<p class="foot">Live answer from ${esc(r.model)}, using only the course material and our notes</p>`);
-  log.scrollTop = log.scrollHeight;
+  finishAnswer(msg, q, r.answer, r.sources, `Live answer from ${esc(r.model)}, using only the course material and our notes`);
 }
 function openChat() {
   const panel = document.getElementById("askpanel");
@@ -804,11 +864,12 @@ function setupChat() {
       <button type="button" class="ask-x" id="askx" aria-label="Close the chat"><svg class="icon" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
     <div class="ask-log" id="chatlog" aria-live="polite"></div>
     <div class="chips ask-chips" id="chatchips"></div>
-    <form class="chat-form" id="chatform"><input id="chatq" placeholder="Ask anything about the project…" autocomplete="off" aria-label="Your question"><button class="btn primary" type="submit">${ICON.pen}<span class="sr">Ask</span></button></form>
+    <form class="chat-form" id="chatform"><input id="chatq" placeholder="Ask anything about the project…" autocomplete="off" aria-label="Your question"><button class="btn primary send" type="submit">${ICON.pen}<span class="sr">Ask</span></button><button class="btn stop" type="button" id="chatstop" title="Stop the answer"><span aria-hidden="true">■</span><span class="sr">Stop</span></button></form>
     <p class="ask-note">${STATIC ? "Live AI through a small server with a daily limit." : "Live AI from the service in .env."} It answers only from the course's training guide and starting notebook, our notebook and our notes, and numbers its sources.</p>
   </section>`);
   document.getElementById("askfab").onclick = () => (CHAT.open ? closeChat() : openChat());
   document.getElementById("askx").onclick = closeChat;
+  document.getElementById("chatstop").onclick = () => CHAT.stop?.();
   document.getElementById("chatform").onsubmit = (e) => { e.preventDefault(); const i = document.getElementById("chatq"); const q = i.value; i.value = ""; askChat(q); };
   addEventListener("keydown", (e) => { if (e.key === "Escape" && CHAT.open && !ZOOMED && !EXPLAIN) closeChat(); });
   CHAT.ready = loadJSON("/static/story/answers.json", { answers: [] }).then((prep) => {

@@ -504,7 +504,10 @@ button, a, label.btn, .chip { touch-action: manipulation; -webkit-tap-highlight-
 .ask-panel .chat-form { padding: 0.5rem 0.9rem 0.2rem; }
 .ask-panel .chat-form input { font-size: 1.08rem; padding: 0.45rem 0.65rem; }
 .ask-panel .chat-form .btn { padding: 0.45rem 0.8rem; }
-.chat-form.busy .btn { opacity: 0.55; pointer-events: none; }
+.chat-form .stop { display: none; }
+.chat-form.busy .send { display: none; }
+.chat-form.busy .stop { display: inline-flex; align-items: center; justify-content: center; }
+.chat-form.busy input { opacity: 0.6; }
 .ask-note { margin: 0; padding: 0.2rem 0.9rem 0.6rem; font-size: 0.82rem; color: var(--ink-2); line-height: 1.3; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .ask-card { border: 1.5px solid var(--ink); background: var(--paper); padding: 0 1rem 0.8rem; }
@@ -559,3 +562,12 @@ button, a, label.btn, .chip { touch-action: manipulation; -webkit-tap-highlight-
   .masthead nav:has(.menu.open) { mask-image: none; }
   .masthead .right .modes button { justify-content: center; }
 }
+
+/* the chat's "working on it" line: three bouncing dots, what it's doing, and the passages it found */
+.msg .status { display: flex; flex-wrap: wrap; align-items: center; gap: 0.2rem 0.6rem; color: var(--ink-2); }
+.dots { display: inline-flex; gap: 0.25rem; }
+.dots i { width: 0.45rem; height: 0.45rem; border-radius: 50%; background: var(--red); animation: bounce 1.2s infinite ease-in-out; }
+.dots i:nth-child(2) { animation-delay: 0.15s; } .dots i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes bounce { 0%, 60%, 100% { transform: translateY(0); opacity: 0.45; } 30% { transform: translateY(-0.3rem); opacity: 1; } }
+.msg .found { flex-basis: 100%; margin: 0.2rem 0 0; padding-left: 1.2rem; font-size: 0.95rem; }
+@media (prefers-reduced-motion: reduce) { .dots i { animation: none; opacity: 0.7; } }

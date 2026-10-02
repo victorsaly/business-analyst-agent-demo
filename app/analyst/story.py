@@ -183,7 +183,9 @@ def stream_answer(question, history=()):
     if not question:
         yield {"type": "error", "message": EMPTY}
         return
+    yield {"type": "status", "stage": "searching"}
     messages, found = _prepare(question, history)
+    yield {"type": "status", "stage": "found", "passages": [{"source": x["source"], "title": x["title"]} for x in found]}
     p, text = current(), ""
     body = {"model": p["model"], "messages": messages, "stream": True}
     body["max_completion_tokens" if p["name"] == "openai" else "max_tokens"] = 800
