@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Getting started: run the demo on your own laptop (Mac and Windows) · Business Performance Analyst Agent</title>
+<title>Getting started: run the demo on your own laptop (Mac, Windows and Linux) · Business Performance Analyst Agent</title>
 <meta name="description" content="A course demonstration (Agentic AI Workshop 2026, Capstone 2): how we built an AI analyst agent, step by step.">
 <link rel="icon" href="../favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="../blog.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
@@ -26,7 +26,7 @@ await mermaid.run({ querySelector: "pre.mermaid" });
 <a class="brand" href="index.html"><img src="../logo.svg" alt="" width="32" height="32"> Business Performance Analyst Agent</a>
 <div class="search" role="search"><label class="sr" for="q">Search the docs</label><input id="q" type="search" placeholder="Search the docs" autocomplete="off" spellcheck="false" aria-controls="hits" aria-expanded="false" aria-autocomplete="list"><kbd aria-hidden="true">/</kbd><div id="hits" role="listbox" aria-label="Search results" hidden></div></div><nav aria-label="Blog"><a href="index.html">How this was made</a><a href="history.html">History</a><a href="requirements.html">Requirements</a><a href="build-guide.html">Build guide</a><a href="../demo/">Open the demo</a><a href="../api/">API</a><a href="../">Home</a></nav></div></header>
 <div class="wrap"><main><span class="course">Course demonstration · Capstone 2 · Agentic AI Workshop 2026</span>
-<h1 id="getting-started-run-the-demo-on-your-own-laptop-mac-and-windows">Getting started: run the demo on your own laptop (Mac and Windows)</h1>
+<h1 id="getting-started-run-the-demo-on-your-own-laptop-mac-windows-and-linux">Getting started: run the demo on your own laptop (Mac, Windows and Linux)</h1>
 <p><em>For everyone in the group. No programming needed: you download a folder, double-click two files, and the
 demo opens in your browser. The first time takes about 15 minutes.</em></p>
 <blockquote>
@@ -38,7 +38,7 @@ demo opens in your browser. The first time takes about 15 minutes.</em></p>
 </blockquote>
 <h2 id="what-you-need">What you need</h2>
 <ul>
-<li>A Mac or a Windows laptop, with internet.</li>
+<li>A Mac, Windows or Linux laptop, with internet.</li>
 <li>About 1 GB of free space.</li>
 <li>15 minutes.</li>
 <li>Optional: a free Groq key for Live AI (Step 3). Without one, Replay mode still works.</li>
@@ -70,13 +70,15 @@ demo opens in your browser. The first time takes about 15 minutes.</em></p>
 <li>Move the unzipped folder somewhere easy to find, for example your Desktop.</li>
 </ol>
 <p>You should now have a folder called <code>business-analyst-agent-demo-main</code>. Inside it are four files whose names
-start with <code>Mac -</code> or <code>Windows -</code>:</p>
+start with <code>Mac -</code>, <code>Windows -</code> or <code>Linux -</code>:</p>
 <pre><code class="language-text">Mac - 1 Setup.command
 Mac - 2 Start.command
 Windows - 1 Setup.bat
 Windows - 2 Start.bat
+Linux - 1 Setup.sh
+Linux - 2 Start.sh
 </code></pre>
-<p>These are the only files you need to touch. Mac users use the two <code>Mac</code> files; Windows users use the two <code>Windows</code> files.</p>
+<p>These are the only files you need to touch. Use the two files for your computer: <code>Mac</code>, <code>Windows</code> or <code>Linux</code>.</p>
 <h2 id="step-2-install-python-once">Step 2. Install Python (once)</h2>
 <p>Python is the free program the demo runs on. You need Python 3.10 or newer. If you are not sure whether you
 have it, skip this step: the setup file in Step 4 checks for you and opens the download page if it is missing.</p>
@@ -102,6 +104,8 @@ have it, skip this step: the setup file in Step 4 checks for you and opens the d
 <p>You should see a version of 3.10 or higher, for example:</p>
 <pre><code class="language-text">Python 3.12.4
 </code></pre>
+<p><strong>Linux</strong></p>
+<p>Open a terminal and type <code>python3 --version</code>.</p>
 <p>If you see <code>command not found</code>, <code>not recognized</code>, or a number below 3.10, install Python:</p>
 <p><strong>Mac</strong></p>
 <ol>
@@ -115,6 +119,11 @@ have it, skip this step: the setup file in Step 4 checks for you and opens the d
 <li>Open it. <strong>On the first screen, tick "Add python.exe to PATH"</strong> at the bottom. This is the step people most often miss.</li>
 <li>Click <strong>Install Now</strong> and wait until it says <em>Setup was successful</em>.</li>
 </ol>
+<p><strong>Linux</strong></p>
+<p>Install it with your package manager. On Ubuntu or Debian, also install <code>python3-venv</code>, which Setup needs:</p>
+<pre><code class="language-bash">sudo apt install python3 python3-venv     # Ubuntu, Debian
+sudo dnf install python3                  # Fedora
+</code></pre>
 <h2 id="step-3-get-a-free-ai-key-optional-for-live-ai">Step 3. Get a free AI key (optional, for Live AI)</h2>
 <ol>
 <li>Go to <a href="https://console.groq.com">https://console.groq.com</a> and sign up. It's free, and a Google account works.</li>
@@ -132,27 +141,56 @@ have it, skip this step: the setup file in Step 4 checks for you and opens the d
 <li>On newer macOS, if there is no <strong>Open</strong> button: go to <strong>System Settings → Privacy &amp; Security</strong>, scroll down, and click <strong>Open Anyway</strong>.</li>
 </ol>
 </li>
-<li>A Terminal window opens and works for a few minutes. Leave it alone until it says <code>Setup done.</code></li>
+<li>A Terminal window opens and works for a few minutes. Leave it alone until it says <code>===== SETUP DONE =====</code>.</li>
 </ol>
 <p><strong>Windows</strong></p>
 <ol>
 <li>Open the project folder and double-click <code>Windows - 1 Setup.bat</code>.</li>
 <li>If a blue <em>Windows protected your PC</em> box appears, click <strong>More info</strong>, then <strong>Run anyway</strong>.</li>
-<li>A black window opens and works for a few minutes. Leave it alone until it says <code>Setup done.</code></li>
+<li>A black window opens and works for a few minutes. Leave it alone until it says <code>===== SETUP DONE =====</code>.</li>
 </ol>
-<p>When it has finished, the window shows something like this (the Mac version; Windows is the same apart from
-the last lines):</p>
+<p><strong>Linux</strong></p>
+<ol>
+<li>Open a terminal in the project folder (in most file managers: right-click inside the folder, <strong>Open in Terminal</strong>).</li>
+<li>
+<p>Type this and press <strong>Enter</strong>:</p>
+<pre><code class="language-bash">bash &quot;Linux - 1 Setup.sh&quot;
+</code></pre>
+</li>
+<li>
+<p>It works for a few minutes. Leave it alone until it says <code>===== SETUP DONE =====</code>.</p>
+</li>
+</ol>
+<p>Setup works through four numbered steps, and the window title always shows the current one. Step 3
+(installing Python packages) is the slow part: you see package names and progress bars scroll past, which
+means it is working. A shortened example (the Mac version; Windows is the same apart from the last lines):</p>
 <pre><code class="language-text">== Business Performance Analyst Agent: setup (Mac) ==
+
+[1/4 Creating the Python environment] in app/.venv ...
+
+[2/4 Updating pip] ...
+
+[3/4 Installing Python packages] This is the slow part, a few minutes. Progress shows below.
+Collecting pandas&gt;=2.0
+  Downloading pandas-2.2.3-cp312-cp312-macosx_11_0_arm64.whl (11.3 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11.3/11.3 MB 8.1 MB/s
+...
+Successfully installed ...
+
+[4/4 Preparing the AdventureWorks database] ...
 Downloading AdventureWorks (about 17 MB)...
+  17.2 MB (100%)
+  Loading table 1/7: SalesOrderHeader
+  ...
 Database ready: /Users/you/Desktop/business-analyst-agent-demo-main/app/data/adventureworks.db
 
-Setup done.
-A text file called .env will open now. Paste your free Groq key after GROQ_API_KEY= and save it.
-(No key? Skip this: Replay mode works without one.)
-Next: double-click 'Mac - 2 Start.command'.
-Press Enter to close this window.
+===== SETUP DONE =====
+
+Last step: your free AI key for Live AI (get one at https://console.groq.com/keys).
 </code></pre>
-<p>At the same time a text file called <code>.env</code> opens (TextEdit on Mac, Notepad on Windows). To add your key:</p>
+<p>If something goes wrong, the window says <code>===== SETUP FAILED at step …</code> with the step that failed. Fix the
+cause (usually the internet connection) and double-click Setup again; finished steps are quick the second time.</p>
+<p>After <code>SETUP DONE</code>, a text file called <code>.env</code> opens (TextEdit on Mac, Notepad on Windows, your text editor on Linux). To add your key:</p>
 <ol>
 <li>Click at the end of the line <code>GROQ_API_KEY=</code>.</li>
 <li>
@@ -161,9 +199,42 @@ Press Enter to close this window.
 </code></pre>
 </li>
 <li>
-<p>Save the file (<strong>⌘ S</strong> on Mac, <strong>Ctrl S</strong> on Windows) and close it.</p>
+<p>Save the file (<strong>⌘ S</strong> on Mac, <strong>Ctrl S</strong> on Windows and Linux).</p>
 </li>
-<li>Press <strong>Enter</strong> in the setup window to close it (on Windows, press any key).</li>
+<li>Tell Setup you're done: on <strong>Windows</strong>, close Notepad; on <strong>Mac</strong> and <strong>Linux</strong>, press <strong>Enter</strong> in the Terminal window.
+    (On Linux without a desktop, <code>.env</code> opens in the terminal editor nano: save with <strong>Ctrl O</strong>, <strong>Enter</strong>, then <strong>Ctrl X</strong>.)</li>
+<li>
+<p>Setup checks the key with Groq and shows one of these:</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Message</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AI key for groq: OK</code></td>
+<td>All set. Live AI will work.</td>
+</tr>
+<tr>
+<td><code>NO AI KEY</code></td>
+<td><code>.env</code> has no key. Fine if you only want Replay; otherwise add it (see above).</td>
+</tr>
+<tr>
+<td><code>AI KEY REJECTED</code></td>
+<td>The key is wrong or was deleted in Groq. Copy it again, or create a new one (Step 3).</td>
+</tr>
+<tr>
+<td><code>could not reach … to check it</code></td>
+<td>No internet right now. The key may be fine; it is checked again on every Start.</td>
+</tr>
+</tbody>
+</table></div>
+</li>
+<li>
+<p>Press <strong>Enter</strong> in the setup window to close it (on Windows, press any key).</p>
+</li>
 </ol>
 <p>No key? Close the <code>.env</code> file without changing it. Running Setup a second time is safe: it keeps your <code>.env</code>.</p>
 <h2 id="step-5-start-the-demo-every-time">Step 5. Start the demo (every time)</h2>
@@ -171,11 +242,14 @@ Press Enter to close this window.
 <li>Double-click the Start file:<ul>
 <li><strong>Mac:</strong> <code>Mac - 2 Start.command</code></li>
 <li><strong>Windows:</strong> <code>Windows - 2 Start.bat</code></li>
+<li><strong>Linux:</strong> in a terminal in the project folder, <code>bash "Linux - 2 Start.sh"</code></li>
 </ul>
 </li>
 <li>
-<p>A window opens and shows:</p>
-<pre><code class="language-text">Starting the demo... your browser will open http://localhost:8501
+<p>A window opens. It first checks your AI key (same messages as in Step 4), then shows:</p>
+<pre><code class="language-text">AI key for groq: OK (model openai/gpt-oss-20b).
+
+Starting the demo... your browser will open http://localhost:8501
 Keep this window open while you present. Close it to stop the demo.
 </code></pre>
 </li>
@@ -238,6 +312,18 @@ Keep this window open while you present. Close it to stop the demo.
 </thead>
 <tbody>
 <tr>
+<td>Linux: <em>"Install Python's venv module"</em> or <em>"ensurepip is not available"</em></td>
+<td>Run <code>sudo apt install python3-venv</code>, then run Setup again.</td>
+</tr>
+<tr>
+<td>Setup seems stuck</td>
+<td>Look at the window title: it names the step. Step 3 can take several minutes on slow wifi; as long as lines keep appearing, it is working.</td>
+</tr>
+<tr>
+<td><em>"SETUP FAILED at step …"</em></td>
+<td>Read the lines just above it. Usually the internet dropped: reconnect and double-click Setup again.</td>
+</tr>
+<tr>
 <td><em>"Python 3.10 or newer is not installed yet"</em></td>
 <td>Install Python (Step 2), then double-click the Setup file again. On Windows, make sure you ticked <strong>Add python.exe to PATH</strong>. If you didn't, run the Python installer again, choose <strong>Modify</strong>, and tick it.</td>
 </tr>
@@ -246,7 +332,7 @@ Keep this window open while you present. Close it to stop the demo.
 <td>Install Python from python.org instead (Step 2), then run Setup again.</td>
 </tr>
 <tr>
-<td><em>"Run 'Mac - 1 Setup.command' first."</em> or <em>"Run "Windows - 1 Setup.bat" first."</em></td>
+<td><em>"Run 'Mac - 1 Setup.command' first."</em>, <em>"Run "Windows - 1 Setup.bat" first."</em> or <em>"Run 'Linux - 1 Setup.sh' first."</em></td>
 <td>Do Step 4 before Step 5.</td>
 </tr>
 <tr>
@@ -258,8 +344,8 @@ Keep this window open while you present. Close it to stop the demo.
 <td>The demo is already running in another window. Use that one, or close it and start again. To find it, see <a href="#port-8501-already-in-use">Port 8501 already in use</a> below.</td>
 </tr>
 <tr>
-<td>Live AI says <em>"No AI key set"</em>, or that the key is wrong</td>
-<td>Open <code>app/.env</code> (Step 4) and check the line is exactly <code>GROQ_API_KEY=gsk_…</code>. Then close the Start window and start again. On a Mac, <code>.env</code> is hidden in Finder: press <strong>⌘ Shift .</strong> to show hidden files.</td>
+<td><em>"NO AI KEY"</em> or <em>"AI KEY REJECTED"</em> when Setup or Start runs, or Live AI says <em>"No AI key set"</em></td>
+<td>Open <code>app/.env</code> (Step 4) and check the line is exactly <code>GROQ_API_KEY=gsk_…</code>. Then close the Start window and start again. On a Mac, <code>.env</code> is hidden in Finder: press <strong>⌘ Shift .</strong> to show hidden files. On Linux, press <strong>Ctrl H</strong> in the file manager.</td>
 </tr>
 <tr>
 <td>Live AI stops with a <em>rate limit</em> or <em>allowance</em> message</td>
