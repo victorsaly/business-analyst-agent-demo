@@ -1,4 +1,4 @@
-# Getting started: run the demo on your own laptop (Mac and Windows)
+# Getting started: run the demo on your own laptop (Mac, Windows and Linux)
 
 *For everyone in the group. No programming needed: you download a folder, double-click two files, and the
 demo opens in your browser. The first time takes about 15 minutes.*
@@ -12,7 +12,7 @@ demo opens in your browser. The first time takes about 15 minutes.*
 
 ## What you need
 
-- A Mac or a Windows laptop, with internet.
+- A Mac, Windows or Linux laptop, with internet.
 - About 1 GB of free space.
 - 15 minutes.
 - Optional: a free Groq key for Live AI (Step 3). Without one, Replay mode still works.
@@ -45,16 +45,18 @@ flowchart LR
 4. Move the unzipped folder somewhere easy to find, for example your Desktop.
 
 You should now have a folder called `business-analyst-agent-demo-main`. Inside it are four files whose names
-start with `Mac -` or `Windows -`:
+start with `Mac -`, `Windows -` or `Linux -`:
 
 ```text
 Mac - 1 Setup.command
 Mac - 2 Start.command
 Windows - 1 Setup.bat
 Windows - 2 Start.bat
+Linux - 1 Setup.sh
+Linux - 2 Start.sh
 ```
 
-These are the only files you need to touch. Mac users use the two `Mac` files; Windows users use the two `Windows` files.
+These are the only files you need to touch. Use the two files for your computer: `Mac`, `Windows` or `Linux`.
 
 ## Step 2. Install Python (once)
 
@@ -87,6 +89,10 @@ You should see a version of 3.10 or higher, for example:
 Python 3.12.4
 ```
 
+**Linux**
+
+Open a terminal and type `python3 --version`.
+
 If you see `command not found`, `not recognized`, or a number below 3.10, install Python:
 
 **Mac**
@@ -100,6 +106,15 @@ If you see `command not found`, `not recognized`, or a number below 3.10, instal
 1. Go to <https://www.python.org/downloads/windows/> and download the latest **Python 3** "Windows installer (64-bit)".
 2. Open it. **On the first screen, tick "Add python.exe to PATH"** at the bottom. This is the step people most often miss.
 3. Click **Install Now** and wait until it says *Setup was successful*.
+
+**Linux**
+
+Install it with your package manager. On Ubuntu or Debian, also install `python3-venv`, which Setup needs:
+
+```bash
+sudo apt install python3 python3-venv     # Ubuntu, Debian
+sudo dnf install python3                  # Fedora
+```
 
 ## Step 3. Get a free AI key (optional, for Live AI)
 
@@ -125,6 +140,17 @@ Don't share your key or put it in a document or chat: anyone who has it can use 
 1. Open the project folder and double-click `Windows - 1 Setup.bat`.
 2. If a blue *Windows protected your PC* box appears, click **More info**, then **Run anyway**.
 3. A black window opens and works for a few minutes. Leave it alone until it says `===== SETUP DONE =====`.
+
+**Linux**
+
+1. Open a terminal in the project folder (in most file managers: right-click inside the folder, **Open in Terminal**).
+2. Type this and press **Enter**:
+
+   ```bash
+   bash "Linux - 1 Setup.sh"
+   ```
+
+3. It works for a few minutes. Leave it alone until it says `===== SETUP DONE =====`.
 
 Setup works through four numbered steps, and the window title always shows the current one. Step 3
 (installing Python packages) is the slow part: you see package names and progress bars scroll past, which
@@ -159,7 +185,7 @@ Last step: your free AI key for Live AI (get one at https://console.groq.com/key
 If something goes wrong, the window says `===== SETUP FAILED at step …` with the step that failed. Fix the
 cause (usually the internet connection) and double-click Setup again; finished steps are quick the second time.
 
-After `SETUP DONE`, a text file called `.env` opens (TextEdit on Mac, Notepad on Windows). To add your key:
+After `SETUP DONE`, a text file called `.env` opens (TextEdit on Mac, Notepad on Windows, your text editor on Linux). To add your key:
 
 1. Click at the end of the line `GROQ_API_KEY=`.
 2. Paste your Groq key straight after the `=`, with no spaces. The line should look like this:
@@ -168,8 +194,9 @@ After `SETUP DONE`, a text file called `.env` opens (TextEdit on Mac, Notepad on
    GROQ_API_KEY=gsk_your_key_here
    ```
 
-3. Save the file (**⌘ S** on Mac, **Ctrl S** on Windows).
-4. Tell Setup you're done: on **Windows**, close Notepad; on **Mac**, press **Enter** in the Terminal window.
+3. Save the file (**⌘ S** on Mac, **Ctrl S** on Windows and Linux).
+4. Tell Setup you're done: on **Windows**, close Notepad; on **Mac** and **Linux**, press **Enter** in the Terminal window.
+   (On Linux without a desktop, `.env` opens in the terminal editor nano: save with **Ctrl O**, **Enter**, then **Ctrl X**.)
 5. Setup checks the key with Groq and shows one of these:
 
    | Message | Meaning |
@@ -188,6 +215,7 @@ No key? Close the `.env` file without changing it. Running Setup a second time i
 1. Double-click the Start file:
    - **Mac:** `Mac - 2 Start.command`
    - **Windows:** `Windows - 2 Start.bat`
+   - **Linux:** in a terminal in the project folder, `bash "Linux - 2 Start.sh"`
 2. A window opens. It first checks your AI key (same messages as in Step 4), then shows:
 
    ```text
@@ -231,14 +259,15 @@ There is also a ready-made PDF: [presentation.pdf](https://victorsaly.github.io/
 
 | What you see | What to do |
 |---|---|
+| Linux: *"Install Python's venv module"* or *"ensurepip is not available"* | Run `sudo apt install python3-venv`, then run Setup again. |
 | Setup seems stuck | Look at the window title: it names the step. Step 3 can take several minutes on slow wifi; as long as lines keep appearing, it is working. |
 | *"SETUP FAILED at step …"* | Read the lines just above it. Usually the internet dropped: reconnect and double-click Setup again. |
 | *"Python 3.10 or newer is not installed yet"* | Install Python (Step 2), then double-click the Setup file again. On Windows, make sure you ticked **Add python.exe to PATH**. If you didn't, run the Python installer again, choose **Modify**, and tick it. |
 | Windows opens the **Microsoft Store** when you run Setup | Install Python from python.org instead (Step 2), then run Setup again. |
-| *"Run 'Mac - 1 Setup.command' first."* or *"Run "Windows - 1 Setup.bat" first."* | Do Step 4 before Step 5. |
+| *"Run 'Mac - 1 Setup.command' first."*, *"Run "Windows - 1 Setup.bat" first."* or *"Run 'Linux - 1 Setup.sh' first."* | Do Step 4 before Step 5. |
 | The browser says *This site can't be reached* | Wait five seconds and refresh. Check the Start window is still open and shows no error. |
 | *"address already in use"* (the Start window closes or shows an error) | The demo is already running in another window. Use that one, or close it and start again. To find it, see [Port 8501 already in use](#port-8501-already-in-use) below. |
-| *"NO AI KEY"* or *"AI KEY REJECTED"* when Setup or Start runs, or Live AI says *"No AI key set"* | Open `app/.env` (Step 4) and check the line is exactly `GROQ_API_KEY=gsk_…`. Then close the Start window and start again. On a Mac, `.env` is hidden in Finder: press **⌘ Shift .** to show hidden files. |
+| *"NO AI KEY"* or *"AI KEY REJECTED"* when Setup or Start runs, or Live AI says *"No AI key set"* | Open `app/.env` (Step 4) and check the line is exactly `GROQ_API_KEY=gsk_…`. Then close the Start window and start again. On a Mac, `.env` is hidden in Finder: press **⌘ Shift .** to show hidden files. On Linux, press **Ctrl H** in the file manager. |
 | Live AI stops with a *rate limit* or *allowance* message | The free Groq plan has a daily limit. Switch to **Replay**: it plays back real recorded runs. |
 | Setup stopped with an error about the internet | Check your connection (some office or university networks block downloads) and run Setup again. Running it twice is safe. |
 
