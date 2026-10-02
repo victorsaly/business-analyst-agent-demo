@@ -72,7 +72,8 @@ async function hash(text) {   // visitors are counted by a hash of their IP addr
   return [...new Uint8Array(buf)].slice(0, 8).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-// ---- the team form (site/team-form/): each member's details, kept in KV under team:<hash of their LinkedIn link>,
+// ---- the team form (site/team-form/): each member's details, kept in KV under team:<hash of their LinkedIn link, or of
+// their name for people without LinkedIn>,
 // so sending the form again replaces their earlier answer. Nothing reads them back over the web:
 // app/scripts/pull_team.py fetches them with wrangler and fills app/web/team.json.
 const SKILLS = ["Python", "SQL / data analysis", "AI and prompting", "Web", "Design / UX", "Writing and documentation",
@@ -92,7 +93,7 @@ async function team(request, env, origin, cors) {
     other_skills: text(b.other_skills, 200), tools: text(b.tools, 500), bio: text(b.bio, 800), photo: text(b.photo, 300),
   };
   if (!entry.name || !entry.role || !entry.bio) return json({ error: "Please fill in your name, role and bio." }, 400, cors);
-  if (!isUrl(entry.linkedin) || !/(^|\.)linkedin\.com$/.test(new URL(entry.linkedin).hostname))
+  if (entry.linkedin && (!isUrl(entry.linkedin) || !/(^|\.)linkedin\.com$/.test(new URL(entry.linkedin).hostname)))   // optional: not everyone has one
     return json({ error: "Please paste your full LinkedIn profile link, starting with https://www.linkedin.com/" }, 400, cors);
   if (entry.photo && !isUrl(entry.photo)) return json({ error: "The photo link should start with https://" }, 400, cors);
   if (!entry.skills.length && !entry.other_skills) return json({ error: "Please tick at least one skill." }, 400, cors);
@@ -101,7 +102,7 @@ async function team(request, env, origin, cors) {
   const who = await hash(request.headers.get("CF-Connecting-IP") || "unknown");
   const sent = +(await env.LIMITS.get(`tv:${day}:${who}`) || 0);
   if (sent >= TEAM_PER_VISITOR) return json({ error: "Too many sends today. Please try again tomorrow." }, 429, cors);
-  const profile = entry.linkedin.toLowerCase().replace(/[?#].*$/, "").replace(/\/+$/, "").replace(/^https:\/\/[a-z]+\./, "https://");
+  const profile = !entry.linkedin ? `name:${entry.name.toLowerCase()}` : entry.linkedin.toLowerCase().replace(/[?#].*$/, "").replace(/\/+$/, "").replace(/^https:\/\/[a-z]+\./, "https://");
   await Promise.all([env.LIMITS.put(`team:${await hash(profile)}`, JSON.stringify({ ...entry, at: new Date().toISOString() })),
                      env.LIMITS.put(`tv:${day}:${who}`, String(sent + 1), { expirationTtl: 172800 })]);
   return json({ ok: true }, 200, cors);

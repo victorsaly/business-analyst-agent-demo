@@ -21,6 +21,7 @@ WORKER = os.path.join(os.path.dirname(HERE), "worker")
 TEAM = os.path.join(HERE, "web", "team.json")
 ANSWERS = os.path.join(HERE, "data", "team_answers.json")
 PHOTOS = os.path.join(HERE, "web", "team")   # served as team/<name>.jpg next to team.json
+PLACEHOLDERS = {"google", "linkedin", "your-name", "yourname", "name", "example", "test", "none", "na", "n-a"}   # not a real profile
 IMAGE_TYPES = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/gif": "gif"}
 SKILLS = ["Python", "SQL / data analysis", "AI and prompting", "Web", "Design / UX", "Writing and documentation",
           "Presenting", "Project management", "Testing"]   # the same list as the form and worker/src/index.js
@@ -78,6 +79,10 @@ def main():
         team = json.load(f)
     members, added = team.get("members", []), []
     for a in answers:
+        handle = a.get("linkedin", "").lower().rstrip("/").rsplit("/", 1)[-1]
+        if handle in PLACEHOLDERS:   # someone without LinkedIn typed a stand-in to get past the form
+            print(f"  {a['name']}: LinkedIn {a['linkedin']} looks like a stand-in, left out")
+            a["linkedin"] = ""
         person = {"name": a["name"], "linkedin": a["linkedin"], "role": a.get("role", ""), "bio": a.get("bio", "")}
         old = next((m for m in members if same(m, person)), None)
         if a.get("photo"):

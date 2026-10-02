@@ -8,6 +8,30 @@
       "role": "Project Manager",
       "bio": "Victor is a software engineer at Storm Software Systems in Watford, with a long background in .NET web development, search and content platforms. He is a certified Umbraco Expert and Elasticsearch Engineer. Lately he has moved into AI products: he holds Microsoft's AI Product Manager certificate and completed London Business School's Implementing Generative AI course. On this project he built the agent, the site and the tooling behind them.",
       "photo": "team/victor-saly.jpg"
+    },
+    {
+      "name": "Akashdeep Nijjar",
+      "linkedin": "",
+      "role": "modified agent",
+      "bio": "Changes to Capstone Project2:\n-added verification function that takes the user query and checks whether all info necessary for charts are there (i.e. prompt give me the overview of cogs for the entire year - this can be a bar plot grouped by region (but user hasn’t specified region) or line graph showing trend per week ) in an ambiguous query like this the agent should not assume and goes back to ask the user what kind of plot is preferred\n\n- added matching rule in rulebook for this\n\n- accessible charts for vision impaired"
+    },
+    {
+      "name": "Manuel Verduzco Valenzuela",
+      "linkedin": "https://www.linkedin.com/in/manuel-verduzco/",
+      "role": "testing",
+      "bio": "Data Scientist, mexican living in Suffolk. Currently implementing AI-driven automation in the military aviation field."
+    },
+    {
+      "name": "Mazen Ahmed",
+      "linkedin": "https://www.linkedin.com/in/mazenahmed-ai/",
+      "role": "prompts",
+      "bio": "AI engineer(KTP Associate and PhD student), focused on NLP"
+    },
+    {
+      "name": "Buddhika Gamage",
+      "linkedin": "https://www.linkedin.com/in/buddhika-sameera/",
+      "role": "Data Analysis, Testing",
+      "bio": "Product Owner / Data Scientist"
     }
   ]
 }
