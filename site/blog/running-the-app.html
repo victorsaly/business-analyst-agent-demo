@@ -451,6 +451,37 @@ course material, and how we built it. Every answer uses only:</p>
 <li>course material: the passages that best match the question from the course's training guide and
     starting notebook, and from our finished notebook. These are numbered, and the answer cites them, like [2].</li>
 </ul>
+<p>While it works, the chat says what it's doing: reading the notes, then the passages it found, then the answer
+as it's written. <strong>Stop</strong> keeps what's written so far.</p>
+<p><strong>No training.</strong> The AI isn't trained on any of this. For each question, the chat looks up the relevant text
+and sends it along with the question. Some of that text is read fresh every time, and some is a saved copy
+that you refresh:</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>What the chat uses</th>
+<th>Local app</th>
+<th>Online</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>The brief, the build guide and the history</td>
+<td>Read from <code>docs/</code> for every question, so edits show at once</td>
+<td>In the Worker's saved copy: refresh it and deploy</td>
+</tr>
+<tr>
+<td>The knowledge base (course material, our notebook, every blog page)</td>
+<td>Saved copy, <code>data/knowledge.json</code></td>
+<td>Saved copy, inside the Worker</td>
+</tr>
+<tr>
+<td>Answers to the suggested questions</td>
+<td>Saved, <code>web/story/answers.json</code></td>
+<td>The same file, on the website</td>
+</tr>
+</tbody>
+</table></div>
 <p>The suggested questions have answers prepared in advance, so they are instant and cost nothing. To regenerate
 them (this uses the AI):</p>
 <pre><code class="language-bash">./demo.sh story
@@ -504,7 +535,10 @@ app does, and caps costs with these limits:</p>
 </tr>
 </tbody>
 </table></div>
-<p>To update it after changing the docs, the notebook or <code>analyst/story.py</code>:</p>
+<p><strong>Logs.</strong> The Worker's requests and errors appear in the Cloudflare dashboard (the Worker's Observability
+tab). They're switched on in <code>wrangler.toml</code>, not in the dashboard, because a deploy resets settings made
+only in the dashboard. The Worker doesn't log the questions visitors type.</p>
+<p>To update it after changing the docs, the notebook or <code>analyst/story.py</code> (<a href="scripts.html">what each script does</a>):</p>
 <ol>
 <li>
 <p>Rebuild the knowledge base (from <code>app/</code>):</p>

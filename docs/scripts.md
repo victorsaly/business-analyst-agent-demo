@@ -133,6 +133,8 @@ for the local app and `../worker/knowledge.json` for the online chat.
 
 The course files aren't in this repo, so you point it at your own copy of the course repo. Both outputs are
 git-ignored, because they hold course material. Without `--course`, it uses only our notebook and docs.
+The online chat only picks up the new copy once the Worker is deployed again
+([The Ask chat](running-the-app.md#the-ask-chat-local-and-online)).
 
 ```bash
 ./demo.sh knowledge --course /path/to/capstone-project-2-business_analyst_agent

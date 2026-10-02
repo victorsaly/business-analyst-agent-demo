@@ -196,7 +196,9 @@ the pauses in each clip with <code>ffmpeg</code> and works out when each word st
 notebook, and every page of this blog, cut into passages the chat can search. It writes <code>data/knowledge.json</code>
 for the local app and <code>../worker/knowledge.json</code> for the online chat.</p>
 <p>The course files aren't in this repo, so you point it at your own copy of the course repo. Both outputs are
-git-ignored, because they hold course material. Without <code>--course</code>, it uses only our notebook and docs.</p>
+git-ignored, because they hold course material. Without <code>--course</code>, it uses only our notebook and docs.
+The online chat only picks up the new copy once the Worker is deployed again
+(<a href="running-the-app.html#the-ask-chat-local-and-online">The Ask chat</a>).</p>
 <pre><code class="language-bash">./demo.sh knowledge --course /path/to/capstone-project-2-business_analyst_agent
 </code></pre>
 <h2 id="make_story_answers">make_story_answers</h2>

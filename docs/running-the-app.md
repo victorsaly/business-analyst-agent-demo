@@ -347,6 +347,19 @@ course material, and how we built it. Every answer uses only:
 - course material: the passages that best match the question from the course's training guide and
   starting notebook, and from our finished notebook. These are numbered, and the answer cites them, like [2].
 
+While it works, the chat says what it's doing: reading the notes, then the passages it found, then the answer
+as it's written. **Stop** keeps what's written so far.
+
+**No training.** The AI isn't trained on any of this. For each question, the chat looks up the relevant text
+and sends it along with the question. Some of that text is read fresh every time, and some is a saved copy
+that you refresh:
+
+| What the chat uses | Local app | Online |
+|---|---|---|
+| The brief, the build guide and the history | Read from `docs/` for every question, so edits show at once | In the Worker's saved copy: refresh it and deploy |
+| The knowledge base (course material, our notebook, every blog page) | Saved copy, `data/knowledge.json` | Saved copy, inside the Worker |
+| Answers to the suggested questions | Saved, `web/story/answers.json` | The same file, on the website |
+
 The suggested questions have answers prepared in advance, so they are instant and cost nothing. To regenerate
 them (this uses the AI):
 
@@ -391,7 +404,11 @@ sequenceDiagram
 | 25 questions a day per visitor (counted by a hash of their IP address) | `PER_VISITOR_LIMIT` |
 | Model | `MODEL` (`gpt-5.4-mini`) |
 
-To update it after changing the docs, the notebook or `analyst/story.py`:
+**Logs.** The Worker's requests and errors appear in the Cloudflare dashboard (the Worker's Observability
+tab). They're switched on in `wrangler.toml`, not in the dashboard, because a deploy resets settings made
+only in the dashboard. The Worker doesn't log the questions visitors type.
+
+To update it after changing the docs, the notebook or `analyst/story.py` ([what each script does](scripts.md)):
 
 1. Rebuild the knowledge base (from `app/`):
 
