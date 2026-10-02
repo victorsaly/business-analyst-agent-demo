@@ -7,7 +7,27 @@ import KB from "../knowledge.json";
 
 const ALLOWED = ["https://victorsaly.github.io", "http://localhost:8501", "http://127.0.0.1:8501"];
 const STOP = new Set(KB.stop);
-const words = (t) => (String(t).toLowerCase().match(/[a-z0-9_]+/g) || []).filter((w) => w.length > 1 && !STOP.has(w));
+const SUFFIXES = [["ments", ""], ["ment", ""], ["ated", "ate"], ["ating", "ate"], ["ates", "ate"], ["ings", ""], ["ing", ""],
+  ["ies", "i"], ["ied", "i"], ["ed", ""], ["s", ""]];
+const DERIVED = [["ation", ""], ["ate", ""], ["est", ""], ["ly", ""]];   // then limitation/limit, biggest/big, weekly/week
+function stem(w) {   // the same light stemmer as app/analyst/knowledge.py: "limited", "limits" and "limiting" all match "limit"
+  for (const [suf, rep] of SUFFIXES) {
+    if (w.endsWith(suf) && w.length - suf.length >= 3 && !(suf === "s" && "isu".includes(w[w.length - 2]))) {
+      w = w.slice(0, -suf.length) + rep;
+      break;
+    }
+  }
+  for (const [suf, rep] of DERIVED) {
+    if (w.endsWith(suf) && w.length - suf.length >= 4) {
+      w = w.slice(0, -suf.length) + rep;
+      break;
+    }
+  }
+  if (w.length > 2 && "ye".includes(w[w.length - 1])) w = w.slice(0, -1) + (w.endsWith("y") ? "i" : "");
+  if (w.length > 3 && w[w.length - 1] === w[w.length - 2] && !"aeiouylsz".includes(w[w.length - 1])) w = w.slice(0, -1);
+  return w;
+}
+const words = (t) => (String(t).toLowerCase().match(/[a-z0-9_]+/g) || []).filter((w) => w.length > 1 && !STOP.has(w)).map(stem);
 
 // ---- the search index, built once per Worker instance
 const K1 = 1.4, B = 0.75;

@@ -31,8 +31,32 @@ if in into is it its just me more most my no not of on or our out so some such t
 these they this to up use used using was we were what when where which who why will with would you your""".split())
 
 
+SUFFIXES = (("ments", ""), ("ment", ""), ("ated", "ate"), ("ating", "ate"), ("ates", "ate"), ("ings", ""), ("ing", ""),
+            ("ies", "i"), ("ied", "i"), ("ed", ""), ("s", ""))
+# Then, on what's left: limitation/limit, calculate/calcul, biggest/big, weekly/week. Checked against the knowledge
+# base's own words; -er (customer/custom), -ion (production/product) and -ness (business/busy) merge too much.
+DERIVED = (("ation", ""), ("ate", ""), ("est", ""), ("ly", ""))
+
+
+def stem(w):
+    """A light stemmer, so "limited", "limits" and "limiting" all match "limit". worker/src/index.js has the same."""
+    for suf, rep in SUFFIXES:
+        if w.endswith(suf) and len(w) - len(suf) >= 3 and not (suf == "s" and w[-2] in "isu"):   # not class, status, analysis
+            w = w[:-len(suf)] + rep
+            break
+    for suf, rep in DERIVED:
+        if w.endswith(suf) and len(w) - len(suf) >= 4:
+            w = w[:-len(suf)] + rep
+            break
+    if len(w) > 2 and w[-1] in "ye":   # query/queri, price/pric
+        w = w[:-1] + ("i" if w[-1] == "y" else "")
+    if len(w) > 3 and w[-1] == w[-2] and w[-1] not in "aeiouylsz":   # running -> runn -> run
+        w = w[:-1]
+    return w
+
+
 def words(text):
-    return [w for w in re.findall(r"[a-z0-9_]+", text.lower()) if len(w) > 1 and w not in STOP]
+    return [stem(w) for w in re.findall(r"[a-z0-9_]+", text.lower()) if len(w) > 1 and w not in STOP]
 
 
 def _chunks(source, title, text, url=""):
