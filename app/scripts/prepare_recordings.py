@@ -5,10 +5,13 @@
 
 Uses about 120-160k tokens on the free Groq plan (the daily allowance is about 200k per model).
 """
+import os
 import sys
 import time
 
-from analyst import agent, briefing, cases
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))   # app/, so `python scripts/<name>.py` works too
+
+from analyst import agent, briefing, cases  # noqa: E402
 
 PAUSE = 20   # seconds between questions, to stay under the free plan's tokens-per-minute limit
 

@@ -10,7 +10,9 @@ import os
 import sys
 import time
 
-from analyst import story
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))   # app/, so `python scripts/<name>.py` works too
+
+from analyst import story  # noqa: E402
 
 QUESTIONS = [
     "What is this project, in one minute?",

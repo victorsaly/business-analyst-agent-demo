@@ -42,7 +42,8 @@ long form:</p>
 .venv\Scripts\python -m scripts.build_site      # Windows
 </code></pre>
 <h2 id="how-they-fit-together">How they fit together</h2>
-<p>Most scripts feed the website. Only two use the AI, and they're the ones that cost tokens.</p>
+<p>Most scripts feed the website. Only the two in red call the AI, so they're the ones that cost tokens.
+(<code>record_video --mode live</code> would too, but the normal videos replay the recordings instead.)</p>
 <figure class="diagram"><pre class="mermaid">flowchart LR
   accTitle: Which script makes what
   P[&quot;prepare_recordings&lt;br/&gt;(uses the AI)&quot;] --&gt; R[(&quot;recordings/&quot;)]
@@ -122,9 +123,9 @@ long form:</p>
 <p>The checks (<code>./demo.sh test</code>) stay in <code>app/test_demo.py</code>: they test the app rather than make anything.</p>
 <h2 id="check_key">check_key</h2>
 <p><em>Source: <a href="https://github.com/victorsaly/business-analyst-agent-demo/blob/main/app/scripts/check_key.py">app/scripts/check_key.py</a></em></p>
-<p>Reads <code>app/.env</code> and asks each AI service whether the key works. It prints one of three things: the key is
-fine, the key is missing, or the service rejected it, with what to do next. It never stops anything, because
-Replay mode works without a key. The double-click Setup and Start files run it for you.</p>
+<p>Reads <code>app/.env</code> and asks each AI service whether its key works. It says plainly if a key is missing or was
+rejected, and what to do next, or that it couldn't reach the service (offline). It never stops anything,
+because Replay mode works without a key. The double-click Setup and Start files run it for you.</p>
 <pre><code class="language-bash">.venv/bin/python -m scripts.check_key
 </code></pre>
 <h2 id="prepare_recordings">prepare_recordings</h2>

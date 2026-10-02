@@ -15,15 +15,18 @@ works online through its Cloudflare Worker.
 
 Re-run after recording new live runs, then commit and push site/. site/media/ (the pitch video) is kept.
 """
+import sys
 import json
 import os
 import re
 import shutil
 
-import api_docs
-import blog
-import server
-from analyst import briefing, cases, tools as T
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))   # app/, so `python scripts/<name>.py` works too
+
+import api_docs  # noqa: E402
+import blog  # noqa: E402
+import server  # noqa: E402
+from analyst import briefing, cases, tools as T  # noqa: E402
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # app/ (this script lives in app/scripts/)
 OUT = os.path.join(os.path.dirname(HERE), "site")

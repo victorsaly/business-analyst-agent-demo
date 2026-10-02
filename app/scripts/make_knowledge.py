@@ -7,12 +7,15 @@ The course folder must hold Training_guide.docx and capstone2_business_analyst.i
 (used by the local app) and ../worker/knowledge.json (bundled into the online chat's Cloudflare Worker). Both
 are git-ignored: they contain course material, which stays out of the public repo.
 """
+import sys
 import argparse
 import json
 import os
 from collections import Counter
 
-from analyst import knowledge, story
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))   # app/, so `python scripts/<name>.py` works too
+
+from analyst import knowledge, story  # noqa: E402
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # app/ (this script lives in app/scripts/)
 

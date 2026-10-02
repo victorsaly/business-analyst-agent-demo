@@ -1,8 +1,13 @@
 """Check the AI key in app/.env and say plainly what to do if it is missing or wrong. Always exits 0:
 Replay mode works without a key, so this only warns."""
+import os
+import sys
+
 import requests
 
-from analyst import agent
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))   # app/, so `python scripts/<name>.py` works too
+
+from analyst import agent  # noqa: E402
 
 FIX = ("  Open app/.env, put your key after GROQ_API_KEY= (free at https://console.groq.com/keys),\n"
        "  save the file, then start the demo again. Without a key only Replay mode works.")

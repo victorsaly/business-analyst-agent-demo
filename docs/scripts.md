@@ -15,7 +15,8 @@ long form:
 
 ## How they fit together
 
-Most scripts feed the website. Only two use the AI, and they're the ones that cost tokens.
+Most scripts feed the website. Only the two in red call the AI, so they're the ones that cost tokens.
+(`record_video --mode live` would too, but the normal videos replay the recordings instead.)
 
 ```mermaid
 flowchart LR
@@ -53,9 +54,9 @@ The checks (`./demo.sh test`) stay in `app/test_demo.py`: they test the app rath
 
 *Source: [app/scripts/check_key.py](../app/scripts/check_key.py)*
 
-Reads `app/.env` and asks each AI service whether the key works. It prints one of three things: the key is
-fine, the key is missing, or the service rejected it, with what to do next. It never stops anything, because
-Replay mode works without a key. The double-click Setup and Start files run it for you.
+Reads `app/.env` and asks each AI service whether its key works. It says plainly if a key is missing or was
+rejected, and what to do next, or that it couldn't reach the service (offline). It never stops anything,
+because Replay mode works without a key. The double-click Setup and Start files run it for you.
 
 ```bash
 .venv/bin/python -m scripts.check_key
