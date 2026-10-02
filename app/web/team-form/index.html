@@ -24,7 +24,14 @@
     font: inherit; font-family: var(--typed); font-size: 1rem; color: var(--ink); background: var(--label);
     border: 2px solid var(--ink); padding: 0.55rem 0.7rem; width: 100%; border-radius: 0;
   }
-  input:focus-visible, textarea:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+  input:focus-visible, textarea:focus-visible { outline: 3px solid var(--red); outline-offset: 3px; }
+  /* A field to fix: a thicker border, a bold message with an icon right under it, and aria-invalid. Not colour
+     alone: to someone with red-green colour blindness, red-ink and ink look almost the same (1.6:1). */
+  input[aria-invalid=true], textarea[aria-invalid=true] { border-width: 3px; border-color: var(--red-ink); padding: calc(0.55rem - 1px) calc(0.7rem - 1px); }
+  fieldset[aria-invalid=true] { border-width: 3px; border-color: var(--red-ink); padding: calc(0.8rem - 1px) calc(1rem - 1px) calc(1rem - 1px); }
+  .field-error, .status.error { display: flex; gap: 0.45rem; align-items: flex-start; font-family: var(--typed); font-weight: 700; color: var(--red-ink); }
+  .field-error { font-size: 0.9rem; margin: 0.15rem 0 0; }
+  .field-error svg.icon, .status.error svg.icon { margin-top: 0.1em; }
   textarea { min-height: 6.5rem; resize: vertical; }
   fieldset { border: 2px solid var(--ink); padding: 0.8rem 1rem 1rem; margin: 0; }
   .skills { display: grid; grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); gap: 0.4rem 1rem; margin-top: 0.4rem; }
@@ -38,7 +45,6 @@
   details.hint summary { cursor: pointer; text-decoration: underline; text-underline-offset: 0.2em; }
   details.hint[open] summary { margin-bottom: 0.2rem; }
   .status { font-family: var(--typed); font-size: 0.95rem; min-height: 1.4em; }
-  .status.error { color: var(--red-ink); }
   .done { border: 2px solid var(--ink); box-shadow: 6px 6px 0 var(--red); padding: 1.4rem 1.5rem; text-align: center; }
   .done h2 { font-size: 1.8rem; margin-bottom: 0.4rem; }
   .done[hidden], form[hidden] { display: none; }
@@ -73,7 +79,7 @@
       <span class="hint" id="role-hint">For example: data analysis, prompts, website, slides, testing.</span>
       <input id="role" name="role" type="text" maxlength="150" required aria-describedby="role-hint">
     </div>
-    <fieldset>
+    <fieldset id="skills-set">
       <legend>Your main skills <span class="req" aria-hidden="true">*</span></legend>
       <span class="hint">Tick everything you're comfortable doing.</span>
       <div class="skills" id="skills"></div>
@@ -116,7 +122,32 @@
   document.getElementById("skills").innerHTML = SKILLS.map((s, i) =>
     `<label><input type="checkbox" name="skills" value="${s}" id="skill-${i}"> ${s}</label>`).join("");
 
-  const say = (msg, error) => { status.textContent = msg; status.classList.toggle("error", !!error); };
+  const ALERT = '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5v.01"/></svg>';
+  const say = (msg, error) => {
+    status.innerHTML = error ? ALERT : ""; status.append(msg); status.classList.toggle("error", !!error);
+  };
+  // Mark a field to fix, with its message right under it (and read out with it); clear it once they change it.
+  const described = (el, id, on) => {
+    const ids = (el.getAttribute("aria-describedby") || "").split(" ").filter((x) => x && x !== id).concat(on ? [id] : []);
+    ids.length ? el.setAttribute("aria-describedby", ids.join(" ")) : el.removeAttribute("aria-describedby");
+  };
+  function fail(el, msg) {
+    const id = `${el.id}-error`;
+    let p = document.getElementById(id);
+    if (!p) { p = Object.assign(document.createElement("p"), { id, className: "field-error" }); el.after(p); }
+    p.innerHTML = ALERT; p.append(msg);
+    el.setAttribute("aria-invalid", "true"); described(el, id, true);
+    return el;
+  }
+  function clear(el) {
+    el.removeAttribute("aria-invalid"); described(el, `${el.id}-error`, false);
+    document.getElementById(`${el.id}-error`)?.remove();
+  }
+  const skillsSet = document.getElementById("skills-set");
+  form.addEventListener("input", (e) => {
+    const el = e.target.name === "skills" || e.target.id === "other_skills" ? skillsSet : e.target;
+    if (el.getAttribute("aria-invalid")) clear(el);
+  });
 
   // LinkedIn: accept the full link (any country subdomain, ?isSelfProfile=true and all), "linkedin.com/in/name" or
   // just "name", and turn it into https://www.linkedin.com/in/name/ with a link to check it's really them.
@@ -140,14 +171,18 @@
     e.preventDefault();
     const data = Object.fromEntries(new FormData(form));
     data.skills = [...form.querySelectorAll("input[name=skills]:checked")].map((c) => c.value);
-    const first = [...form.querySelectorAll("[required]")].find((el) => !el.value.trim());
-    if (first) { say("Please fill in every field marked *.", true); first.focus(); return; }
+    form.querySelectorAll("[aria-invalid]").forEach(clear);
+    const bad = [...form.querySelectorAll("[required]")].filter((el) => !el.value.trim()).map((el) => fail(el, "Please fill this in."));
     data.linkedin = linkedinUrl(data.linkedin);
-    if (!data.linkedin) {
-      say("Please paste your LinkedIn profile link, or type the name at the end of it.", true);
-      document.getElementById("linkedin").focus(); return;
+    if (!data.linkedin && linkedin.value.trim())
+      bad.push(fail(linkedin, "That doesn't look like a LinkedIn profile. Paste the link, or type the name at the end of it."));
+    if (!data.skills.length && !data.other_skills.trim()) bad.push(fail(skillsSet, "Please tick at least one skill, or write one under Other skills."));
+    if (bad.length) {
+      bad.sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1));
+      say(bad.length === 1 ? "One answer needs fixing: it's marked above." : `${bad.length} answers need fixing: they're marked above.`, true);
+      (bad[0] === skillsSet ? document.getElementById("skill-0") : bad[0]).focus();
+      return;
     }
-    if (!data.skills.length && !data.other_skills.trim()) { say("Please tick at least one skill.", true); document.getElementById("skill-0").focus(); return; }
     send.disabled = true; say("Sending…");
     try {
       const r = await fetch(`${WORKER}/team`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
