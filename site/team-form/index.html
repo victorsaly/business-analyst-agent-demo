@@ -35,6 +35,8 @@
   button.btn { cursor: pointer; justify-self: start; margin: 0; background: var(--ink); color: var(--paper); }
   button.btn:hover { background: var(--ink-2); color: var(--paper); }
   button.btn[disabled] { opacity: 0.6; cursor: wait; }
+  details.hint summary { cursor: pointer; text-decoration: underline; text-underline-offset: 0.2em; }
+  details.hint[open] summary { margin-bottom: 0.2rem; }
   .status { font-family: var(--typed); font-size: 0.95rem; min-height: 1.4em; }
   .status.error { color: var(--red-ink); }
   .done { border: 2px solid var(--ink); box-shadow: 6px 6px 0 var(--red); padding: 1.4rem 1.5rem; text-align: center; }
@@ -57,8 +59,14 @@
     </div>
     <div class="field">
       <label for="linkedin">LinkedIn profile link <span class="req" aria-hidden="true">*</span></label>
-      <span class="hint" id="linkedin-hint">For example https://www.linkedin.com/in/your-name/</span>
-      <input id="linkedin" name="linkedin" type="url" inputmode="url" maxlength="300" required aria-describedby="linkedin-hint" placeholder="https://www.linkedin.com/in/">
+      <span class="hint" id="linkedin-hint">Paste your profile link, or type just the name at the end of it (for example victorsaly).</span>
+      <input id="linkedin" name="linkedin" type="text" inputmode="url" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="300" required aria-describedby="linkedin-hint linkedin-check" placeholder="linkedin.com/in/your-name">
+      <span class="hint" id="linkedin-check" aria-live="polite"></span>
+      <details class="hint">
+        <summary>Where do I find it?</summary>
+        In the LinkedIn app: tap your photo, then View profile, then the ··· button, then Share profile and Copy link.
+        On a computer: open your profile; the link is in the address bar.
+      </details>
     </div>
     <div class="field">
       <label for="role">Your role on the project <span class="req" aria-hidden="true">*</span></label>
@@ -109,14 +117,34 @@
     `<label><input type="checkbox" name="skills" value="${s}" id="skill-${i}"> ${s}</label>`).join("");
 
   const say = (msg, error) => { status.textContent = msg; status.classList.toggle("error", !!error); };
+
+  // LinkedIn: accept the full link (any country subdomain, ?isSelfProfile=true and all), "linkedin.com/in/name" or
+  // just "name", and turn it into https://www.linkedin.com/in/name/ with a link to check it's really them.
+  const linkedin = document.getElementById("linkedin"), check = document.getElementById("linkedin-check");
+  function linkedinUrl(v) {
+    v = v.trim();
+    const m = v.match(/linkedin\.com\/(?:in|pub)\/([^/?#\s]+)/i);
+    if (m) return `https://www.linkedin.com/in/${m[1]}/`;
+    if (/^@?[\p{L}\p{N}_%-]{3,100}$/u.test(v)) return `https://www.linkedin.com/in/${v.replace(/^@/, "")}/`;
+    return "";
+  }
+  linkedin.addEventListener("input", () => {
+    const url = linkedinUrl(linkedin.value);
+    check.replaceChildren();
+    if (!url) return;
+    const a = Object.assign(document.createElement("a"), { href: url, target: "_blank", rel: "noopener", textContent: url.replace("https://www.", "") });
+    check.append("Your profile: ", a, " (open it to check)");
+  });
+  linkedin.addEventListener("blur", () => { const url = linkedinUrl(linkedin.value); if (url) linkedin.value = url; });
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(form));
     data.skills = [...form.querySelectorAll("input[name=skills]:checked")].map((c) => c.value);
     const first = [...form.querySelectorAll("[required]")].find((el) => !el.value.trim());
     if (first) { say("Please fill in every field marked *.", true); first.focus(); return; }
-    if (!/^https:\/\/([a-z]+\.)?linkedin\.com\//i.test(data.linkedin.trim())) {
-      say("Please paste your full LinkedIn profile link, starting with https://www.linkedin.com/", true);
+    data.linkedin = linkedinUrl(data.linkedin);
+    if (!data.linkedin) {
+      say("Please paste your LinkedIn profile link, or type the name at the end of it.", true);
       document.getElementById("linkedin").focus(); return;
     }
     if (!data.skills.length && !data.other_skills.trim()) { say("Please tick at least one skill.", true); document.getElementById("skill-0").focus(); return; }
